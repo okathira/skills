@@ -1,0 +1,84 @@
+# zvec-llm-wiki（日本語版）
+
+[Agent Skill](https://agentskills.io/) で、コーディング中にプロジェクトの **LLM 向け wiki**（`docs/wiki/`）を同期し、**zvec-grep（`zg`）** を共有検索レイヤーとして使う。
+
+コアループ: **Read (zg) → Work → Verify with human → Record (edit wiki) → Re-index (`zg index`)**。
+
+このスキルは **wiki ガバナンス** と **zg をいつ使うか** を担当する。zg のフラグ、モデル、MCP、トランスポートはインストール済み CLI（`zg help`）にあり — ここでは重複しない。
+
+## レイアウト
+
+```
+ja/zvec-llm-wiki/
+  README.md                       # このファイル（カタログ / 人間向け）
+  install/install.sh              # スキルをエージェントのスキルディレクトリへコピー
+  SKILL.md                        # エージェント向けエントリポイント
+  scripts/zg-bootstrap.sh         # 対象リポジトリで zg + docs/wiki をブートストラップ
+  references/
+  templates/
+```
+
+スキル `name` は `zvec-llm-wiki-ja` で、このフォルダに対応する。`install.sh` は `SKILL.md`、`scripts/`、`references/`、`templates/` だけをコピーする — この README と `install/` はコピーしない。このフォルダは単体で完結し、英語版へ依存しない。
+
+2 つのセットアップ手順 — 混同しないこと:
+
+1. **スキルのインストール**（マシンまたはリポジトリごとに 1 回）— `install/install.sh`
+2. **対象リポジトリのブートストラップ**（プロジェクトごとに 1 回）— `scripts/zg-bootstrap.sh`
+
+## 1. スキルのインストール
+
+`.agents/skills/zvec-llm-wiki-ja`（Cursor、Codex、OpenCode）または任意で `.claude/skills/`（Claude Code）へコピーする。
+
+```bash
+# ユーザー全体（デフォルト）— Cursor / Codex / OpenCode
+sh ja/zvec-llm-wiki/install/install.sh
+
+# プロジェクトスコープ — チームリポジトリ、Cloud Agents
+cd your-repo
+sh /path/to/skills/ja/zvec-llm-wiki/install/install.sh --project
+
+# Claude Code 向けにもインストール
+sh ja/zvec-llm-wiki/install/install.sh --claude
+sh ja/zvec-llm-wiki/install/install.sh --project --claude
+```
+
+既存インストールを上書きするには `--force` を使う。カタログ更新後は `--force` で再実行し、`~/.agents/skills/`（またはプロジェクト内の `.agents/skills/`）に変更を反映する。
+
+Windows では Git Bash など POSIX シェルから実行する。
+
+インストール後にエージェントを再起動する。
+
+## 2. 対象リポジトリのブートストラップ
+
+作業中の **プロジェクト** から実行する（このカタログからではない）。**Node.js 22+** が必要 — zvec-grep にスタンドアロンバイナリはない。
+
+```bash
+cd your-repo
+
+# インストール済みエージェントを自動検出（Codex、Cursor、OpenCode、Claude、…）
+bash /path/to/skills/ja/zvec-llm-wiki/scripts/zg-bootstrap.sh
+
+# またはエージェントを明示的に指定（参照: zg help install）
+bash /path/to/skills/ja/zvec-llm-wiki/scripts/zg-bootstrap.sh --target cursor codex opencode
+
+# デフォルト wiki 埋め込みを上書き（参照: zg help models）
+bash /path/to/skills/ja/zvec-llm-wiki/scripts/zg-bootstrap.sh --embedding local/potion-multilingual-128m
+```
+
+`zg` を解決し（既存インストール → `npx` → 任意のグローバル `npm install -g`）、`zg install` で MCP を配線し、`docs/wiki/` のひな形を生成し、`AGENTS.md` ホットメモリを upsert し、zg デフォルト探索で最初のインデックスを構築する。MCP 設定後にエージェントを再起動する。
+
+## スキルパッケージの内容
+
+| パス | 目的 |
+|------|------|
+| `SKILL.md` | エントリポイント: 読み取り/記録ループ、wiki 構造、zg 使用タイミング |
+| `references/wiki-workflow.md` | ガバナンス不変条件、what-vs-why、ホット/コールドメモリ |
+| `scripts/zg-bootstrap.sh` | 冪等で非破壊的なリポジトリセットアップ |
+| `templates/adr.md` | Architecture Decision Record テンプレート |
+| `templates/wiki-page.md` | 汎用 wiki ページテンプレート |
+
+## 設計の出典
+
+- [zvec-grep](https://github.com/zvec-ai/zvec-grep) — zg の挙動と CLI リファレンス（`zg help`）
+- Living-docs 実践: docs-first、one-home-per-fact、human-as-checkpoint、what-vs-why、hot/cold memory
+- [Agent Skills](https://agentskills.io/specification) 執筆（簡潔な SKILL.md、段階的開示）

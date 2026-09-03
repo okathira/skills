@@ -5,7 +5,7 @@ about structure/governance.
 
 ## Five governance invariants
 
-1. **Docs-first.** The `docs/wiki/` file is the source of truth; any external tracker/wiki copy
+1. **Docs-first.** Files under `docs/wiki/` are the source of truth; any external tracker/wiki copy
    is a mirror. Author in the repo before publishing elsewhere.
 2. **One home per fact.** Each concept/decision/requirement lives in exactly one file.
    Cross-reference instead of copying — duplicated prose is drift waiting to happen.
