@@ -25,33 +25,47 @@ about structure/governance.
 
 ## Hot vs. cold memory
 
-- **Hot memory** = `AGENTS.md` / `CLAUDE.md` at repo root: loaded every session. Keep it short —
-  conventions, where the wiki lives, and "read the wiki before acting via `zg`".
-- **Cold memory** = `docs/wiki/**`: pulled on demand through `zg query`. Only the relevant page
-  enters context, not the whole wiki.
+- **Hot memory** = `AGENTS.md` at repo root (bootstrap upserts a marked block). Loaded every
+  session. Keep it short — where the wiki lives, search wiki before acting, propose-then-record.
+- **Cold memory** = `docs/wiki/**`: pulled on demand through zg. Only the relevant page enters
+  context, not the whole wiki.
 
-Suggested `AGENTS.md` snippet:
+Bootstrap writes or updates this block in `AGENTS.md`:
 
 ```md
-## Project knowledge
-- Living wiki: docs/wiki/ (registry: docs/wiki/index.md)
-- Search it before acting:  zg query "<intent>" -g "docs/wiki/**"
-- After verified work: propose wiki updates; on approval, edit the owning page, then `zg index`.
+<!-- ZVEC_LLM_WIKI_START -->
+## Project knowledge (LLM wiki)
+
+- Living wiki: `docs/wiki/` (registry: `docs/wiki/index.md`)
+- Search wiki before acting (scope: `docs/wiki/**`)
+- After verified work: propose wiki updates; on approval, edit the owning page, then incremental `zg index`
+
+<!-- ZVEC_LLM_WIKI_END -->
 ```
+
+For Claude Code, copy the same block into `CLAUDE.md` manually if needed.
 
 ## Session loop
 
 1. **Start** — read `docs/wiki/index.md` (registry) so you know what exists and where.
-2. **Before a task** — `zg query "<intent>"` to pull relevant pages + code evidence. Read only
-   what the ranked results point to.
+2. **Before a task** — search for intent scoped to `docs/wiki/**` first, then widen to code if
+   needed. How to pass scope: `zg help query`. Read only what ranked results point to.
 3. **Do the work.**
 4. **Verify** with the user (tests pass / behavior confirmed).
 5. **Propose, then record on approval** — update the one owning page, add/adjust an ADR for
    decisions, register any new page in `index.md`, cross-reference.
-6. **Re-index** — `zg index` then `zg status`.
+6. **Re-index** — incremental `zg index`, then `zg status`.
+
+## Index scope
+
+First bootstrap uses zg default file discovery — no `src/` assumption. After you understand the
+repo layout, propose narrower or wider index paths when defaults are wrong. Use `zg help index` for
+path options. `--reset-paths` and `--rebuild` require explicit user confirmation.
 
 ## Drift checks (run periodically)
 
-- `zg query -g "docs/wiki/**" "<feature you just changed>"` — does the wiki still match reality?
-- Grep for stale references after a rename: `zg query --rg -n -F "OldName" -g "docs/**"`.
+- Search `docs/wiki/**` for the feature you just changed — does the wiki still match reality?
+- After a rename, use exact lookup across `docs/**` for stale references.
 - If a page describes removed behavior, fix it in the same PR as the code change.
+
+For search commands and flags, use `zg help query`.

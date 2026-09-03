@@ -4,6 +4,8 @@ An [Agent Skill](https://agentskills.io/) that keeps a project's **LLM-facing wi
 
 Core loop: **Read (zg) → Work → Verify with human → Record (edit wiki) → Re-index (`zg index`)**.
 
+This skill owns **wiki governance** and **when to use zg**. zg flags, models, MCP, and transport live in the installed CLI (`zg help`) — not duplicated here.
+
 ## Layout
 
 ```
@@ -40,7 +42,10 @@ sh zvec-llm-wiki/install/install.sh --claude
 sh zvec-llm-wiki/install/install.sh --project --claude
 ```
 
-Use `--force` to overwrite an existing install. On Windows, run from Git Bash or another POSIX shell.
+Use `--force` to overwrite an existing install. After updating this catalog, re-run with
+`--force` so `~/.agents/skills/` (or `.agents/skills/` in a project) picks up changes.
+
+On Windows, run from Git Bash or another POSIX shell.
 
 Restart your agent after installing.
 
@@ -54,18 +59,22 @@ cd your-repo
 # Auto-detect installed agents (Codex, Cursor, OpenCode, Claude, …)
 bash /path/to/skills/zvec-llm-wiki/scripts/zg-bootstrap.sh
 
-# Or pick agents explicitly
+# Or pick agents explicitly (see: zg help install)
 bash /path/to/skills/zvec-llm-wiki/scripts/zg-bootstrap.sh --target cursor codex opencode
+
+# Override the default wiki embedding (see: zg help models)
+bash /path/to/skills/zvec-llm-wiki/scripts/zg-bootstrap.sh --embedding local/potion-multilingual-128m
 ```
 
-This resolves `zg` (existing install → `npx` → optional global `npm install -g`), wires MCP via `zg install`, scaffolds `docs/wiki/`, and builds the first index. Restart the agent after MCP configuration.
+This resolves `zg` (existing install → `npx` → optional global `npm install -g`), wires MCP via
+`zg install`, scaffolds `docs/wiki/`, upserts `AGENTS.md` hot memory, and builds the first index
+with zg default file discovery. Restart the agent after MCP configuration.
 
 ## Skill package contents
 
 | Path | Purpose |
 |------|---------|
-| `SKILL.md` | Entry point: read/record loop, structure, guardrails |
-| `references/zvec-grep-cheatsheet.md` | Full `zg` flags, MCP tool names, index management |
+| `SKILL.md` | Entry point: read/record loop, wiki structure, zg usage timing |
 | `references/wiki-workflow.md` | Governance invariants, what-vs-why, hot/cold memory |
 | `scripts/zg-bootstrap.sh` | Idempotent, non-destructive repo setup |
 | `templates/adr.md` | Architecture Decision Record template |
@@ -73,6 +82,6 @@ This resolves `zg` (existing install → `npx` → optional global `npm install 
 
 ## Design sources
 
-- [zvec-grep](https://github.com/zvec-ai/zvec-grep) docs (search routes, index management, MCP, freshness)
+- [zvec-grep](https://github.com/zvec-ai/zvec-grep) — zg behavior and CLI reference (`zg help`)
 - Living-docs practices: docs-first, one-home-per-fact, human-as-checkpoint, what-vs-why, hot/cold memory
 - [Agent Skills](https://agentskills.io/specification) authoring (concise SKILL.md, progressive disclosure)

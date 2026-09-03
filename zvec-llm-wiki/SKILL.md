@@ -45,37 +45,36 @@ docs/wiki/
 Use `templates/adr.md` and `templates/wiki-page.md` as starting points. Keep each page short;
 link, don't duplicate. Governance details: `references/wiki-workflow.md`.
 
-## Read before acting
+## When to use zg (and when not to)
 
-### MCP (when wired by `zg install`)
+This skill defines **when and why** to search. For flags, models, MCP setup, and transport, run
+`zg help`, `zg help query`, `zg help index`, `zg help install`, or `zg help models` — do not copy
+or invent zg syntax from this skill.
 
-Prefer the agent's indexed search tool for intent-based lookup:
+### Retrieval routing
 
-| Agent | Semantic search tool |
+| Situation | Route |
 |---|---|
-| Codex / Claude Code / Cursor | `zvec_grep_search` |
-| OpenCode | `zvec_grep_zvec_grep_search` |
-| Qwen / Qoder | `mcp__zvec_grep__zvec_grep_search` |
+| Meaning, cross-file context, or location unknown | zg indexed search (MCP tool from `zg install` if available; tool name varies by client) |
+| Exact identifier, path, regex, or rename leftovers | Native grep/rg, or zg managed rg — see `zg help query` |
+| Task starts | Scope to `docs/wiki/**` first; widen to code only when wiki evidence is not enough |
+| Checking whether related material exists locally | One focused semantic probe; stop when results are enough or irrelevant |
 
-Use native grep/rg (or `zg query --rg`) for exact symbols, paths, or regex. Index lifecycle
-(`zg index`, `zg status`) stays on the CLI. Optional `zvec_grep_rg` exists only with zg's `full`
-MCP toolset — do not assume it is available.
+**Wiki scope is a skill contract:** when reading the wiki first, always pass `docs/wiki/**` as the
+search scope (MCP or CLI). How to pass scope depends on the installed zg — ask `zg help query`, do
+not guess flags from this skill.
 
-### CLI (`zg query`)
+Index lifecycle (`zg index`, `zg status`) stays on the CLI. Do not assume optional MCP index or
+managed-rg tools exist unless the installed zg exposes them.
 
-| You know... | Command |
-|---|---|
-| Only the intent / meaning | `zg query "where feature flags are resolved" --limit 5` |
-| Intent + exact anchors | `zg query --hybrid "auth flow" --fts "ForbiddenError" --fuse --limit 10` |
-| A concept, no keyword | `zg query --vector "how retries back off"` |
-| Exact symbol / path / regex | `zg query --rg -n -F "AuthService" -g "*.ts" src` |
+Stop searching once ranked evidence is enough — do not read whole files "just in case".
 
-Narrow first, then widen: add `-g "docs/wiki/**"` to hit only the wiki, `-t md` for Markdown,
-`-t ts` for code. Stop searching once the returned evidence is enough — do not read whole files
-"just in case". See `references/zvec-grep-cheatsheet.md` for full flags.
+### Index scope (project judgment)
 
-**Freshness:** results report `fresh` or `possibly_stale`. Act on a good-enough hit; only use
-`--refresh wait` when the very latest file change must be included.
+Bootstrap uses zg's default file discovery for the first index — this skill does not assume a
+`src/` layout. After inspecting the repository, **propose** narrower or wider index paths when the
+defaults miss important code or index too much noise. Changing stored paths requires
+`--reset-paths` or `--rebuild`; both need explicit user confirmation.
 
 ## Record after verifying
 
@@ -83,47 +82,34 @@ When the user confirms the work is correct:
 
 1. **Propose** what to record: which page owns the fact, whether an ADR is needed, and a short
    draft. Wait for approval before editing.
-2. **Find the single home** with `zg query -g "docs/wiki/**" "<topic>"`. Update that page; if
-   none exists, create one under the right section and add it to `index.md`.
+2. **Find the single home** — search scoped to `docs/wiki/**` for the topic. Update that page;
+   if none exists, create one under the right section and add it to `index.md`.
 3. **Write the *why*, not just the *what*.** For structural/architectural decisions, add or
    update an ADR in `decisions/` (use `templates/adr.md`).
 4. **Cross-reference** related pages instead of copying prose.
-5. **Re-index** after edits:
-   ```bash
-   zg index            # incremental; reuses model + path selection
-   zg status           # confirm files indexed / no failures
-   ```
+5. **Re-index** after edits: incremental `zg index`, then `zg status` to confirm readiness.
 
 Keep diffs small and reviewable — the user reviews wiki changes like code.
 
 ## Bootstrap (first time in a repo)
 
-Run `scripts/zg-bootstrap.sh` from this skill package (or equivalent commands). It is idempotent
-and non-destructive:
+Run `scripts/zg-bootstrap.sh` from this skill package. It is idempotent and non-destructive:
 
 ```bash
 bash scripts/zg-bootstrap.sh                          # auto-detect agents
-bash scripts/zg-bootstrap.sh --target cursor codex    # explicit targets
+bash scripts/zg-bootstrap.sh --target cursor codex    # explicit targets; see zg help install
+bash scripts/zg-bootstrap.sh --embedding <model>      # override default wiki embedding
 ```
 
-Requires Node.js 22+. The script resolves `zg` via existing install → `npx` → confirmed global
-`npm install -g`. It scaffolds `docs/wiki/`, runs `zg install`, and builds the first index.
+Requires Node.js 22+. The script resolves `zg`, scaffolds `docs/wiki/`, upserts `AGENTS.md` hot
+memory, runs `zg install`, and builds the first index with zg default discovery. Restart the agent
+after MCP configuration.
 
-Manual equivalent:
-
-```bash
-npm install -g @zvec/zvec-grep          # or: npx @zvec/zvec-grep ...
-zg install --target cursor --yes        # codex | opencode | claude | qwen | all
-zg index -g "src/**" -g "docs/**" -g "!dist/**"
-zg status --check-ready
-```
-
-`zg install` wires the local MCP server (loopback `127.0.0.1:7999`). Restart the agent after
-install. Details: `references/zvec-grep-cheatsheet.md`.
+For manual setup or troubleshooting, follow `zg help` and `zg help install`.
 
 ## Guardrails
 
 - Do **not** run `--rebuild`, `--drop`, `--reset-paths` without explicit confirmation.
 - Do **not** update the wiki from unverified work, or copy the same fact into two files.
-- Do **not** flood context: prefer ranked `zg` evidence over opening full files.
-- `.zvec-grep/` and `.git/` are auto-excluded; don't index build/cache/log dirs.
+- Do **not** flood context: prefer ranked zg evidence over opening full files.
+- Do **not** duplicate zg documentation here — the installed CLI is the source of truth.

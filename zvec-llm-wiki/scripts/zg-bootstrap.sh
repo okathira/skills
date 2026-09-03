@@ -3,18 +3,23 @@
 # Idempotent and non-destructive: it never rebuilds/drops an existing index.
 #
 # Usage:
-#   ./zg-bootstrap.sh [--target codex|cursor|opencode|claude|qwen|all]...
+#   ./zg-bootstrap.sh [--target <agent>]... [--embedding <model>]
 #   ./zg-bootstrap.sh                    # auto-detect agents (zg install)
 #
 set -euo pipefail
 
 TARGETS=()
+EMBEDDING="local/potion-multilingual-128m"
+EMBEDDING_EXPLICIT=0
 
 usage() {
   cat <<'EOF'
-Usage: zg-bootstrap.sh [--target <agent>]...
+Usage: zg-bootstrap.sh [--target <agent>]... [--embedding <model>]
 
-Agents: codex, cursor, opencode, claude, qwen, all
+  --target <agent>     Repeatable; passed to zg install (see: zg help install)
+  --embedding <model>  First-index model (default: local/potion-multilingual-128m)
+                       Catalog: zg help models
+
 With no --target, runs: zg install --yes (auto-detect).
 Requires Node.js 22+.
 EOF
@@ -33,6 +38,16 @@ while [[ $# -gt 0 ]]; do
         shift
       done
       ;;
+    --embedding)
+      shift
+      if [[ $# -eq 0 ]]; then
+        echo "error: --embedding requires a value" >&2
+        exit 1
+      fi
+      EMBEDDING="$1"
+      EMBEDDING_EXPLICIT=1
+      shift
+      ;;
     -h|--help)
       usage
       exit 0
@@ -48,6 +63,46 @@ done
 say() { printf '\033[1;36m==>\033[0m %s\n' "$*"; }
 
 warn() { printf '\033[1;33mwarning:\033[0m %s\n' "$*" >&2; }
+
+upsert_agents_md() {
+  local block_file agents=AGENTS.md
+  block_file="$(mktemp)"
+  cat > "$block_file" <<'EOF'
+<!-- ZVEC_LLM_WIKI_START -->
+## Project knowledge (LLM wiki)
+
+- Living wiki: `docs/wiki/` (registry: `docs/wiki/index.md`)
+- Search wiki before acting (scope: `docs/wiki/**`)
+- After verified work: propose wiki updates; on approval, edit the owning page, then incremental `zg index`
+
+<!-- ZVEC_LLM_WIKI_END -->
+EOF
+
+  if [[ ! -f "$agents" ]]; then
+    cp "$block_file" "$agents"
+    say "Created $agents (hot memory for the wiki loop)"
+  elif grep -q 'ZVEC_LLM_WIKI_START' "$agents"; then
+    awk -v blockfile="$block_file" '
+      /ZVEC_LLM_WIKI_START/ {
+        if (!done) {
+          while ((getline line < blockfile) > 0) print line
+          done = 1
+        }
+        skip = 1
+        next
+      }
+      /ZVEC_LLM_WIKI_END/ { skip = 0; next }
+      !skip { print }
+    ' "$agents" > "${agents}.tmp"
+    mv "${agents}.tmp" "$agents"
+    say "Updated $agents wiki block"
+  else
+    printf '\n' >> "$agents"
+    cat "$block_file" >> "$agents"
+    say "Appended wiki block to $agents"
+  fi
+  rm -f "$block_file"
+}
 
 # 1) Node.js 22+ check --------------------------------------------------------
 if ! command -v node >/dev/null 2>&1; then
@@ -134,20 +189,26 @@ else
   say "docs/wiki/ already exists — leaving it untouched"
 fi
 
-# 5) Build or update the index ------------------------------------------------
-COMMON_EXCLUDES=(-g "!dist/**" -g "!node_modules/**" -g "!.git/**" -g "!.zvec-grep/**")
+# 5) Hot memory (AGENTS.md) -------------------------------------------------
+upsert_agents_md
 
+# 6) Build or update the index ------------------------------------------------
 if [[ -d .zvec-grep ]]; then
   say "Existing index found — running incremental update (no rebuild)"
+  if (( EMBEDDING_EXPLICIT )); then
+    warn "--embedding is ignored for an existing index. To change models, use zg index --rebuild --embedding <model> with explicit user confirmation."
+  fi
   run_zg index
-elif [[ -d src ]]; then
-  say "Building first index (scoped to src/ and docs/)"
-  run_zg index -g "src/**" -g "docs/**" "${COMMON_EXCLUDES[@]}"
 else
-  say "No src/ — building first index (docs/ + repo root, with exclusions)"
-  run_zg index -g "docs/**" -g "**/*" "${COMMON_EXCLUDES[@]}"
+  say "Building first index (embedding: ${EMBEDDING}; zg default file discovery)"
+  run_zg index --embedding "$EMBEDDING"
 fi
 
 run_zg status --check-ready
+
+if [[ "$ZG_MODE" == "npx" ]]; then
+  warn "zg is not on PATH. Later agent runs of 'zg index' may fail unless you install globally: npm install -g @zvec/zvec-grep"
+fi
+
 say "Done. Restart your agent if MCP was just configured."
-say "Try:  zg query \"where <thing> is handled\" -g \"docs/wiki/**\""
+say "Hot memory: AGENTS.md. Search wiki first (scope: docs/wiki/**). For zg usage: zg help"
