@@ -8,14 +8,15 @@ This repository is an [Agent Skills](https://agentskills.io/) catalog. Each skil
 
 ```
 skills/                          # catalog root (this repo)
-  README.md                      # language policy + skill index (human-facing)
+  README.md                      # English landing (GitHub default): policy + skill index
+  README.ja.md                   # Japanese landing; keep in lockstep with README.md
   zvec-llm-wiki/                 # English skill package (default locale)
   ja/zvec-llm-wiki/              # Japanese locale variant
   docs/wiki/                     # compiled project knowledge (this wiki)
   AGENTS.md                      # hot memory / schema block for agents
 ```
 
-**Raw sources** (immutable for wiki purposes): skill `SKILL.md`, package `README.md`, `install/install.sh`, and catalog [README.md](../../README.md).
+**Raw sources** (immutable for wiki purposes): skill `SKILL.md`, package `README.md`, `install/install.sh`, and catalog [README.md](../../README.md) / [README.ja.md](../../README.ja.md).
 
 **Retrieval layer**: [zvec-grep](https://github.com/zvec-ai/zvec-grep) (`zg`) indexes the workspace; agents search `docs/wiki/**` first via MCP or CLI.
 

@@ -27,9 +27,10 @@ Each locale folder is a **complete, standalone package**. English and Japanese f
 
 - Any behavior change requires editing both `zvec-llm-wiki/` and `ja/zvec-llm-wiki/` in the same PR.
 - Wiki for this catalog is authored in English (default locale); Japanese skill README remains human-facing for `ja/` installers.
+- Catalog landing pages [README.md](../../../README.md) and [README.ja.md](../../../README.ja.md) stay in lockstep (see [conventions.md](../conventions.md)).
 
 ## References
 
 - [conventions.md](../conventions.md)
 - [architecture.md](../architecture.md)
-- Catalog [README.md](../../../README.md)
+- Catalog [README.md](../../../README.md) · [README.ja.md](../../../README.ja.md)
