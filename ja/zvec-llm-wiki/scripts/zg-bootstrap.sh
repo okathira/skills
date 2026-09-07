@@ -64,6 +64,18 @@ say() { printf '\033[1;36m==>\033[0m %s\n' "$*"; }
 
 warn() { printf '\033[1;33m警告:\033[0m %s\n' "$*" >&2; }
 
+ensure_gitignore_zvec() {
+  if [[ ! -f .gitignore ]]; then
+    printf '# zvec-grep ローカルインデックス（正ではない）\n.zvec-grep/\n' > .gitignore
+    say ".gitignore を作成し .zvec-grep/ を追加した"
+  elif ! grep -qE '^\.zvec-grep/?$' .gitignore 2>/dev/null; then
+    printf '\n# zvec-grep ローカルインデックス（正ではない）\n.zvec-grep/\n' >> .gitignore
+    say ".gitignore に .zvec-grep/ を追記した"
+  else
+    say ".gitignore は既に .zvec-grep/ を無視している"
+  fi
+}
+
 upsert_agents_md() {
   local block_file agents=AGENTS.md
   block_file="$(mktemp)"
@@ -191,6 +203,9 @@ fi
 
 # 5) ホットメモリ（AGENTS.md） ------------------------------------------------
 upsert_agents_md
+
+# 5b) ローカルインデックスを git から除外 ---------------------------------------
+ensure_gitignore_zvec
 
 # 6) インデックスの構築または更新 ---------------------------------------------
 if [[ -d .zvec-grep ]]; then

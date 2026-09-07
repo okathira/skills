@@ -64,6 +64,18 @@ say() { printf '\033[1;36m==>\033[0m %s\n' "$*"; }
 
 warn() { printf '\033[1;33mwarning:\033[0m %s\n' "$*" >&2; }
 
+ensure_gitignore_zvec() {
+  if [[ ! -f .gitignore ]]; then
+    printf '# zvec-grep local index (not source of truth)\n.zvec-grep/\n' > .gitignore
+    say "Created .gitignore with .zvec-grep/"
+  elif ! grep -qE '^\.zvec-grep/?$' .gitignore 2>/dev/null; then
+    printf '\n# zvec-grep local index (not source of truth)\n.zvec-grep/\n' >> .gitignore
+    say "Appended .zvec-grep/ to .gitignore"
+  else
+    say ".gitignore already ignores .zvec-grep/"
+  fi
+}
+
 upsert_agents_md() {
   local block_file agents=AGENTS.md
   block_file="$(mktemp)"
@@ -191,6 +203,9 @@ fi
 
 # 5) Hot memory (AGENTS.md) -------------------------------------------------
 upsert_agents_md
+
+# 5b) Keep local index out of git ---------------------------------------------
+ensure_gitignore_zvec
 
 # 6) Build or update the index ------------------------------------------------
 if [[ -d .zvec-grep ]]; then

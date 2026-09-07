@@ -83,5 +83,5 @@ with zg default file discovery. Restart the agent after MCP configuration.
 ## Design sources
 
 - [zvec-grep](https://github.com/zvec-ai/zvec-grep) — zg behavior and CLI reference (`zg help`)
-- Living-docs practices: docs-first, one-home-per-fact, human-as-checkpoint, what-vs-why, hot/cold memory
+- [Karpathy LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) — persistent compiled wiki, index-first query, optional log; adapted for coding with human checkpoint and zg instead of qmd
 - [Agent Skills](https://agentskills.io/specification) authoring (concise SKILL.md, progressive disclosure)

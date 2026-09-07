@@ -80,5 +80,5 @@ bash /path/to/skills/ja/zvec-llm-wiki/scripts/zg-bootstrap.sh --embedding local/
 ## 設計の出典
 
 - [zvec-grep](https://github.com/zvec-ai/zvec-grep) — zg の挙動と CLI リファレンス（`zg help`）
-- Living-docs 実践: docs-first、one-home-per-fact、human-as-checkpoint、what-vs-why、hot/cold memory
+- [Karpathy LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) — 永続的な編纂 wiki、index 先読み、任意の log。コーディング向けに人間チェックポイントと zg（qmd の代替）で適応
 - [Agent Skills](https://agentskills.io/specification) 執筆（簡潔な SKILL.md、段階的開示）
