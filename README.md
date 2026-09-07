@@ -1,12 +1,12 @@
 # Agent Skills catalog
 
-[![Agent Skills](https://img.shields.io/badge/Agent%20Skills-spec-111827?style=flat-square)](https://agentskills.io/) [![zvec-grep](https://img.shields.io/badge/search-zvec--grep-4f46e5?style=flat-square)](https://github.com/zvec-ai/zvec-grep)
+[![Agent Skills](https://img.shields.io/badge/Agent%20Skills-spec-111827?style=flat-square)](https://agentskills.io/)
 
 Skills for coding agents — [Cursor](https://cursor.com/), Codex, OpenCode, and Claude Code.
 
 [English](README.md) · [日本語](README.ja.md)
 
-Each skill is a self-contained folder: install it, then agents follow `SKILL.md` while they work.
+A growing catalog of **independent** Agent Skills. Each skill is its own package: we add it here, install it into our agents, and dogfood it in this repository as well. After install, agents follow that skill's `SKILL.md`.
 
 ## Skills
 
@@ -14,19 +14,11 @@ Each skill is a self-contained folder: install it, then agents follow `SKILL.md`
 |-------|----------------|--------|
 | [zvec-llm-wiki](skills/zvec-llm-wiki/zvec-llm-wiki/) | Keep an LLM-facing wiki (`docs/wiki/`) in sync, with [zvec-grep](https://github.com/zvec-ai/zvec-grep) as the search layer | [zvec-llm-wiki-ja](skills/zvec-llm-wiki/zvec-llm-wiki-ja/) |
 
-## Quick start
+## Using a skill
 
-```bash
-# English locale (default)
-sh skills/zvec-llm-wiki/zvec-llm-wiki/install/install.sh
+Open the skill folder and follow **its** README. The usual first step is `install/install.sh`, then restart the agent. Re-run with `--force` after pulling catalog updates, if that skill's README says so.
 
-# Japanese locale
-sh skills/zvec-llm-wiki/zvec-llm-wiki-ja/install/install.sh
-```
-
-Re-run with `--force` after pulling catalog updates. Restart the agent after install.
-
-Install copies skill files into agent directories — not this catalog README. Next, bootstrap a *target* project with `scripts/zg-bootstrap.sh`. Full steps: [zvec-llm-wiki/README.md](skills/zvec-llm-wiki/zvec-llm-wiki/README.md) · [日本語](skills/zvec-llm-wiki/zvec-llm-wiki-ja/README.md).
+Install copies skill files into agent directories — not this catalog README. Anything extra (bootstrap, tools, project wiring) is documented per skill.
 
 ## Language policy
 
@@ -34,14 +26,12 @@ English is the default locale so agents spend fewer tokens. Japanese is opt-in.
 
 | | English | Japanese |
 |---|---------|----------|
-| **Skills** | `skills/<skill-name>/<skill-name>/`, e.g. `skills/zvec-llm-wiki/zvec-llm-wiki/` — folder name matches `name` in `SKILL.md` | `skills/<skill-name>/<skill-name>-ja/`, e.g. `skills/zvec-llm-wiki/zvec-llm-wiki-ja/` — distinct `name` (`zvec-llm-wiki-ja`) |
+| **Skills** | `skills/<skill-name>/<skill-name>/` — folder name matches `name` in `SKILL.md` | `skills/<skill-name>/<skill-name>-ja/` — distinct `name` (suffix `-ja`) |
 | **This landing page** | [`README.md`](README.md) (GitHub default) | [`README.ja.md`](README.ja.md) |
 
-- **Independence:** each skill locale folder is a complete package. Extracting that folder alone is enough to install and run it. Layout is one-to-one (`SKILL.md`, `install/`, `scripts/`, `references/`, `templates/`). No symlinks or cross-locale runtime deps. Behavior and flags stay aligned; only natural language and `name` differ.
-- **Maintenance:** when behavior changes, update every locale in the same change. When catalog landing copy changes, update `README.md` and `README.ja.md` together (same sections, same facts). Pick one skill locale per install.
+- **Independence:** each skill locale folder is a complete package. Extracting that folder alone is enough to install and run it. Locales of the same skill stay one-to-one; there are no symlinks or cross-locale runtime deps. Behavior and flags stay aligned; only natural language and `name` differ.
+- **Maintenance:** when a skill's behavior changes, update every locale of that skill in the same change. When catalog landing copy changes, update `README.md` and `README.ja.md` together (same sections, same facts). Pick one locale per install.
 
 ## Related
 
 - [Agent Skills specification](https://agentskills.io/specification)
-- [zvec-grep](https://github.com/zvec-ai/zvec-grep)
-- [Karpathy — LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f)
