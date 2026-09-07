@@ -27,7 +27,14 @@ From the **project root** (not the skill package folder):
 bash zvec-llm-wiki/scripts/zg-bootstrap.sh --target cursor
 ```
 
-Creates `docs/wiki/`, `AGENTS.md`, `.zvec-grep/`, runs `zg install`, builds index with `local/potion-multilingual-128m`.
+Creates `docs/wiki/`, `AGENTS.md`, `.zvec-grep/`, installs `@zvec/zvec-grep` globally if `zg` is missing, runs `zg install`, builds index with `local/potion-multilingual-128m`.
+
+Supported embeddings are whatever the installed zg lists — do not copy a model table into this wiki. Inspect the catalog:
+
+```bash
+zg help models
+npx --yes @zvec/zvec-grep help models   # if zg is not on PATH
+```
 
 **Idempotent**: second run does not rebuild wiki scaffold or drop index; runs incremental `zg index`.
 
@@ -46,9 +53,9 @@ Restart agent after first MCP install.
 
 | Issue | Action |
 |-------|--------|
-| `zg` not on PATH | Use `npx --yes @zvec/zvec-grep <cmd>` or `npm install -g @zvec/zvec-grep` |
+| `zg` not on PATH / MCP `zvec_grep` error | `npm install -g @zvec/zvec-grep`, confirm `which zg`, restart Cursor. After an nvm Node switch, reinstall globally. |
 | Query returns empty stubs | Wiki pages need content; re-run `zg index` after edits |
-| MCP tool missing | Restart Cursor after `zg install --target cursor` |
+| MCP tool missing after a good `zg` | Restart Cursor after `zg install --target cursor` |
 
 ## Related
 

@@ -61,11 +61,19 @@ bash /path/to/skills/ja/zvec-llm-wiki/scripts/zg-bootstrap.sh
 # またはエージェントを明示的に指定（参照: zg help install）
 bash /path/to/skills/ja/zvec-llm-wiki/scripts/zg-bootstrap.sh --target cursor codex opencode
 
-# デフォルト wiki 埋め込みを上書き（参照: zg help models）
+# デフォルト wiki 埋め込みを上書き
 bash /path/to/skills/ja/zvec-llm-wiki/scripts/zg-bootstrap.sh --embedding local/potion-multilingual-128m
 ```
 
-`zg` を解決し（既存インストール → `npx` → 任意のグローバル `npm install -g`）、`zg install` で MCP を配線し、`docs/wiki/` のひな形を生成し、`AGENTS.md` ホットメモリを upsert し、zg デフォルト探索で最初のインデックスを構築する。MCP 設定後にエージェントを再起動する。
+使える埋め込みモデルはインストール済み zg のカタログが正。一覧は次で確認する（この README にはモデル表を置かない）。
+
+```bash
+zg help models
+# PATH に zg が無いとき:
+npx --yes @zvec/zvec-grep help models
+```
+
+`zg` が無いときは、`zg install` の前に `npm install -g @zvec/zvec-grep` を実行する。MCP の stdio 設定は常に `zg` バイナリを起動し（`zg install` は npm パッケージを入れない）、npx だけのブートストラップだとエージェントが `command not found: zg` になる。その後 `docs/wiki/` のひな形を生成し、`AGENTS.md` ホットメモリを upsert し、zg デフォルト探索で最初のインデックスを構築する。MCP 設定後にエージェントを再起動する。
 
 ## スキルパッケージの内容
 

@@ -84,10 +84,10 @@ docs/wiki/
 ```bash
 bash scripts/zg-bootstrap.sh                          # エージェント自動検出
 bash scripts/zg-bootstrap.sh --target cursor codex    # 明示的ターゲット; zg help install を参照
-bash scripts/zg-bootstrap.sh --embedding <model>      # デフォルト wiki 埋め込みを上書き
+bash scripts/zg-bootstrap.sh --embedding <model>      # デフォルト wiki 埋め込みを上書き（一覧: zg help models）
 ```
 
-Node.js 22+ が必要。スクリプトは `zg` を解決し、`docs/wiki/` のひな形を生成し、`AGENTS.md` ホットメモリを upsert し、`zg install` を実行し、zg デフォルト探索で最初のインデックスを構築する。MCP 設定後にエージェントを再起動する。
+Node.js 22+ が必要。スクリプトは `zg` を PATH に載せる（無ければ `npm install -g`。`zg install` は MCP に `command: zg` を書き npm パッケージは入れないため必須）、`docs/wiki/` のひな形を生成し、`AGENTS.md` ホットメモリを upsert し、`zg install` を実行し、zg デフォルト探索で最初のインデックスを構築する。MCP 設定後にエージェントを再起動する。
 
 手動セットアップやトラブルシューティングは `zg help` と `zg help install` に従う。
 

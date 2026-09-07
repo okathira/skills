@@ -18,7 +18,8 @@ Usage: zg-bootstrap.sh [--target <agent>]... [--embedding <model>]
 
   --target <agent>     Repeatable; passed to zg install (see: zg help install)
   --embedding <model>  First-index model (default: local/potion-multilingual-128m)
-                       Catalog: zg help models
+                       List models: zg help models
+                       (if zg is not on PATH: npx --yes @zvec/zvec-grep help models)
 
 With no --target, runs: zg install --yes (auto-detect).
 Requires Node.js 22+.
@@ -127,41 +128,31 @@ if (( NODE_MAJOR < 22 )); then
   exit 1
 fi
 
-# 2) Resolve zg: existing → npx → confirmed global install --------------------
-ZG=()
-ZG_MODE=""
+# 2) Resolve zg on PATH. `zg install` writes MCP command "zg" and does not
+# install the npm package — npx-only bootstrap leaves agents with command not found.
+ZG=(zg)
 
 if command -v zg >/dev/null 2>&1; then
-  ZG=(zg)
-  ZG_MODE="global"
   say "Using zg ($(zg --version 2>/dev/null || echo unknown))"
-elif command -v npx >/dev/null 2>&1; then
-  ZG=(npx --yes @zvec/zvec-grep)
-  ZG_MODE="npx"
-  say "Using npx @zvec/zvec-grep (no global install)"
+elif command -v npm >/dev/null 2>&1; then
+  say "zg is not on PATH; installing @zvec/zvec-grep globally so MCP can spawn zg"
+  npm install -g @zvec/zvec-grep
+  PATH="$(npm prefix -g)/bin:${PATH}"
+  export PATH
+  hash -r 2>/dev/null || true
+  if ! command -v zg >/dev/null 2>&1; then
+    echo "Installed @zvec/zvec-grep but zg is still not on PATH. Add $(npm prefix -g)/bin to PATH and retry." >&2
+    exit 1
+  fi
+  say "Using zg ($(zg --version 2>/dev/null || echo unknown))"
 else
-  echo "Neither zg nor npx found. Install Node.js npm/npx first." >&2
+  echo "Neither zg nor npm found. Install Node.js 22+ first." >&2
   exit 1
 fi
 
 run_zg() {
   "${ZG[@]}" "$@"
 }
-
-if [[ "$ZG_MODE" == "npx" ]] && ! command -v zg >/dev/null 2>&1; then
-  if [[ -t 0 ]]; then
-    printf 'Install @zvec/zvec-grep globally for faster runs? [y/N] '
-    read -r reply
-    if [[ "$reply" =~ ^[Yy]$ ]]; then
-      say "Installing @zvec/zvec-grep globally"
-      npm install -g @zvec/zvec-grep
-      ZG=(zg)
-      ZG_MODE="global"
-    fi
-  else
-    warn "Non-interactive session: continuing with npx (no global install)."
-  fi
-fi
 
 # 3) Wire the agent MCP integration -------------------------------------------
 if [[ ${#TARGETS[@]} -eq 0 ]]; then
@@ -220,10 +211,6 @@ else
 fi
 
 run_zg status --check-ready
-
-if [[ "$ZG_MODE" == "npx" ]]; then
-  warn "zg is not on PATH. Later agent runs of 'zg index' may fail unless you install globally: npm install -g @zvec/zvec-grep"
-fi
 
 say "Done. Restart your agent if MCP was just configured."
 say "Hot memory: AGENTS.md. Search wiki first (scope: docs/wiki/**). For zg usage: zg help"

@@ -98,12 +98,13 @@ Run `scripts/zg-bootstrap.sh` from this skill package. It is idempotent and non-
 ```bash
 bash scripts/zg-bootstrap.sh                          # auto-detect agents
 bash scripts/zg-bootstrap.sh --target cursor codex    # explicit targets; see zg help install
-bash scripts/zg-bootstrap.sh --embedding <model>      # override default wiki embedding
+bash scripts/zg-bootstrap.sh --embedding <model>      # override default wiki embedding (list: zg help models)
 ```
 
-Requires Node.js 22+. The script resolves `zg`, scaffolds `docs/wiki/`, upserts `AGENTS.md` hot
-memory, runs `zg install`, and builds the first index with zg default discovery. Restart the agent
-after MCP configuration.
+Requires Node.js 22+. The script puts `zg` on PATH (`npm install -g` if missing — required because
+`zg install` writes MCP `command: zg` and does not install the package), scaffolds `docs/wiki/`,
+upserts `AGENTS.md` hot memory, runs `zg install`, and builds the first index with zg default
+discovery. Restart the agent after MCP configuration.
 
 For manual setup or troubleshooting, follow `zg help` and `zg help install`.
 

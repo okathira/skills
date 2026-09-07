@@ -62,13 +62,24 @@ bash /path/to/skills/zvec-llm-wiki/scripts/zg-bootstrap.sh
 # Or pick agents explicitly (see: zg help install)
 bash /path/to/skills/zvec-llm-wiki/scripts/zg-bootstrap.sh --target cursor codex opencode
 
-# Override the default wiki embedding (see: zg help models)
+# Override the default wiki embedding
 bash /path/to/skills/zvec-llm-wiki/scripts/zg-bootstrap.sh --embedding local/potion-multilingual-128m
 ```
 
-This resolves `zg` (existing install → `npx` → optional global `npm install -g`), wires MCP via
-`zg install`, scaffolds `docs/wiki/`, upserts `AGENTS.md` hot memory, and builds the first index
-with zg default file discovery. Restart the agent after MCP configuration.
+Supported embedding models come from the installed zg catalog. List them there (this README does
+not duplicate the table):
+
+```bash
+zg help models
+# if zg is not on PATH:
+npx --yes @zvec/zvec-grep help models
+```
+
+If `zg` is missing, the script runs `npm install -g @zvec/zvec-grep` before `zg install`.
+MCP stdio config always launches the `zg` binary (`zg install` does not install the npm package),
+so an npx-only bootstrap would leave agents with `command not found: zg`. Then it scaffolds
+`docs/wiki/`, upserts `AGENTS.md` hot memory, and builds the first index with zg default file
+discovery. Restart the agent after MCP configuration.
 
 ## Skill package contents
 

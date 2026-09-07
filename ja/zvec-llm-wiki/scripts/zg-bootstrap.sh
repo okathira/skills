@@ -18,7 +18,8 @@ usage() {
 
   --target <agent>     繰り返し可; zg install に渡す（参照: zg help install）
   --embedding <model>  初回インデックスのモデル（デフォルト: local/potion-multilingual-128m）
-                       カタログ: zg help models
+                       対応一覧は zg help models
+                       （PATH に無いときは npx --yes @zvec/zvec-grep help models）
 
 --target なしの場合は zg install --yes（自動検出）を実行する。
 Node.js 22+ が必要。
@@ -127,41 +128,31 @@ if (( NODE_MAJOR < 22 )); then
   exit 1
 fi
 
-# 2) zg の解決: 既存 → npx → 確認つきグローバルインストール --------------------
-ZG=()
-ZG_MODE=""
+# 2) PATH 上の zg を解決する。`zg install` は MCP の command に "zg" を書き、
+# npm パッケージは入れない — npx だけのブートストラップはエージェントが command not found になる。
+ZG=(zg)
 
 if command -v zg >/dev/null 2>&1; then
-  ZG=(zg)
-  ZG_MODE="global"
   say "zg を使用 ($(zg --version 2>/dev/null || echo 不明))"
-elif command -v npx >/dev/null 2>&1; then
-  ZG=(npx --yes @zvec/zvec-grep)
-  ZG_MODE="npx"
-  say "npx @zvec/zvec-grep を使用（グローバルインストールなし）"
+elif command -v npm >/dev/null 2>&1; then
+  say "zg が PATH にないため、MCP が zg を起動できるよう @zvec/zvec-grep をグローバルインストールします"
+  npm install -g @zvec/zvec-grep
+  PATH="$(npm prefix -g)/bin:${PATH}"
+  export PATH
+  hash -r 2>/dev/null || true
+  if ! command -v zg >/dev/null 2>&1; then
+    echo "@zvec/zvec-grep を入れましたが zg がまだ PATH にありません。$(npm prefix -g)/bin を PATH に追加して再実行してください。" >&2
+    exit 1
+  fi
+  say "zg を使用 ($(zg --version 2>/dev/null || echo 不明))"
 else
-  echo "zg も npx も見つかりません。先に Node.js の npm/npx をインストールしてください。" >&2
+  echo "zg も npm も見つかりません。先に Node.js 22+ をインストールしてください。" >&2
   exit 1
 fi
 
 run_zg() {
   "${ZG[@]}" "$@"
 }
-
-if [[ "$ZG_MODE" == "npx" ]] && ! command -v zg >/dev/null 2>&1; then
-  if [[ -t 0 ]]; then
-    printf '次回以降を速くするため @zvec/zvec-grep をグローバルインストールしますか? [y/N] '
-    read -r reply
-    if [[ "$reply" =~ ^[Yy]$ ]]; then
-      say "@zvec/zvec-grep をグローバルインストールします"
-      npm install -g @zvec/zvec-grep
-      ZG=(zg)
-      ZG_MODE="global"
-    fi
-  else
-    warn "非対話セッションのため npx のまま続行します（グローバルインストールなし）。"
-  fi
-fi
 
 # 3) エージェント MCP 連携 -----------------------------------------------------
 if [[ ${#TARGETS[@]} -eq 0 ]]; then
@@ -220,10 +211,6 @@ else
 fi
 
 run_zg status --check-ready
-
-if [[ "$ZG_MODE" == "npx" ]]; then
-  warn "zg が PATH にありません。後でエージェントが 'zg index' を実行すると失敗する可能性があります。グローバルインストール: npm install -g @zvec/zvec-grep"
-fi
 
 say "完了。MCP を今設定した場合はエージェントを再起動してください。"
 say "ホットメモリ: AGENTS.md。まず wiki を検索（スコープ: docs/wiki/**）。zg の使い方: zg help"

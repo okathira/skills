@@ -9,7 +9,7 @@
 | **Hot memory** | Short `AGENTS.md` block loaded every session (`ZVEC_LLM_WIKI_*` markers). |
 | **Cold memory** | `docs/wiki/**` retrieved on demand via `zg`. |
 | **LLM Wiki** | [Karpathy's pattern](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f): persistent, interlinked markdown compiled from raw sources; optional search (here: zvec-grep). |
-| **zg / zvec-grep** | Local semantic + lexical search CLI and MCP server. Flags: `zg help`. |
+| **zg / zvec-grep** | Local semantic + lexical search CLI and MCP server. Flags: `zg help`. Embedding catalog: `zg help models` or `npx --yes @zvec/zvec-grep help models`. |
 | **Registry** | `docs/wiki/index.md` — catalog of wiki pages with one-line summaries. |
 
 ## Related
