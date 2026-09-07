@@ -4,6 +4,7 @@
 
 | Term | Definition |
 |------|------------|
+| **ADR** | Architecture Decision Record — one markdown file per structural decision in `docs/wiki/decisions/` (the "why", not the "what"). |
 | **Agent Skill** | Cursor/Codex/OpenCode/Claude instruction package (`SKILL.md` + supporting files). Spec: [agentskills.io](https://agentskills.io/). |
 | **Bootstrap** | Run `zg-bootstrap.sh` in a target repo to scaffold `docs/wiki/`, upsert `AGENTS.md`, wire MCP, and build the first `zg` index. |
 | **Hot memory** | Short `AGENTS.md` block loaded every session (`ZVEC_LLM_WIKI_*` markers). |

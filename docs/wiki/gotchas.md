@@ -11,7 +11,7 @@ Bootstrap creates a local index under `.zvec-grep/`. It is not source of truth. 
 - **Install skill** (`install.sh`) → agent skill directory only
 - **Bootstrap repo** (`zg-bootstrap.sh`) → `docs/wiki/`, `AGENTS.md`, index, MCP
 
-Running bootstrap from inside `zvec-llm-wiki/` instead of the project root wires the wrong workspace.
+Running bootstrap from inside a skill package folder (e.g. `skills/zvec-llm-wiki/zvec-llm-wiki/`) instead of the project root wires the wrong workspace.
 
 ## Empty wiki stubs rank in search but answer nothing
 

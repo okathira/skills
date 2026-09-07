@@ -6,8 +6,8 @@
 
 ### Language policy
 
-- **English** is the default locale at repo root (`zvec-llm-wiki/`). Folder name matches skill `name` in `SKILL.md`.
-- **Japanese** variants live under `ja/<skill-name>/` with a distinct `name` (e.g. `zvec-llm-wiki-ja`).
+- **English** is the default locale at `skills/<skill-name>/<skill-name>/`. Folder name matches skill `name` in `SKILL.md`.
+- **Japanese** variants live at `skills/<skill-name>/<skill-name>-ja/` with a distinct `name` (e.g. `zvec-llm-wiki-ja`).
 - **Independence**: each locale folder is a complete package. No symlinks or cross-locale runtime dependencies.
 - **Skills**: behavior changes must update every locale the same way; pick one locale per install.
 - **Catalog landing**: GitHub shows [README.md](../../README.md) (English). [README.ja.md](../../README.ja.md) is the Japanese counterpart. Same sections and facts; only natural language differs. Change both in the same edit. Language switcher and badges stay Markdown-only (no HTML wrappers).
@@ -39,3 +39,4 @@ Adapted from [Karpathy's LLM Wiki pattern](https://gist.github.com/karpathy/442a
 
 - [architecture.md](architecture.md) — repo layout
 - [decisions/ADR-0001-locale-independence.md](decisions/ADR-0001-locale-independence.md) — why locales do not symlink
+- [decisions/ADR-0002-catalog-skills-directory.md](decisions/ADR-0002-catalog-skills-directory.md) — why packages live under `skills/`

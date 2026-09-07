@@ -12,21 +12,21 @@
 
 | スキル | できること | English |
 |--------|------------|---------|
-| [ja/zvec-llm-wiki](ja/zvec-llm-wiki/) | LLM 向け wiki（`docs/wiki/`）を同期し、検索レイヤーに [zvec-grep](https://github.com/zvec-ai/zvec-grep) を使う | [zvec-llm-wiki](zvec-llm-wiki/) |
+| [zvec-llm-wiki-ja](skills/zvec-llm-wiki/zvec-llm-wiki-ja/) | LLM 向け wiki（`docs/wiki/`）を同期し、検索レイヤーに [zvec-grep](https://github.com/zvec-ai/zvec-grep) を使う | [zvec-llm-wiki](skills/zvec-llm-wiki/zvec-llm-wiki/) |
 
 ## クイックスタート
 
 ```bash
 # 英語ロケール（デフォルト）
-sh zvec-llm-wiki/install/install.sh
+sh skills/zvec-llm-wiki/zvec-llm-wiki/install/install.sh
 
 # 日本語ロケール
-sh ja/zvec-llm-wiki/install/install.sh
+sh skills/zvec-llm-wiki/zvec-llm-wiki-ja/install/install.sh
 ```
 
 カタログを pull したあとは `--force` で再実行する。インストール後はエージェントを再起動する。
 
-インストールはスキルファイルをエージェント用ディレクトリへコピーする（このカタログ README はコピーしない）。続けて、対象プロジェクトで `scripts/zg-bootstrap.sh` を実行する。手順の全体: [日本語 README](ja/zvec-llm-wiki/README.md) · [English](zvec-llm-wiki/README.md)。
+インストールはスキルファイルをエージェント用ディレクトリへコピーする（このカタログ README はコピーしない）。続けて、対象プロジェクトで `scripts/zg-bootstrap.sh` を実行する。手順の全体: [日本語 README](skills/zvec-llm-wiki/zvec-llm-wiki-ja/README.md) · [English](skills/zvec-llm-wiki/zvec-llm-wiki/README.md)。
 
 ## 言語ポリシー
 
@@ -34,7 +34,7 @@ sh ja/zvec-llm-wiki/install/install.sh
 
 | | 英語 | 日本語 |
 |---|------|--------|
-| **スキル** | リポジトリ直下。例: `zvec-llm-wiki/` — フォルダ名は `SKILL.md` の `name` と一致 | `ja/<skill-name>/`。例: `ja/zvec-llm-wiki/` — 別の `name`（`zvec-llm-wiki-ja`） |
+| **スキル** | `skills/<skill-name>/<skill-name>/`。例: `skills/zvec-llm-wiki/zvec-llm-wiki/` — フォルダ名は `SKILL.md` の `name` と一致 | `skills/<skill-name>/<skill-name>-ja/`。例: `skills/zvec-llm-wiki/zvec-llm-wiki-ja/` — 別の `name`（`zvec-llm-wiki-ja`） |
 | **このトップページ** | [`README.md`](README.md)（GitHub の既定表示） | [`README.ja.md`](README.ja.md) |
 
 - **独立性:** 各ロケールのスキルフォルダは単体で完結する。そのフォルダだけ取り出せばインストールと実行ができる。ファイル構成は 1 対 1（`SKILL.md`、`install/`、`scripts/`、`references/`、`templates/`）。シンボリックリンクや実行時の他ロケール参照はしない。挙動とフラグは揃え、自然言語と `name` だけ変える。

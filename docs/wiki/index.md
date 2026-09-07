@@ -9,4 +9,5 @@ The map of what lives where. Every page must be listed here.
 | [conventions.md](conventions.md) | Locale policy, bilingual catalog README lockstep, install boundaries, wiki loop rules |
 | [gotchas.md](gotchas.md) | Dogfooding pitfalls: gitignore, MCP needs global `zg`, empty stubs |
 | [decisions/ADR-0001-locale-independence.md](decisions/ADR-0001-locale-independence.md) | Why locale folders are standalone packages (no symlinks) |
+| [decisions/ADR-0002-catalog-skills-directory.md](decisions/ADR-0002-catalog-skills-directory.md) | Why distributable packages live under `skills/<name>/` |
 | [runbooks/skill-setup.md](runbooks/skill-setup.md) | Install, bootstrap, re-index; list embeddings with `zg help models` |

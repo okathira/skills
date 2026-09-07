@@ -10,8 +10,10 @@ This repository is an [Agent Skills](https://agentskills.io/) catalog. Each skil
 skills/                          # catalog root (this repo)
   README.md                      # English landing (GitHub default): policy + skill index
   README.ja.md                   # Japanese landing; keep in lockstep with README.md
-  zvec-llm-wiki/                 # English skill package (default locale)
-  ja/zvec-llm-wiki/              # Japanese locale variant
+  skills/                        # distributable skill packages only
+    zvec-llm-wiki/
+      zvec-llm-wiki/             # English skill package (default locale)
+      zvec-llm-wiki-ja/          # Japanese locale variant
   docs/wiki/                     # compiled project knowledge (this wiki)
   AGENTS.md                      # hot memory / schema block for agents
 ```
@@ -24,14 +26,14 @@ skills/                          # catalog root (this repo)
 
 | Step | Where | Script | Scope |
 |------|-------|--------|-------|
-| Install skill | Catalog or any path | `zvec-llm-wiki/install/install.sh` | Once per machine or per repo (`.agents/skills/`) |
-| Bootstrap target repo | Project root | `zvec-llm-wiki/scripts/zg-bootstrap.sh` | Once per project (`docs/wiki/`, `AGENTS.md`, `.zvec-grep/`) |
+| Install skill | Catalog or any path | `skills/zvec-llm-wiki/zvec-llm-wiki/install/install.sh` | Once per machine or per repo (`.agents/skills/`) |
+| Bootstrap target repo | Project root | `skills/zvec-llm-wiki/zvec-llm-wiki/scripts/zg-bootstrap.sh` | Once per project (`docs/wiki/`, `AGENTS.md`, `.zvec-grep/`) |
 
 `install.sh` copies only `SKILL.md`, `scripts/`, `references/`, `templates/` — not the catalog README or `install/` folder.
 
 ## Why / notes
 
-- English packages live at repo root; Japanese under `ja/<skill-name>/`. See [conventions.md](conventions.md) and [decisions/ADR-0001-locale-independence.md](decisions/ADR-0001-locale-independence.md).
+- Skill packages live under `skills/<skill-name>/`; default locale is unmarked (`<skill-name>/`), Japanese is `<skill-name>-ja/`. Repo root holds dogfooding artifacts (`docs/wiki/`, `AGENTS.md`). See [conventions.md](conventions.md), [decisions/ADR-0001-locale-independence.md](decisions/ADR-0001-locale-independence.md), and [decisions/ADR-0002-catalog-skills-directory.md](decisions/ADR-0002-catalog-skills-directory.md).
 - `.zvec-grep/` is local index storage; gitignored, not source of truth.
 
 ## Related

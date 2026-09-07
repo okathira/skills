@@ -9,7 +9,7 @@ This skill owns **wiki governance** and **when to use zg**. zg flags, models, MC
 ## Layout
 
 ```
-zvec-llm-wiki/
+skills/zvec-llm-wiki/zvec-llm-wiki/
   README.md                       # this file (catalog / humans)
   install/install.sh              # copy the skill into agent skill directories
   SKILL.md                        # agent entry point
@@ -31,15 +31,15 @@ Copies the skill into `.agents/skills/zvec-llm-wiki` (Cursor, Codex, OpenCode) o
 
 ```bash
 # User-wide (default) — Cursor / Codex / OpenCode
-sh zvec-llm-wiki/install/install.sh
+sh skills/zvec-llm-wiki/zvec-llm-wiki/install/install.sh
 
 # Project-scoped — team repos, Cloud Agents
 cd your-repo
-sh /path/to/skills/zvec-llm-wiki/install/install.sh --project
+sh /path/to/skills/skills/zvec-llm-wiki/zvec-llm-wiki/install/install.sh --project
 
 # Also install for Claude Code
-sh zvec-llm-wiki/install/install.sh --claude
-sh zvec-llm-wiki/install/install.sh --project --claude
+sh skills/zvec-llm-wiki/zvec-llm-wiki/install/install.sh --claude
+sh skills/zvec-llm-wiki/zvec-llm-wiki/install/install.sh --project --claude
 ```
 
 Use `--force` to overwrite an existing install. After updating this catalog, re-run with
@@ -57,13 +57,13 @@ Run from the **project** you are working in (not from this catalog). Requires **
 cd your-repo
 
 # Auto-detect installed agents (Codex, Cursor, OpenCode, Claude, …)
-bash /path/to/skills/zvec-llm-wiki/scripts/zg-bootstrap.sh
+bash /path/to/skills/skills/zvec-llm-wiki/zvec-llm-wiki/scripts/zg-bootstrap.sh
 
 # Or pick agents explicitly (see: zg help install)
-bash /path/to/skills/zvec-llm-wiki/scripts/zg-bootstrap.sh --target cursor codex opencode
+bash /path/to/skills/skills/zvec-llm-wiki/zvec-llm-wiki/scripts/zg-bootstrap.sh --target cursor codex opencode
 
 # Override the default wiki embedding
-bash /path/to/skills/zvec-llm-wiki/scripts/zg-bootstrap.sh --embedding local/potion-multilingual-128m
+bash /path/to/skills/skills/zvec-llm-wiki/zvec-llm-wiki/scripts/zg-bootstrap.sh --embedding local/potion-multilingual-128m
 ```
 
 Supported embedding models come from the installed zg catalog. List them there (this README does

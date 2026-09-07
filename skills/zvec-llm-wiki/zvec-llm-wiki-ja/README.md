@@ -9,7 +9,7 @@
 ## レイアウト
 
 ```
-ja/zvec-llm-wiki/
+skills/zvec-llm-wiki/zvec-llm-wiki-ja/
   README.md                       # このファイル（カタログ / 人間向け）
   install/install.sh              # スキルをエージェントのスキルディレクトリへコピー
   SKILL.md                        # エージェント向けエントリポイント
@@ -31,15 +31,15 @@ ja/zvec-llm-wiki/
 
 ```bash
 # ユーザー全体（デフォルト）— Cursor / Codex / OpenCode
-sh ja/zvec-llm-wiki/install/install.sh
+sh skills/zvec-llm-wiki/zvec-llm-wiki-ja/install/install.sh
 
 # プロジェクトスコープ — チームリポジトリ、Cloud Agents
 cd your-repo
-sh /path/to/skills/ja/zvec-llm-wiki/install/install.sh --project
+sh /path/to/skills/skills/zvec-llm-wiki/zvec-llm-wiki-ja/install/install.sh --project
 
 # Claude Code 向けにもインストール
-sh ja/zvec-llm-wiki/install/install.sh --claude
-sh ja/zvec-llm-wiki/install/install.sh --project --claude
+sh skills/zvec-llm-wiki/zvec-llm-wiki-ja/install/install.sh --claude
+sh skills/zvec-llm-wiki/zvec-llm-wiki-ja/install/install.sh --project --claude
 ```
 
 既存インストールを上書きするには `--force` を使う。カタログ更新後は `--force` で再実行し、`~/.agents/skills/`（またはプロジェクト内の `.agents/skills/`）に変更を反映する。
@@ -56,13 +56,13 @@ Windows では Git Bash など POSIX シェルから実行する。
 cd your-repo
 
 # インストール済みエージェントを自動検出（Codex、Cursor、OpenCode、Claude、…）
-bash /path/to/skills/ja/zvec-llm-wiki/scripts/zg-bootstrap.sh
+bash /path/to/skills/skills/zvec-llm-wiki/zvec-llm-wiki-ja/scripts/zg-bootstrap.sh
 
 # またはエージェントを明示的に指定（参照: zg help install）
-bash /path/to/skills/ja/zvec-llm-wiki/scripts/zg-bootstrap.sh --target cursor codex opencode
+bash /path/to/skills/skills/zvec-llm-wiki/zvec-llm-wiki-ja/scripts/zg-bootstrap.sh --target cursor codex opencode
 
 # デフォルト wiki 埋め込みを上書き
-bash /path/to/skills/ja/zvec-llm-wiki/scripts/zg-bootstrap.sh --embedding local/potion-multilingual-128m
+bash /path/to/skills/skills/zvec-llm-wiki/zvec-llm-wiki-ja/scripts/zg-bootstrap.sh --embedding local/potion-multilingual-128m
 ```
 
 使える埋め込みモデルはインストール済み zg のカタログが正。一覧は次で確認する（この README にはモデル表を置かない）。

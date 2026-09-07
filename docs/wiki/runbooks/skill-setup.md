@@ -1,6 +1,6 @@
 # Runbook: Install skill and bootstrap this repo
 
-> Verified setup steps for the Agent Skills catalog (dogfooded 2026-09-03).
+> Verified setup steps for the Agent Skills catalog (dogfooded 2026-09-03; paths updated 2026-09-07).
 
 ## Prerequisites
 
@@ -12,19 +12,25 @@
 From the catalog:
 
 ```bash
-sh zvec-llm-wiki/install/install.sh --force
+sh skills/zvec-llm-wiki/zvec-llm-wiki/install/install.sh --force
 ```
 
 Installs to `~/.agents/skills/zvec-llm-wiki`. Restart the agent after install.
 
 Project-scoped: add `--project` (installs to `.agents/skills/` in cwd).
 
+Japanese locale:
+
+```bash
+sh skills/zvec-llm-wiki/zvec-llm-wiki-ja/install/install.sh --force
+```
+
 ## 2. Bootstrap the target repo (once per project)
 
 From the **project root** (not the skill package folder):
 
 ```bash
-bash zvec-llm-wiki/scripts/zg-bootstrap.sh --target cursor
+bash skills/zvec-llm-wiki/zvec-llm-wiki/scripts/zg-bootstrap.sh --target cursor
 ```
 
 Creates `docs/wiki/`, `AGENTS.md`, `.zvec-grep/`, installs `@zvec/zvec-grep` globally if `zg` is missing, runs `zg install`, builds index with `local/potion-multilingual-128m`.
