@@ -1,94 +1,137 @@
 # LLM wiki workflow & governance
 
-Detailed reference for the read/record loop. Load when setting up a wiki or when the user asks
-about structure/governance.
+Detailed reference for ingest, query, lint, record, and crystallize.
 
-## Karpathy LLM Wiki alignment
+## Karpathy alignment
 
-This skill adapts [Andrej Karpathy's LLM Wiki pattern](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) for coding projects:
-
-| Karpathy | This skill |
+| Karpathy layer/op | This skill |
 | --- | --- |
-| Raw sources (immutable) | Repo code and config — wiki links to source, does not replace it |
-| Wiki (compiled, compounding) | `docs/wiki/**` |
-| Schema | `AGENTS.md` hot block + this skill package |
-| Ingest | Record after human verification (propose → approve → edit) |
-| Query | Read `index.md` first; search scoped to `docs/wiki/**` via zg |
-| Lint | Drift checks below |
-| Optional search | zvec-grep (`zg`) instead of qmd at scale |
-| Optional `log.md` | `docs/wiki/log.md` — append-only timeline of ingests/records (not created by bootstrap; add when useful) |
+| Raw sources (immutable) | Optional `raw/` imported Markdown; executable code remains raw evidence |
+| Wiki (compiled, compounding) | `sources/`, `entities/`, `concepts/`, `analyses/` |
+| Optional coding overlay | `decisions/`, `runbooks/` |
+| Schema | `index.md`, page frontmatter/headings, and the `AGENTS.md` hot block |
+| Ingest | Deep-compile documents; shallow-index code; update registry and log |
+| Query | index → wiki-scoped zg hybrid → rg for names → widen |
+| Lint | Registry, links, contradictions, freshness, size, renames, history |
+| Record | Show intended pages, then write unless interrupted (involved) |
+| Crystallize | Preserve a durable query synthesis in `analyses/` |
+| Log | Append-only `log.md` timeline |
 
-**Human checkpoint** is intentional for coding: Karpathy's pattern lets the LLM maintain most of the wiki; here, unverified wiki text becomes trusted rules in the next session.
+zg is the only search engine. There is no qmd integration, second index, or strict wiki write-lock.
 
-## Five governance invariants
+## Invariants
 
-1. **Docs-first.** Files under `docs/wiki/` are the source of truth; any external tracker/wiki copy
-   is a mirror. Author in the repo before publishing elsewhere.
-2. **One home per fact.** Each concept/decision/requirement lives in exactly one file.
-   Cross-reference instead of copying — duplicated prose is drift waiting to happen.
-3. **Indexed.** Every page is reachable from `index.md` (the registry) and included in the `zg`
-   index, so agents can find it without a manual path.
-4. **Human checkpoint.** After verification, **propose** wiki updates; record only on explicit
-   approval. No silent auto-updates.
-5. **Nothing structural ships without its doc.** A new module/feature/decision includes a
-   proposed wiki/ADR entry; once approved, land it in the **same PR** as the code change.
+1. `docs/wiki/` is the home for living knowledge; mirrors are not authoritative.
+2. One fact has one home. Use relative `.md` links, never copied prose or `[[wikilinks]]`.
+3. Every page is linked from `index.md` with a one-line summary and indexed by zg.
+4. Writes are involved: show the page plan and evidence, then edit unless the user stops.
+5. Contradictions stay visible and isolated; rejected paths stay marked `superseded`.
+6. Incremental `zg index` is routine. `--rebuild`, `--drop`, and `--reset-paths` require explicit
+   approval.
 
-## What vs. why
+## Page contract
 
-- **What** (auto-derivable): file structure, component list, public API surface. Can be
-  regenerated from code; keep it thin and link to source.
-- **Why** (human intent): trade-offs, constraints, rejected alternatives, gotchas. This is the
-  durable value — it cannot be recovered by scanning code. Capture it in ADRs and `gotchas.md`.
+Pages use thin YAML frontmatter:
 
-## Hot vs. cold memory
-
-- **Hot memory** = `AGENTS.md` at repo root (bootstrap upserts a marked block). Loaded every
-  session. Keep it short — where the wiki lives, search wiki before acting, propose-then-record.
-- **Cold memory** = `docs/wiki/**`: pulled on demand through zg. Only the relevant page enters
-  context, not the whole wiki.
-
-Bootstrap writes or updates this block in `AGENTS.md`:
-
-```md
-<!-- ZVEC_LLM_WIKI_START -->
-## Project knowledge (LLM wiki)
-
-- Living wiki: `docs/wiki/` (registry: `docs/wiki/index.md`)
-- Search wiki before acting (scope: `docs/wiki/**`)
-- After verified work: propose wiki updates; on approval, edit the owning page, then incremental `zg index`
-
-<!-- ZVEC_LLM_WIKI_END -->
+```yaml
+---
+status: working # working | decided
+aliases:
+  - Exact alternate name
+source: raw/example.md # repository-root raw path, repository path, or URL
+---
 ```
 
-For Claude Code, copy the same block into `CLAUDE.md` manually if needed.
+Every content page carries this frontmatter, including the coding overlay; `index.md` and `log.md`
+are schema and timeline, so they stay plain. zg indexes YAML as its own chunk, and rg reads the
+whole file, so frontmatter keys do not need a body copy. Follow with a one-line lead and useful H2
+sections such as `What`, `Why`, and `Related`. `source` may be omitted when no external source
+exists. Hashes are optional and apply only to immutable `raw/` dumps, not the codebase. `Related`
+and ADR `References` are the wiki graph; they must not restamp URLs or paths already listed in
+`source`.
 
-## Session loop
+`decisions/` pages replace the enum with the ADR lifecycle and add decision metadata, so the
+lifecycle has exactly one home instead of a body line that drifts from frontmatter:
 
-1. **Start** — read `docs/wiki/index.md` (registry) so you know what exists and where.
-2. **Before a task** — search for intent scoped to `docs/wiki/**` first, then widen to code if
-   needed. How to pass scope: `zg help query`. Read only what ranked results point to.
-3. **Do the work.**
-4. **Verify** with the user (tests pass / behavior confirmed).
-5. **Propose, then record on approval** — update the one owning page, add/adjust an ADR for
-   decisions, register any new page in `index.md`, cross-reference.
-6. **Re-index** — incremental `zg index`, then `zg status`.
+```yaml
+---
+status: accepted # proposed = working; accepted and superseded = decided
+date: 2026-09-08
+deciders: name
+---
+```
 
-## Index scope
+Omit `superseded_by` until another ADR replaces this one. Omit `source` when there is no external
+provenance. Do not leave blank keys.
 
-First bootstrap uses zg default file discovery — no `src/` assumption. After you understand the
-repo layout, propose narrower or wider index paths when defaults are wrong. Use `zg help index` for
-path options. `--reset-paths` and `--rebuild` require explicit user confirmation.
+Use `templates/wiki-page.md`, `templates/adr.md`, and `templates/runbook.md` as starting points.
 
-## Registry format (Karpathy index)
+## Ubiquitous language and aliases
 
-`index.md` lists every page with a **link and one-line summary** (not just a table of roles). Register new pages on every ingest. Stubs with only a heading rank in search but answer nothing until filled in.
+Aliases are retrieval names for the fact a page owns, not extra prose and not a second glossary.
 
-## Drift checks (lint — run periodically)
+- Target **about 3–6** high-signal phrases people and agents actually type (`involved write`,
+  `hot memory`, `zg-bootstrap`). One synonym is too thin; a thesaurus is too thick.
+- Write them in the **wiki's authoring language**. Add Kanji, Kana, or English (or another
+  script) only when that exact string is expected in rg.
+- A glossary (or one `concepts/` page) owns shared term definitions. Other pages list names for
+  their own fact; they do not copy definitions.
+- One home: YAML only for `aliases`, `source`, `status`, and ADR `date` / `deciders` /
+  `superseded_by`. Do not add a `## Aliases` section or a Source heading that copies YAML. A
+  duplicated H2 alias list was tried for heading extract and is superseded.
 
-- Search `docs/wiki/**` for the feature you just changed — does the wiki still match reality?
-- After a rename, use exact lookup across `docs/**` for stale references.
-- If a page describes removed behavior, fix it in the same PR as the code change.
-- Orphan pages: every file under `docs/wiki/` must appear in `index.md`.
-- Mentioned-but-missing pages: concepts referenced in prose should have a home or a deliberate stub.
+When ingesting or recording, add aliases in the same edit. Lint thin alias lists the same way as
+missing frontmatter.
 
-For search commands and flags, use `zg help query`.
+## Staged query
+
+1. Read `docs/wiki/index.md`.
+2. Use zg hybrid search scoped to `docs/wiki/**` when the catalog is insufficient.
+3. Use zg managed rg (or native rg) for known names, aliases, paths, and Japanese proper nouns.
+4. Widen to `raw/**` or code only after wiki evidence is insufficient.
+5. Stop when evidence is enough.
+
+Use `zg help query` for current syntax. One workspace index serves all scopes.
+
+## Ingest depths
+
+- **Documents:** convert PDF/Office to Markdown first. Treat imported `raw/` files as immutable,
+  find homes with hybrid plus alias rg, and compile claims into a few short wiki pages.
+- **Code:** index and query it as raw evidence. Do not compile the repository tree into wiki pages.
+- **Living Markdown:** move it into the wiki rather than keeping a second copy.
+
+Every ingest updates `index.md`, appends `log.md`, then runs incremental `zg index` and checks
+freshness before the next query.
+
+## Log contract
+
+Use `## [YYYY-MM-DD] kind | title`, where kind is `ingest`, `lint`, `crystallize`, or `record`.
+
+```md
+## [2026-09-08] ingest | Product brief
+
+- Added [Product](entities/product.md) and updated [Pricing](concepts/pricing.md).
+- Source: `raw/product-brief.md`
+```
+
+## Lint
+
+- Compare wiki `.md` files with `index.md` to find orphans.
+- Resolve every relative `.md` link; do not accept wikilinks.
+- Use hybrid search to find semantic conflicts; isolate competing claims instead of merging them.
+- Check source paths and optional hashes for pages compiled from `raw/`.
+- Split pages that outgrow one fact or useful heading-sized sections.
+- Use rg for stale names after renames.
+- Preserve dead ends and superseded claims.
+- Reject title-only or heading-only stubs because they pollute retrieval without answering.
+- Reject empty or single-synonym `aliases` on content pages; expect a handful of high-signal
+  YAML names, no body restamp of frontmatter keys, and shared definitions on one glossary page.
+
+## Hot memory and embedding
+
+The hot block says: read `index.md` first; then use wiki-scoped zg; show the write plan and proceed
+unless stopped; run incremental `zg index` after edits.
+
+The default remains `local/potion-multilingual-128m`. A higher-quality same-engine option is
+`local/qwen3-embedding-0.6b`; switching requires a rebuild and explicit approval. Use `zg help
+models` for the installed catalog.

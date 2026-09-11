@@ -1,80 +1,135 @@
 # LLM wiki ワークフローとガバナンス
 
-読み取り/記録ループの詳細リファレンス。wiki のセットアップ時、またはユーザーが構造/ガバナンスについて尋ねたときに読む。
+ingest、query、lint、record、crystallize の詳細リファレンス。
 
-## Karpathy LLM Wiki との対応
+## Karpathy との対応
 
-このスキルは [Andrej Karpathy の LLM Wiki パターン](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) をコーディング向けに適応したもの:
-
-| Karpathy | このスキル |
+| Karpathy の層/操作 | このスキル |
 | --- | --- |
-| Raw sources（不変） | リポのコードと設定 — wiki はソースへリンクし置き換えない |
-| Wiki（編纂・複合） | `docs/wiki/**` |
-| Schema | `AGENTS.md` ホットブロック + このスキルパッケージ |
-| Ingest | 人間の検証後に記録（提案 → 承認 → 編集） |
-| Query | まず `index.md` を読む; `docs/wiki/**` を zg でスコープ検索 |
-| Lint | 下記ドリフトチェック |
-| 任意の検索 | 規模が大きくなったら qmd の代わりに zvec-grep（`zg`） |
-| 任意の `log.md` | `docs/wiki/log.md` — ingest/記録の追記ログ（ブートストラップでは作らない; 必要なら追加） |
+| Raw sources（不変） | 任意の `raw/` インポート済み Markdown。実行コードは raw な証拠のまま |
+| Wiki（編纂・複利） | `sources/`、`entities/`、`concepts/`、`analyses/` |
+| 任意の coding overlay | `decisions/`、`runbooks/` |
+| Schema | `index.md`、ページの frontmatter/見出し、`AGENTS.md` ホットブロック |
+| Ingest | 文書を深く編纂、コードを浅く索引、レジストリとログを更新 |
+| Query | index → wiki スコープ zg hybrid → 名前は rg → widen |
+| Lint | 登録、リンク、矛盾、鮮度、サイズ、リネーム、履歴 |
+| Record | 予定ページを示し、止められなければ書く（involved） |
+| Crystallize | 永続化すべき query の統合結果を `analyses/` に保存 |
+| Log | 追記専用の `log.md` タイムライン |
 
-**人間チェックポイント**はコーディング向けの意図的な設計。Karpathy では LLM が wiki の大半を維持するが、ここでは未検証の wiki 文面が次セッションの「ルール」として信頼されてしまう。
+検索エンジンは zg だけ。qmd 連携、第 2 の index、strict な wiki 書き込みロックはない。
 
-## 5 つのガバナンス不変条件
+## 不変条件
 
-1. **Docs-first.** `docs/wiki/` 配下のファイルが正; 外部トラッカー/wiki のコピーはミラー。他へ公開する前にリポジトリ内で執筆する。
-2. **1 事実 1 ホーム.** 各概念/決定/要件は正確に 1 ファイルに存在する。コピーではなく相互参照 — 重複した文章はドリフトの予兆。
-3. **インデックス済み.** 各ページは `index.md`（レジストリ）から到達可能で、`zg` インデックスに含まれ、エージェントが手動パスなしで見つけられる。
-4. **人間チェックポイント.** 検証後、wiki 更新を **提案**; 明示的な承認があるときだけ記録。黙って自動更新しない。
-5. **構造的な変更はドキュメントなしでは取り込まない。** 新モジュール/機能/決定には wiki/ADR エントリの提案を含める; 承認後、コード変更と **同じ PR** で取り込む。
+1. `docs/wiki/` が生きた知識のホーム。ミラーは正ではない。
+2. 1 事実 1 ホーム。相対 `.md` リンクを使い、文章コピーや `[[wikilinks]]` は使わない。
+3. 全ページを 1 行要約付きで `index.md` からリンクし、zg で索引する。
+4. 書き込みは involved: ページ計画と根拠を示し、ユーザーが止めなければ編集する。
+5. 矛盾は見える形で隔離し、却下した経路は `superseded` として保持する。
+6. 増分 `zg index` は通常操作。`--rebuild`、`--drop`、`--reset-paths` は明示的な承認必須。
 
-## What vs. Why
+## ページ契約
 
-- **What**（自動導出可能）: ファイル構造、コンポーネント一覧、公開 API 面。コードから再生成可能; 薄く保ちソースへリンク。
-- **Why**（人間の意図）: トレードオフ、制約、却下した代替案、落とし穴。これが持続的な価値 — コードスキャンでは復元できない。ADR と `gotchas.md` に記録する。
+ページは薄い YAML frontmatter を使う:
 
-## ホット vs. コールドメモリ
-
-- **ホットメモリ** = リポジトリルートの `AGENTS.md`（ブートストラップがマーク付きブロックを upsert）。毎セッション読み込まれる。短く保つ — wiki の場所、行動前に wiki を検索、提案してから記録。
-- **コールドメモリ** = `docs/wiki/**`: zg 経由でオンデマンド取得。関連ページだけがコンテキストに入り、wiki 全体ではない。
-
-ブートストラップは `AGENTS.md` に次のブロックを書き込むか更新する:
-
-```md
-<!-- ZVEC_LLM_WIKI_START -->
-## プロジェクト知識（LLM wiki）
-
-- 生きた wiki: `docs/wiki/`（レジストリ: `docs/wiki/index.md`）
-- 作業前に wiki を検索する（スコープ: `docs/wiki/**`）
-- 検証済みの作業のあと: wiki 更新を提案し、承認後にホームのページを編集、続けて増分 `zg index`
-
-<!-- ZVEC_LLM_WIKI_END -->
+```yaml
+---
+status: working # working | decided
+aliases:
+  - 完全一致させる別名
+source: raw/example.md # プロジェクトルートの raw path、リポジトリ path、または URL
+---
 ```
 
-Claude Code では、必要なら同じブロックを `CLAUDE.md` に手動でコピーする。
+この frontmatter は coding overlay を含むすべての内容ページに置く。`index.md` と `log.md` は
+schema とタイムラインなので素のままにする。zg は YAML を独立チャンクとして索引し、rg は
+ファイル全体を読むので、frontmatter のキーを本文へ複製しない。続けて 1 行リードと `What`、
+`Why`、`Related` などの有用な H2 節を置く。外部 source がなければ `source` は省略する。hash は
+任意で、不変の `raw/` ダンプだけに使い、コードベースには使わない。`Related` と ADR の
+`References` は wiki グラフであり、`source` に既にある URL や path を再掲しない。
 
-## セッションループ
+`decisions/` のページは enum を ADR ライフサイクルに置き換え、決定のメタデータを加える。
+本文の行と frontmatter がずれないよう、ライフサイクルのホームは 1 つだけにする:
 
-1. **開始** — `docs/wiki/index.md`（レジストリ）を読み、何がどこにあるか把握する。
-2. **タスク前** — まず `docs/wiki/**` にスコープして意図を検索し、必要ならコードへ広げる。スコープの渡し方: `zg help query`。ランク付け結果が指すものだけ読む。
-3. **作業する。**
-4. **ユーザーと検証**（テスト通過 / 挙動確認）。
-5. **提案し、承認後に記録** — 単一ホームのページを更新、決定には ADR を追加/調整、新ページを `index.md` に登録、相互参照。
-6. **再インデックス** — 増分 `zg index`、続けて `zg status`。
+```yaml
+---
+status: accepted # proposed は working、accepted と superseded は decided
+date: 2026-09-08
+deciders: 名前
+---
+```
 
-## インデックススコープ
+置き換える ADR ができるまで `superseded_by` は書かない。外部の来歴がなければ `source` は
+省略する。空キーは残さない。
 
-初回のブートストラップは zg デフォルトファイル探索を使用 — `src/` 前提なし。リポジトリレイアウトを理解した後、デフォルトが誤っている場合はより狭い/広いインデックスパスを提案する。パスオプションは `zg help index` を参照。`--reset-paths` と `--rebuild` はユーザーの明示的な確認が必要。
+出発点として `templates/wiki-page.md`、`templates/adr.md`、`templates/runbook.md` を使う。
 
-## レジストリ形式（Karpathy の index）
+## ユビキタス言語と aliases
 
-`index.md` は各ページを **リンク + 1 行要約** で列挙する（役割だけの表ではない）。ingest のたびに新ページを登録する。見出しだけのスタブは検索に出るが、中身がなければ答えにならない。
+aliases はそのページが所有する事実の検索用の名前であり、追加の本文でも第 2 の glossary でもない。
 
-## ドリフトチェック（lint — 定期的に実行）
+- 人が実際に打つ高シグナルな句を **おおよそ 3–6 個**（`involved write`、`hot memory`、
+  `zg-bootstrap` など）。同義語 1 個は薄すぎ、シソーラスは厚すぎ。
+- **wiki の執筆言語**で書く。漢字・カナ・英語（または別表記）は、rg でその完全一致が必要な
+  ときだけ足す。
+- glossary（または `concepts/` の 1 ページ）が共有用語の定義を所有する。他ページは自分の
+  事実の名前だけを列挙し、定義をコピーしない。
+- ホームは 1 つ: `aliases`、`source`、`status`、ADR の `date` / `deciders` /
+  `superseded_by` は YAML だけ。YAML を写す `## Aliases` や Source 見出しは置かない。見出し
+  抽出のための H2 複製は試して superseded。
 
-- 変更した機能について `docs/wiki/**` を検索 — wiki は現実と一致しているか?
-- リネーム後、`docs/**` 全体で完全一致検索を行い、古い参照がないか確認。
-- ページが削除された挙動を記述している場合、コード変更と同じ PR で修正する。
-- 孤児ページ: `docs/wiki/` 配下の全ファイルが `index.md` に載っているか。
-- 言及だけの未ページ: 本文で言及した概念にホームがあるか、意図的なスタブか。
+ingest や record の同じ編集で aliases を足す。薄い alias リストは frontmatter 欠けと同じ lint
+対象。
 
-検索コマンドとフラグは `zg help query` を使用する。
+## 段階的 query
+
+1. `docs/wiki/index.md` を読む。
+2. カタログで足りなければ `docs/wiki/**` にスコープした zg hybrid 検索を使う。
+3. 既知の名前、alias、path、日本語固有名詞には zg managed rg（または native rg）を使う。
+4. wiki の証拠が不足した後だけ `raw/**` またはコードへ広げる。
+5. 証拠が十分なら止める。
+
+現在の構文は `zg help query` を使う。1 つの workspace index がすべての scope を担う。
+
+## Ingest の深さ
+
+- **文書:** PDF/Office はまず Markdown に変換する。インポートした `raw/` は不変として扱い、
+  hybrid と alias rg でホームを探し、主張を少数の短い wiki ページへ編纂する。
+- **コード:** raw な証拠として索引・検索する。リポジトリツリーを wiki ページへ編纂しない。
+- **生きた Markdown:** 2 つ目のコピーを維持せず wiki へ移動する。
+
+各 ingest で `index.md` を更新し、`log.md` に追記し、増分 `zg index` を実行する。次の query
+前に freshness を確認する。
+
+## ログ契約
+
+`## [YYYY-MM-DD] kind | title` を使う。kind は `ingest`、`lint`、`crystallize`、`record`。
+
+```md
+## [2026-09-08] ingest | 製品概要
+
+- [製品](entities/product.md) を追加し、[価格](concepts/pricing.md) を更新。
+- Source: `raw/product-brief.md`
+```
+
+## Lint
+
+- wiki の `.md` ファイルと `index.md` を比較し孤児を見つける。
+- 全相対 `.md` リンクを解決し、wikilink を許可しない。
+- hybrid 検索で意味的な矛盾を探し、競合する主張を統合せず隔離する。
+- `raw/` から編纂したページの source path と任意 hash を確認する。
+- 1 事実または有用な見出し単位を超えたページを分割する。
+- リネーム後の古い名前を rg で探す。
+- 行き止まりと superseded な主張を保持する。
+- 検索を汚して答えを持たない、タイトルだけ・見出しだけの stub を拒否する。
+- 内容ページの `aliases` が空または同義語 1 個なら拒否する。高シグナルな YAML 名が複数、
+  frontmatter の本文再掲なし、共有定義は glossary 1 ページ、を期待する。
+
+## ホットメモリと埋め込み
+
+ホットブロックは、まず `index.md`、次に wiki スコープの zg、書き込み計画を示して止められなければ
+続行、編集後に増分 `zg index`、という順序を示す。
+
+デフォルトは `local/potion-multilingual-128m` のまま。より高品質な同一エンジンの選択肢は
+`local/qwen3-embedding-0.6b`。切り替えには rebuild と明示的な承認が必要。インストール済み
+カタログは `zg help models` を使う。

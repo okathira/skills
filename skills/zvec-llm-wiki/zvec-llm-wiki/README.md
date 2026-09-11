@@ -1,10 +1,16 @@
 # zvec-llm-wiki
 
-An [Agent Skill](https://agentskills.io/) that keeps a project's **LLM-facing wiki** (`docs/wiki/`) in sync while coding, using **zvec-grep (`zg`)** as the shared search layer.
+An [Agent Skill](https://agentskills.io/) for ingesting, querying, linting, recording, and
+crystallizing a project's **LLM-facing wiki** (`docs/wiki/`) with **zvec-grep (`zg`)**.
 
-Core loop: **Read (zg) → Work → Verify with human → Record (edit wiki) → Re-index (`zg index`)**.
+Core loop: **Query → Work → Ingest/Record/Crystallize → Lint → incremental `zg index`**.
+Writes are involved: show the page plan, then edit unless the user stops. Destructive index
+operations remain approval-gated.
 
-This skill owns **wiki governance** and **when to use zg**. zg flags, models, MCP, and transport live in the installed CLI (`zg help`) — not duplicated here.
+The default Karpathy-style wiki contains `index.md`, `log.md`, `sources/`, `entities/`, `concepts/`,
+and `analyses/`. `decisions/` and `runbooks/` are optional coding overlays; project-root `raw/` is
+optional and immutable. Query order is index first, wiki-scoped zg hybrid, rg for exact names, then
+wider raw or code scope only when needed. qmd is not used.
 
 ## Layout
 
@@ -77,22 +83,25 @@ npx --yes @zvec/zvec-grep help models
 
 If `zg` is missing, the script runs `npm install -g @zvec/zvec-grep` before `zg install`.
 MCP stdio config always launches the `zg` binary (`zg install` does not install the npm package),
-so an npx-only bootstrap would leave agents with `command not found: zg`. Then it scaffolds
-`docs/wiki/`, upserts `AGENTS.md` hot memory, and builds the first index with zg default file
+so an npx-only bootstrap would leave agents with `command not found: zg`. For a new wiki it creates
+a useful registry, operation log, and category directories without empty stubs; an existing wiki is
+untouched. It then upserts `AGENTS.md` hot memory and builds the first index with zg default file
 discovery. Restart the agent after MCP configuration.
 
 ## Skill package contents
 
 | Path | Purpose |
 |------|---------|
-| `SKILL.md` | Entry point: read/record loop, wiki structure, zg usage timing |
-| `references/wiki-workflow.md` | Governance invariants, what-vs-why, hot/cold memory |
+| `SKILL.md` | Entry point: operations, wiki layers, staged zg routing |
+| `references/wiki-workflow.md` | Page/log contracts, ingest depth, lint rules, embeddings |
 | `scripts/zg-bootstrap.sh` | Idempotent, non-destructive repo setup |
-| `templates/adr.md` | Architecture Decision Record template |
-| `templates/wiki-page.md` | Generic wiki page template |
+| `templates/wiki-page.md` | Source, entity, concept, and analysis page template |
+| `templates/adr.md` | Architecture Decision Record template (coding overlay) |
+| `templates/runbook.md` | Procedure template (coding overlay) |
 
 ## Design sources
 
 - [zvec-grep](https://github.com/zvec-ai/zvec-grep) — zg behavior and CLI reference (`zg help`)
-- [Karpathy LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) — persistent compiled wiki, index-first query, optional log; adapted for coding with human checkpoint and zg instead of qmd
+- [Karpathy LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) — persistent compiled wiki, categories, operations, index-first query, and log
+- [zvec-grep open-source post](https://zvec.org/en/blog/2026-08-28-zvec-grep-open-source/) — one staged engine for semantic/hybrid discovery and rg verification
 - [Agent Skills](https://agentskills.io/specification) authoring (concise SKILL.md, progressive disclosure)

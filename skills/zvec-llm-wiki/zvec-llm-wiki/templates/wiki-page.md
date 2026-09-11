@@ -1,14 +1,27 @@
+---
+status: working
+aliases:
+  - <high-signal name agents type>
+  - <spoken synonym>
+  - <short form or code-name>
+source: <raw/path.md, repository path, URL, or omit this key>
+---
+
 # <Page title = the one fact this page owns>
 
-> One-line summary of what this page is the single source of truth for.
+One-line summary of what this page is the single source of truth for.
 
 ## What
-The current state (the "what"). Keep it thin; link to source files instead of pasting code.
 
-## Why / notes
-Intent, constraints, and gotchas that code alone doesn't reveal.
+The current state. Keep it focused and link to evidence instead of copying it.
+
+## Why
+
+Intent, constraints, conflicts, and preserved dead ends that the source alone does not explain.
 
 ## Related
-- Links to other wiki pages / ADRs (cross-reference, don't duplicate).
 
-<!-- Registered in docs/wiki/index.md? If not, add it. Re-run `zg index` after editing. -->
+- [Related page](../concepts/related-page.md) — use relative `.md` links, not wikilinks.
+
+<!-- Register this page with a one-line summary in docs/wiki/index.md, append log.md for a
+substantial operation, then run incremental `zg index`. -->

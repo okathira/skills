@@ -1,6 +1,18 @@
+---
+status: decided
+aliases:
+  - skill setup
+  - bootstrap runbook
+  - zg-bootstrap
+  - install.sh
+  - incremental zg index
+source:
+  - ../../../skills/zvec-llm-wiki/zvec-llm-wiki/scripts/zg-bootstrap.sh
+---
+
 # Runbook: Install skill and bootstrap this repo
 
-> Verified setup steps for the Agent Skills catalog (dogfooded 2026-09-03; paths updated 2026-09-07).
+> Verified setup steps for the Agent Skills catalog (re-bootstrapped 2026-09-10).
 
 ## Prerequisites
 
@@ -60,10 +72,11 @@ Restart agent after first MCP install.
 | Issue | Action |
 |-------|--------|
 | `zg` not on PATH / MCP `zvec_grep` error | `npm install -g @zvec/zvec-grep`, confirm `which zg`, restart Cursor. After an nvm Node switch, reinstall globally. |
-| Query returns empty stubs | Wiki pages need content; re-run `zg index` after edits |
+| Query misses a new wiki page | Confirm it is registered in `index.md`, then run incremental `zg index` |
 | MCP tool missing after a good `zg` | Restart Cursor after `zg install --target cursor` |
 
 ## Related
 
-- [architecture.md](../architecture.md)
-- [conventions.md](../conventions.md)
+- [Catalog layout](../concepts/catalog-layout.md)
+- [Conventions](../concepts/conventions.md)
+- [Gotchas](../concepts/gotchas.md)

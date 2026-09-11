@@ -1,8 +1,20 @@
+---
+status: accepted
+date: 2026-09-03
+deciders: Catalog maintainers
+aliases:
+  - locale independence
+  - ADR-0001
+  - standalone package
+  - no cross-locale links
+source:
+  - ../../../README.md
+  - ../../../README.ja.md
+---
+
 # ADR-0001: Locale folders are independent packages
 
-- **Status:** Accepted
-- **Date:** 2026-09-03
-- **Deciders:** Catalog maintainers
+Each locale folder of a skill is a complete, standalone package with no cross-locale runtime links.
 
 ## Context
 
@@ -27,11 +39,10 @@ Each locale folder is a **complete, standalone package**. English and Japanese f
 
 - Any behavior change requires editing both `skills/zvec-llm-wiki/zvec-llm-wiki/` and `skills/zvec-llm-wiki/zvec-llm-wiki-ja/` in the same PR.
 - Wiki for this catalog is authored in English (default locale); Japanese skill README remains human-facing for Japanese installers.
-- Catalog landing pages [README.md](../../../README.md) and [README.ja.md](../../../README.ja.md) stay in lockstep (see [conventions.md](../conventions.md)).
+- Catalog landing pages [README.md](../../../README.md) and [README.ja.md](../../../README.ja.md) stay in lockstep (see [conventions](../concepts/conventions.md)).
 
 ## References
 
-- [conventions.md](../conventions.md)
-- [architecture.md](../architecture.md)
+- [Conventions](../concepts/conventions.md)
+- [Catalog layout](../concepts/catalog-layout.md)
 - [decisions/ADR-0002-catalog-skills-directory.md](ADR-0002-catalog-skills-directory.md)
-- Catalog [README.md](../../../README.md) · [README.ja.md](../../../README.ja.md)

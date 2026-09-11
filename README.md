@@ -2,7 +2,7 @@
 
 [![Agent Skills](https://img.shields.io/badge/Agent%20Skills-spec-111827?style=flat-square)](https://agentskills.io/)
 
-Skills for coding agents — [Cursor](https://cursor.com/), Codex, OpenCode, and Claude Code.
+Skills for terminal agents — [Cursor](https://cursor.com/), Codex, OpenCode, and Claude Code.
 
 [English](README.md) · [日本語](README.ja.md)
 
@@ -12,7 +12,7 @@ A growing catalog of **independent** Agent Skills. Each skill is its own package
 
 | Skill | What it does | 日本語 |
 |-------|----------------|--------|
-| [zvec-llm-wiki](skills/zvec-llm-wiki/zvec-llm-wiki/) | Keep an LLM-facing wiki (`docs/wiki/`) in sync, with [zvec-grep](https://github.com/zvec-ai/zvec-grep) as the search layer | [zvec-llm-wiki-ja](skills/zvec-llm-wiki/zvec-llm-wiki-ja/) |
+| [zvec-llm-wiki](skills/zvec-llm-wiki/zvec-llm-wiki/) | Compile sources, design knowledge, and project context into a living wiki, using [zvec-grep](https://github.com/zvec-ai/zvec-grep) for staged retrieval | [zvec-llm-wiki-ja](skills/zvec-llm-wiki/zvec-llm-wiki-ja/) |
 
 ## Using a skill
 

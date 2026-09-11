@@ -2,7 +2,7 @@
 
 [![Agent Skills](https://img.shields.io/badge/Agent%20Skills-spec-111827?style=flat-square)](https://agentskills.io/)
 
-コーディングエージェント向けスキル — [Cursor](https://cursor.com/)、Codex、OpenCode、Claude Code。
+ターミナルエージェント向けスキル — [Cursor](https://cursor.com/)、Codex、OpenCode、Claude Code。
 
 [English](README.md) · [日本語](README.ja.md)
 
@@ -12,7 +12,7 @@
 
 | スキル | できること | English |
 |--------|------------|---------|
-| [zvec-llm-wiki-ja](skills/zvec-llm-wiki/zvec-llm-wiki-ja/) | LLM 向け wiki（`docs/wiki/`）を同期し、検索レイヤーに [zvec-grep](https://github.com/zvec-ai/zvec-grep) を使う | [zvec-llm-wiki](skills/zvec-llm-wiki/zvec-llm-wiki/) |
+| [zvec-llm-wiki-ja](skills/zvec-llm-wiki/zvec-llm-wiki-ja/) | ソース・設計知識・プロジェクト文脈を生きた wiki に編纂し、段階的検索に [zvec-grep](https://github.com/zvec-ai/zvec-grep) を使う | [zvec-llm-wiki](skills/zvec-llm-wiki/zvec-llm-wiki/) |
 
 ## スキルの使い方
 

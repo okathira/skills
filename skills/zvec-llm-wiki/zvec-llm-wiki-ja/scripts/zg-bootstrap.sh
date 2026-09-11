@@ -85,8 +85,8 @@ upsert_agents_md() {
 ## プロジェクト知識（LLM wiki）
 
 - 生きた wiki: `docs/wiki/`（レジストリ: `docs/wiki/index.md`）
-- 作業前に wiki を検索する（スコープ: `docs/wiki/**`）
-- 検証済みの作業のあと: wiki 更新を提案し、承認後にホームのページを編集、続けて増分 `zg index`
+- Query 順序: `index.md` を読み、次に `docs/wiki/**` にスコープした zg hybrid、完全一致名は rg、不足時だけ範囲を広げる
+- Wiki 書き込みは involved: ページ計画を示し、止められなければ編集する。編集後は増分 `zg index`
 
 <!-- ZVEC_LLM_WIKI_END -->
 EOF
@@ -170,24 +170,42 @@ fi
 # 4) wiki のひな形 ------------------------------------------------------------
 if [[ ! -d docs/wiki ]]; then
   say "docs/wiki/ のひな形を作成します"
-  mkdir -p docs/wiki/decisions docs/wiki/runbooks
+  mkdir -p docs/wiki/sources docs/wiki/entities docs/wiki/concepts docs/wiki/analyses
   cat > docs/wiki/index.md <<'EOF'
 # Wiki レジストリ
 
-何がどこにあるかの地図。すべてのページをここに載せる。
+最初にこのカタログを読む。すべての wiki ページを相対 `.md` リンクと 1 行要約付きで登録する。
 
-| ページ | 所有するもの |
-|------|------|
-| glossary.md | ドメイン用語と略語 |
-| architecture.md | コンポーネント、境界、データフロー（"what"） |
-| decisions/ | ADR — 構造的な選択の "why" |
-| conventions.md | 命名、パターン、do/don't |
-| gotchas.md | 落とし穴と触ってはいけないもの |
-| runbooks/ | ビルド、テスト、デプロイ、リリース |
+## Core
+
+- [操作ログ](log.md) — ingest、lint、crystallize、大きな record の追記履歴。
+
+## Sources
+
+ソース要約と来歴ページは `sources/` に置く。
+
+## Entities
+
+人、システム、プロジェクト、製品は `entities/` に置く。
+
+## Concepts
+
+用語、パターン、ルール、アイデアは `concepts/` に置く。
+
+## Analyses
+
+統合分析と crystallize した query 回答は `analyses/` に置く。
+
+任意の coding overlay として `decisions/` と `runbooks/` を追加できる。任意の不変な
+インポート済み Markdown はプロジェクトルートの `raw/`（`docs/` の隣）に置ける。
 EOF
-  for f in glossary architecture conventions gotchas; do
-    [[ -f "docs/wiki/$f.md" ]] || echo "# ${f}" > "docs/wiki/$f.md"
-  done
+  cat > docs/wiki/log.md <<'EOF'
+# Wiki 操作ログ
+
+大きな操作を `## [YYYY-MM-DD] kind | title` として追記する。kind は `ingest`、`lint`、
+`crystallize`、`record`。変更ページを相対 `.md` リンクで示し、該当時は source path を記録する。
+過去の entry は書き換えない。
+EOF
 else
   say "docs/wiki/ は既に存在するため変更しません"
 fi
@@ -213,4 +231,4 @@ fi
 run_zg status --check-ready
 
 say "完了。MCP を今設定した場合はエージェントを再起動してください。"
-say "ホットメモリ: AGENTS.md。まず wiki を検索（スコープ: docs/wiki/**）。zg の使い方: zg help"
+say "ホットメモリ: AGENTS.md。まず docs/wiki/index.md を読む。zg の使い方: zg help"

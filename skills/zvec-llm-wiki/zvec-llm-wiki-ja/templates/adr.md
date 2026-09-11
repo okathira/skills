@@ -1,8 +1,17 @@
+---
+status: proposed # proposed (working) | accepted (decided) | superseded
+date: YYYY-MM-DD
+deciders: <名前>
+aliases:
+  - ADR-NNNN
+  - <この決定の高シグナルな名前>
+  - <エージェントが打つ短い形>
+source: <path、URL、またはこのキーを省略>
+---
+
 # ADR-NNNN: <短い決定タイトル>
 
-- **Status:** Proposed | Accepted | Superseded by ADR-XXXX
-- **Date:** YYYY-MM-DD
-- **Deciders:** <名前>
+このページが所有する決定の 1 行要約。
 
 ## Context（背景）
 どのような問題や要因が決定を必要としたか? コードや issue へリンク。事実に留める。
@@ -21,4 +30,8 @@
 ポジティブ、ネガティブ、フォローアップ。何が楽/難しくなるか。注意すべき落とし穴。
 
 ## References（参照）
-関連 wiki ページ、PR、ADR への相互リンク（内容はここにコピーしない）。
+wiki グラフのみ。`source` の URL や path はここに再掲しない。
+
+<!-- この ADR を 1 行要約付きで docs/wiki/index.md に登録し、log.md に追記後、増分 `zg index` を
+実行する。status、date、deciders、superseded_by、aliases、source は frontmatter だけ。空キーは
+省略し、superseded_by は置き換え時だけ足す。 -->

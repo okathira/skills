@@ -1,8 +1,20 @@
+---
+status: accepted
+date: 2026-09-07
+deciders: Catalog maintainers
+aliases:
+  - catalog skills directory
+  - ADR-0002
+  - skills grouping
+  - unmarked default locale
+source:
+  - ../../../README.md
+  - ../../../README.ja.md
+---
+
 # ADR-0002: Skill packages under `skills/`
 
-- **Status:** Accepted
-- **Date:** 2026-09-07
-- **Deciders:** Catalog maintainers
+Distributable skill packages live under `skills/<skill-name>/`, keeping the repo root for catalog and dogfooding artifacts.
 
 ## Context
 
@@ -38,7 +50,6 @@ The repo root keeps catalog landing pages (`README.md`, `README.ja.md`) and dogf
 
 ## References
 
-- [architecture.md](../architecture.md)
-- [conventions.md](../conventions.md)
+- [Catalog layout](../concepts/catalog-layout.md)
+- [Conventions](../concepts/conventions.md)
 - [decisions/ADR-0001-locale-independence.md](ADR-0001-locale-independence.md)
-- Catalog [README.md](../../../README.md) · [README.ja.md](../../../README.ja.md)

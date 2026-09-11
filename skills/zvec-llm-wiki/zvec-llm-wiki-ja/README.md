@@ -1,10 +1,17 @@
 # zvec-llm-wiki（日本語版）
 
-[Agent Skill](https://agentskills.io/) で、コーディング中にプロジェクトの **LLM 向け wiki**（`docs/wiki/`）を同期し、**zvec-grep（`zg`）** を共有検索レイヤーとして使う。
+[Agent Skill](https://agentskills.io/) で、**zvec-grep（`zg`）** を使ってプロジェクトの
+**LLM 向け wiki**（`docs/wiki/`）を ingest、query、lint、record、crystallize する。
 
-コアループ: **Read (zg) → Work → Verify with human → Record (edit wiki) → Re-index (`zg index`)**。
+コアループ: **Query → Work → Ingest/Record/Crystallize → Lint → 増分 `zg index`**。
+書き込みは involved: ページ計画を示し、ユーザーが止めなければ編集する。破壊的な index 操作は
+引き続き承認必須。
 
-このスキルは **wiki ガバナンス** と **zg をいつ使うか** を担当する。zg のフラグ、モデル、MCP、トランスポートはインストール済み CLI（`zg help`）にあり — ここでは重複しない。
+Karpathy 型の既定 wiki は `index.md`、`log.md`、`sources/`、`entities/`、`concepts/`、
+`analyses/`。`decisions/` と `runbooks/` は任意の coding overlay、プロジェクトルートの
+`raw/` は任意かつ不変。
+Query は index、wiki スコープ zg hybrid、完全一致名の rg、不足時だけ raw/code へ拡大、の順。
+qmd は使わない。
 
 ## レイアウト
 
@@ -73,20 +80,22 @@ zg help models
 npx --yes @zvec/zvec-grep help models
 ```
 
-`zg` が無いときは、`zg install` の前に `npm install -g @zvec/zvec-grep` を実行する。MCP の stdio 設定は常に `zg` バイナリを起動し（`zg install` は npm パッケージを入れない）、npx だけのブートストラップだとエージェントが `command not found: zg` になる。その後 `docs/wiki/` のひな形を生成し、`AGENTS.md` ホットメモリを upsert し、zg デフォルト探索で最初のインデックスを構築する。MCP 設定後にエージェントを再起動する。
+`zg` が無いときは、`zg install` の前に `npm install -g @zvec/zvec-grep` を実行する。MCP の stdio 設定は常に `zg` バイナリを起動し（`zg install` は npm パッケージを入れない）、npx だけのブートストラップだとエージェントが `command not found: zg` になる。新規 wiki には空 stub なしで有用なレジストリ、操作ログ、種別ディレクトリを作り、既存 wiki には触れない。その後 `AGENTS.md` ホットメモリを upsert し、zg デフォルト探索で最初のインデックスを構築する。MCP 設定後にエージェントを再起動する。
 
 ## スキルパッケージの内容
 
 | パス | 目的 |
 |------|------|
-| `SKILL.md` | エントリポイント: 読み取り/記録ループ、wiki 構造、zg 使用タイミング |
-| `references/wiki-workflow.md` | ガバナンス不変条件、what-vs-why、ホット/コールドメモリ |
+| `SKILL.md` | エントリポイント: 操作、wiki レイヤー、段階的 zg ルーティング |
+| `references/wiki-workflow.md` | ページ/ログ契約、ingest 深度、lint ルール、埋め込み |
 | `scripts/zg-bootstrap.sh` | 冪等で非破壊的なリポジトリセットアップ |
-| `templates/adr.md` | Architecture Decision Record テンプレート |
-| `templates/wiki-page.md` | 汎用 wiki ページテンプレート |
+| `templates/wiki-page.md` | source / entity / concept / analysis ページのテンプレート |
+| `templates/adr.md` | Architecture Decision Record テンプレート（coding overlay） |
+| `templates/runbook.md` | 手順テンプレート（coding overlay） |
 
 ## 設計の出典
 
 - [zvec-grep](https://github.com/zvec-ai/zvec-grep) — zg の挙動と CLI リファレンス（`zg help`）
-- [Karpathy LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) — 永続的な編纂 wiki、index 先読み、任意の log。コーディング向けに人間チェックポイントと zg（qmd の代替）で適応
+- [Karpathy LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) — 永続的な編纂 wiki、種別、操作、index 先読み、log
+- [zvec-grep オープンソース記事](https://zvec.org/en/blog/2026-08-28-zvec-grep-open-source/) — semantic/hybrid discovery と rg verification を段階化した 1 エンジン
 - [Agent Skills](https://agentskills.io/specification) 執筆（簡潔な SKILL.md、段階的開示）

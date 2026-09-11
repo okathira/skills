@@ -1,99 +1,97 @@
 ---
 name: zvec-llm-wiki
-description: Maintains a project's LLM wiki (docs/wiki/) with zvec-grep (zg) so agents read knowledge before acting and record after verification. Use for LLM wiki, living docs, zvec-grep, zg, ナレッジベース, wiki整備, conventions, ADRs, or gotchas. Not for web search or non-wiki Markdown.
+description: Ingests, queries, lints, records, and crystallizes a project's LLM wiki (docs/wiki/) with zvec-grep (zg). Use for LLM wiki, living docs, knowledge bases, wiki maintenance, sources, entities, concepts, analyses, ADRs, or runbooks. Not for web search or non-wiki Markdown.
 license: Proprietary. Internal use.
 ---
 
 # Maintaining an LLM wiki with zvec-grep
 
 ## Overview
+Run `docs/wiki/` as a living, compounding knowledge system shared by people and agents. `zg`
+(zvec-grep) is the single retrieval engine. The loop is:
 
-Run the project's documentation as a **living system** that both humans and agents share.
-`zg` (zvec-grep) is the retrieval layer; `docs/wiki/` is the source of truth. The loop is:
+> **Query → Work → Ingest/Record/Crystallize → Lint → incremental `zg index`**
 
-> **Read (zg) → Work → Verify with the human → Record (edit wiki) → Re-index (zg index)**
-
-Two non-negotiable rules keep this trustworthy:
-
-1. **Human is the checkpoint.** After work is verified, **propose** wiki updates (what page, what
-   to add). Record only when the user approves. Never silently write docs — a wrong result would
-   become a "rule" the next session trusts. Structural changes should include wiki/ADR updates in
-   the **same PR** once approved.
-2. **The agent never mutates the index lifecycle on its own.** You MAY run `zg index`
-   (incremental update) *after wiki edits* as a routine refresh, but you MUST NOT run
-   `--rebuild`, `--drop`, or `--reset-paths` without explicit user confirmation.
-
-If `zg` is not installed or no index exists, follow **Bootstrap** below. Until bootstrap succeeds,
-use normal search tools to read code — but do **not** update the wiki from unverified guesses.
+Wiki writes are **involved**, not strict: show the pages and intended changes, then edit in the
+same turn unless the user stops you. Keep changes small and evidence-linked. Only destructive
+index operations require prior approval.
 
 ## Wiki structure (docs/wiki/)
-
-Principle: **one home per fact, cross-reference instead of copy.** Separate *what* (auto-derivable
-from code) from *why* (human intent).
+Principle: **one home per fact; link instead of copying.**
 
 ```
 docs/wiki/
-  index.md          # entry map: what lives where (the registry)
-  glossary.md       # domain terms, acronyms, one-line definitions
-  architecture.md   # components, boundaries, data flow (the "what")
-  decisions/        # ADRs: one file per decision, the "why" (ADR-0001-*.md)
-  conventions.md    # naming, patterns, do/don't
-  gotchas.md        # sharp edges: "we don't touch X because ..."
-  runbooks/         # how to build, test, deploy, release
+  index.md          # registry grouped by category, with links and one-line summaries
+  log.md            # append-only operation timeline
+  sources/          # source summaries and provenance
+  entities/         # people, systems, projects, products
+  concepts/         # terms, patterns, rules, ideas
+  analyses/         # synthesis and crystallized answers
+  decisions/        # optional coding overlay: ADRs
+  runbooks/         # optional coding overlay: procedures
+raw/                # optional project-root immutable imported Markdown
 ```
 
-Use `templates/adr.md` and `templates/wiki-page.md` as starting points. Keep each page short;
-link, don't duplicate. Governance details: `references/wiki-workflow.md`.
+Living documents belong in the wiki. Imported dumps may live in `raw/` and stay immutable.
+Executable code is raw evidence: index and query it, but do not compile the whole codebase into
+wiki pages. PDF/Office input must be converted to Markdown before ingest; native PDF ingest is not
+supported. Use relative `.md` links, never `[[wikilinks]]`.
 
-## When to use zg (and when not to)
+## Operations
 
-This skill defines **when and why** to search. For flags, models, MCP setup, and transport, run
-`zg help`, `zg help query`, `zg help index`, `zg help install`, or `zg help models` — do not copy
-or invent zg syntax from this skill.
+### Query
 
-### Retrieval routing
+1. Read `docs/wiki/index.md`.
+2. If the registry is insufficient, use zg hybrid search scoped to `docs/wiki/**`.
+3. For a known name, path, exact alias, or Japanese proper noun, use zg managed rg (or native
+   `rg` when needed).
+4. Widen to `raw/**` or code only when wiki evidence is insufficient.
+5. Stop when ranked evidence is enough; do not open whole files just in case.
 
-| Situation | Route |
-|---|---|
-| Meaning, cross-file context, or location unknown | zg indexed search (MCP tool from `zg install` if available; tool name varies by client) |
-| Exact identifier, path, regex, or rename leftovers | Native grep/rg, or zg managed rg — see `zg help query` |
-| Task starts | Scope to `docs/wiki/**` first; widen to code only when wiki evidence is not enough |
-| Checking whether related material exists locally | One focused semantic probe; stop when results are enough or irrelevant |
+### Ingest and record
 
-**Wiki scope is a skill contract:** when reading the wiki first, always pass `docs/wiki/**` as the
-search scope (MCP or CLI). How to pass scope depends on the installed zg — ask `zg help query`, do
-not guess flags from this skill.
+- Show the page plan, then proceed unless interrupted.
+- Find existing homes using wiki-scoped hybrid plus rg on exact aliases.
+- Deep-compile documents into a few short pages; shallow-index code without compiling it.
+- Put `status` and `aliases` in the page frontmatter (the YAML block between `---`). Add
+  `source` when there is provenance. ADR pages also put `date` and `deciders` there. Do not
+  copy those keys into headings or body prose (no `## Aliases`, no Source section that repeats
+  `source`). Omit keys with no value (`superseded_by` only when replaced).
+- Treat aliases as ubiquitous language: about 3–6 high-signal names for the fact this page owns,
+  in the wiki's authoring language. Not one synonym, not a thesaurus. Shared definitions live on a
+  glossary (or one concepts page); other pages alias, they do not redefine. Add another
+  language/script only when that exact form is expected in rg.
+- Update `index.md` and append `log.md` for ingest or substantial records.
+- Preserve rejected approaches and dead ends; mark them superseded instead of deleting history.
 
-Index lifecycle (`zg index`, `zg status`) stays on the CLI. Do not assume optional MCP index or
-managed-rg tools exist unless the installed zg exposes them.
+### Crystallize
 
-Stop searching once ranked evidence is enough — do not read whole files "just in case".
+File a durable, well-supported query result under `analyses/`, without duplicating its facts into
+other pages. Register it and log the operation.
 
-### Index scope (project judgment)
+### Lint
 
-Bootstrap uses zg's default file discovery for the first index — this skill does not assume a
-`src/` layout. After inspecting the repository, **propose** narrower or wider index paths when the
-defaults miss important code or index too much noise. Changing stored paths requires
-`--reset-paths` or `--rebuild`; both need explicit user confirmation.
+- Every wiki `.md` page is registered in `index.md`; every relative `.md` link resolves.
+- Contradictions are visibly isolated in a section or an `analyses/` page, never silently merged.
+- Pages sourced from `raw/` still match their source path and optional raw-dump hash.
+- Oversized pages are split when they stop representing one fact or useful heading-sized chunks.
+- Renames and stale exact references are checked with rg.
+- Superseded claims and dead ends remain visible.
+- Content pages carry a handful of high-signal frontmatter `aliases` for their own fact; no body
+  list restamps frontmatter; shared terms are defined once on a glossary page.
 
-## Record after verifying
+After wiki edits, run incremental `zg index`, then `zg status`/freshness before relying on a new
+query. For detailed governance and log format, read `references/wiki-workflow.md`.
 
-When the user confirms the work is correct:
+## zg usage
 
-1. **Propose** what to record: which page owns the fact, whether an ADR is needed, and a short
-   draft. Wait for approval before editing.
-2. **Find the single home** — search scoped to `docs/wiki/**` for the topic. Update that page;
-   if none exists, create one under the right section and add it to `index.md`.
-3. **Write the *why*, not just the *what*.** For structural/architectural decisions, add or
-   update an ADR in `decisions/` (use `templates/adr.md`).
-4. **Cross-reference** related pages instead of copying prose.
-5. **Re-index** after edits: incremental `zg index`, then `zg status` to confirm readiness.
+This skill defines **when**, not CLI syntax. Run `zg help query`, `zg help index`, `zg help
+install`, or `zg help models`; do not invent flags. One workspace index serves wiki, raw, and
+code through query-time scopes. Keep the multilingual default
+`local/potion-multilingual-128m`; `local/qwen3-embedding-0.6b` is a same-engine quality upgrade
+that requires a rebuild and therefore approval. Do not add qmd or a second indexer.
 
-Keep diffs small and reviewable — the user reviews wiki changes like code.
-
-## Bootstrap (first time in a repo)
-
-Run `scripts/zg-bootstrap.sh` from this skill package. It is idempotent and non-destructive:
+## Bootstrap
 
 ```bash
 bash scripts/zg-bootstrap.sh                          # auto-detect agents
@@ -101,16 +99,8 @@ bash scripts/zg-bootstrap.sh --target cursor codex    # explicit targets; see zg
 bash scripts/zg-bootstrap.sh --embedding <model>      # override default wiki embedding (list: zg help models)
 ```
 
-Requires Node.js 22+. The script puts `zg` on PATH (`npm install -g` if missing — required because
-`zg install` writes MCP `command: zg` and does not install the package), scaffolds `docs/wiki/`,
-upserts `AGENTS.md` hot memory, runs `zg install`, and builds the first index with zg default
-discovery. Restart the agent after MCP configuration.
+Requires Node.js 22+. The script creates a useful scaffold only when `docs/wiki/` is absent,
+upserts the `AGENTS.md` hot block, configures zg, and builds or incrementally updates one index.
+An existing wiki is untouched.
 
-For manual setup or troubleshooting, follow `zg help` and `zg help install`.
-
-## Guardrails
-
-- Do **not** run `--rebuild`, `--drop`, `--reset-paths` without explicit confirmation.
-- Do **not** update the wiki from unverified work, or copy the same fact into two files.
-- Do **not** flood context: prefer ranked zg evidence over opening full files.
-- Do **not** duplicate zg documentation here — the installed CLI is the source of truth.
+Never run `--rebuild`, `--drop`, or `--reset-paths` without explicit user approval.

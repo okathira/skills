@@ -85,8 +85,8 @@ upsert_agents_md() {
 ## Project knowledge (LLM wiki)
 
 - Living wiki: `docs/wiki/` (registry: `docs/wiki/index.md`)
-- Search wiki before acting (scope: `docs/wiki/**`)
-- After verified work: propose wiki updates; on approval, edit the owning page, then incremental `zg index`
+- Query order: read `index.md`; then zg hybrid scoped to `docs/wiki/**`; then rg for exact names; widen only if needed
+- Wiki writes are involved: show the page plan, then edit unless stopped; after edits run incremental `zg index`
 
 <!-- ZVEC_LLM_WIKI_END -->
 EOF
@@ -170,24 +170,42 @@ fi
 # 4) Scaffold the wiki --------------------------------------------------------
 if [[ ! -d docs/wiki ]]; then
   say "Scaffolding docs/wiki/"
-  mkdir -p docs/wiki/decisions docs/wiki/runbooks
+  mkdir -p docs/wiki/sources docs/wiki/entities docs/wiki/concepts docs/wiki/analyses
   cat > docs/wiki/index.md <<'EOF'
 # Wiki registry
 
-The map of what lives where. Every page must be listed here.
+Read this catalog first. Register every wiki page with a relative `.md` link and one-line summary.
 
-| Page | Owns |
-|------|------|
-| glossary.md | domain terms & acronyms |
-| architecture.md | components, boundaries, data flow (the "what") |
-| decisions/ | ADRs — the "why" behind structural choices |
-| conventions.md | naming, patterns, do/don't |
-| gotchas.md | sharp edges & things not to touch |
-| runbooks/ | build, test, deploy, release |
+## Core
+
+- [Operation log](log.md) — append-only history of ingest, lint, crystallize, and substantial records.
+
+## Sources
+
+Source summaries and provenance pages belong in `sources/`.
+
+## Entities
+
+People, systems, projects, and products belong in `entities/`.
+
+## Concepts
+
+Terms, patterns, rules, and ideas belong in `concepts/`.
+
+## Analyses
+
+Syntheses and crystallized query answers belong in `analyses/`.
+
+Optional coding overlays may add `decisions/` and `runbooks/`. Optional immutable imported Markdown
+may live in project-root `raw/` (a sibling of `docs/`).
 EOF
-  for f in glossary architecture conventions gotchas; do
-    [[ -f "docs/wiki/$f.md" ]] || echo "# ${f}" > "docs/wiki/$f.md"
-  done
+  cat > docs/wiki/log.md <<'EOF'
+# Wiki operation log
+
+Append substantial operations as `## [YYYY-MM-DD] kind | title`, where kind is `ingest`, `lint`,
+`crystallize`, or `record`. Describe changed pages with relative `.md` links and record source paths
+when applicable; do not rewrite earlier entries.
+EOF
 else
   say "docs/wiki/ already exists — leaving it untouched"
 fi
@@ -213,4 +231,4 @@ fi
 run_zg status --check-ready
 
 say "Done. Restart your agent if MCP was just configured."
-say "Hot memory: AGENTS.md. Search wiki first (scope: docs/wiki/**). For zg usage: zg help"
+say "Hot memory: AGENTS.md. Read docs/wiki/index.md first. For zg usage: zg help"
