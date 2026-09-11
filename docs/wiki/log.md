@@ -2,6 +2,18 @@
 
 Append-only timeline for substantial wiki operations. Use `## [YYYY-MM-DD] kind | title`; record ingest, lint, crystallize, and large record operations, not routine queries.
 
+## [2026-09-11] record | Re-dogfood skill install and loop name
+
+- Reinstalled `zvec-llm-wiki` with `--force` and re-ran `zg-bootstrap.sh --target cursor` from the repo root. Existing wiki stayed in place; hot memory unchanged; incremental index.
+- Catalog conventions now use the skill loop (**Query → Work → Ingest/Record/Crystallize → Lint → incremental `zg index`**). The older Index → Retrieve slogan is superseded as a second name for the same steps.
+- Runbook gained a Verification section; gotchas record that bootstrap does not refresh `~/.agents/skills/`.
+- ADR-0003 implementation notes now match frontmatter-only aliases and the runbook template.
+
+## [2026-09-11] record | Say frontmatter, not YAML alone
+
+- Living skill and wiki pages now call the metadata block frontmatter. `YAML` remains only as the syntax (`---` fences, “YAML frontmatter”, “the YAML block between `---`”).
+- Left historical `log.md` lines unchanged.
+
 ## [2026-09-10] record | Frontmatter is the only metadata home
 
 - Generalized the one-home rule beyond aliases: `source`, `status`, `date`, `deciders`, and `superseded_by` stay in YAML.

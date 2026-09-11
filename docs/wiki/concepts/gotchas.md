@@ -6,6 +6,7 @@ aliases:
   - dogfooding pitfalls
   - heading-only stubs
   - MCP zg PATH
+  - stale skill install
 source:
   - ../../../skills/zvec-llm-wiki/zvec-llm-wiki/scripts/zg-bootstrap.sh
 ---
@@ -24,6 +25,8 @@ The bootstrap creates a local index under `.zvec-grep/`. It is not source of tru
 
 Running bootstrap from inside the skill package wires the wrong workspace.
 
+Bootstrap does not copy `SKILL.md`. After catalog updates to the package, re-run `install.sh --force` or the agent keeps the previous install under `~/.agents/skills/`.
+
 ## Do not create heading-only stubs
 
 Heading-only pages rank in semantic search but provide no evidence. The new scaffold creates category directories plus useful `index.md` and `log.md`, not empty topic pages.
@@ -36,7 +39,7 @@ With nvm, switching Node versions can remove zg from `PATH`; reinstall it global
 
 ## Japanese retrieval needs aliases
 
-Do not assume BM25 tokenization handles Japanese proper nouns. On a Japanese wiki, keep Kanji, Kana, and English aliases in YAML `aliases` on the owning page and use exact rg when a name is known.
+Do not assume BM25 tokenization handles Japanese proper nouns. On a Japanese wiki, keep Kanji, Kana, and English aliases in frontmatter `aliases` on the owning page and use exact rg when a name is known.
 
 This catalog wiki is English. Prefer English ubiquitous-language aliases; see [Conventions](conventions.md).
 

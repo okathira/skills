@@ -12,7 +12,7 @@ source:
 
 # Runbook: Install skill and bootstrap this repo
 
-> Verified setup steps for the Agent Skills catalog (re-bootstrapped 2026-09-10).
+> Verified setup steps for the Agent Skills catalog (re-dogfooded 2026-09-11).
 
 ## Prerequisites
 
@@ -67,6 +67,12 @@ npx --yes @zvec/zvec-grep status --check-ready
 
 Restart agent after first MCP install.
 
+## Verification
+
+- `~/.agents/skills/zvec-llm-wiki/SKILL.md` matches `skills/zvec-llm-wiki/zvec-llm-wiki/SKILL.md` (same for `references/` and `templates/`).
+- `AGENTS.md` still contains the `ZVEC_LLM_WIKI` hot block; existing `docs/wiki/` pages were not replaced by the scaffold.
+- `zg status --check-ready` succeeds after incremental `zg index`.
+
 ## Troubleshooting
 
 | Issue | Action |
@@ -74,6 +80,7 @@ Restart agent after first MCP install.
 | `zg` not on PATH / MCP `zvec_grep` error | `npm install -g @zvec/zvec-grep`, confirm `which zg`, restart Cursor. After an nvm Node switch, reinstall globally. |
 | Query misses a new wiki page | Confirm it is registered in `index.md`, then run incremental `zg index` |
 | MCP tool missing after a good `zg` | Restart Cursor after `zg install --target cursor` |
+| Agent follows old frontmatter or loop rules | Catalog `SKILL.md` changed but `~/.agents/skills/` did not. Re-run step 1 with `--force` and restart the agent. |
 
 ## Related
 

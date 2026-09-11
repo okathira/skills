@@ -24,17 +24,19 @@ source:
 
 ## Wiki workflow
 
-The accepted loop is:
+The accepted loop is the same as `zvec-llm-wiki`:
 
-> **Index → Retrieve → Work → Involved write → Incremental zg index**
+> **Query → Work → Ingest/Record/Crystallize → Lint → incremental `zg index`**
+
+A second slogan (**Index → Retrieve → Work → Involved write → Incremental zg index**) was tried in this catalog and is superseded: it restated Query plus involved writes instead of naming the operations.
+
+Query is staged:
 
 - Read `docs/wiki/index.md` first.
 - If it is insufficient, use zg hybrid search scoped to `docs/wiki/**`.
 - Use exact rg for known names and aliases; widen to raw/code only if wiki evidence is insufficient.
-- Ingest, lint, record, and crystallize use involved writes: show the pages, then write unless the user stops the operation.
-- There is no strict page write-lock.
-- `zg index --rebuild`, `--drop`, and `--reset-paths` still require explicit confirmation.
-- Preserve rejected or superseded ideas instead of deleting their history.
+
+Ingest, record, crystallize, and lint use involved writes: show the pages, then write unless the user stops the operation. There is no strict page write-lock. `zg index --rebuild`, `--drop`, and `--reset-paths` still require explicit confirmation. Preserve rejected or superseded ideas instead of deleting their history.
 
 ## Links and page shape
 
@@ -49,10 +51,10 @@ The accepted loop is:
 This wiki is English. Aliases are the English names people and agents actually type for the fact a page owns — not a thesaurus and not a Japanese mirror. Both skill locales encode this thickness.
 
 - [Glossary](glossary.md) owns term definitions.
-- Each other page lists only the names of its own fact in YAML `aliases`.
+- Each other page lists only the names of its own fact in frontmatter `aliases`.
 - Target about 3–6 high-signal phrases (`involved write`, `hot memory`, `coding overlay`). One synonym is too thin.
 - Add a Japanese string only when that exact form is expected in rg. This catalog rarely needs that.
-- Do not duplicate frontmatter in the body. zg already chunks YAML; a second list or Source heading drifts.
+- Do not duplicate frontmatter in the body. zg already chunks frontmatter; a second list or Source heading drifts.
 - `Related` / `References` are the wiki graph. They must not copy `source` paths or URLs.
 
 ## Related

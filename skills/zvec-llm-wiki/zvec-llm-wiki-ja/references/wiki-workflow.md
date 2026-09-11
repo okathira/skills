@@ -42,7 +42,7 @@ source: raw/example.md # プロジェクトルートの raw path、リポジト�
 ```
 
 この frontmatter は coding overlay を含むすべての内容ページに置く。`index.md` と `log.md` は
-schema とタイムラインなので素のままにする。zg は YAML を独立チャンクとして索引し、rg は
+schema とタイムラインなので素のままにする。zg は frontmatter を独立チャンクとして索引し、rg は
 ファイル全体を読むので、frontmatter のキーを本文へ複製しない。続けて 1 行リードと `What`、
 `Why`、`Related` などの有用な H2 節を置く。外部 source がなければ `source` は省略する。hash は
 任意で、不変の `raw/` ダンプだけに使い、コードベースには使わない。`Related` と ADR の
@@ -75,7 +75,7 @@ aliases はそのページが所有する事実の検索用の名前であり、
 - glossary（または `concepts/` の 1 ページ）が共有用語の定義を所有する。他ページは自分の
   事実の名前だけを列挙し、定義をコピーしない。
 - ホームは 1 つ: `aliases`、`source`、`status`、ADR の `date` / `deciders` /
-  `superseded_by` は YAML だけ。YAML を写す `## Aliases` や Source 見出しは置かない。見出し
+  `superseded_by` は frontmatter だけ。frontmatter を写す `## Aliases` や Source 見出しは置かない。見出し
   抽出のための H2 複製は試して superseded。
 
 ingest や record の同じ編集で aliases を足す。薄い alias リストは frontmatter 欠けと同じ lint
@@ -122,7 +122,7 @@ ingest や record の同じ編集で aliases を足す。薄い alias リスト�
 - リネーム後の古い名前を rg で探す。
 - 行き止まりと superseded な主張を保持する。
 - 検索を汚して答えを持たない、タイトルだけ・見出しだけの stub を拒否する。
-- 内容ページの `aliases` が空または同義語 1 個なら拒否する。高シグナルな YAML 名が複数、
+- 内容ページの `aliases` が空または同義語 1 個なら拒否する。高シグナルな frontmatter 名が複数、
   frontmatter の本文再掲なし、共有定義は glossary 1 ページ、を期待する。
 
 ## ホットメモリと埋め込み

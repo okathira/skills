@@ -43,7 +43,7 @@ source: raw/example.md # repository-root raw path, repository path, or URL
 ```
 
 Every content page carries this frontmatter, including the coding overlay; `index.md` and `log.md`
-are schema and timeline, so they stay plain. zg indexes YAML as its own chunk, and rg reads the
+are schema and timeline, so they stay plain. zg indexes frontmatter as its own chunk, and rg reads the
 whole file, so frontmatter keys do not need a body copy. Follow with a one-line lead and useful H2
 sections such as `What`, `Why`, and `Related`. `source` may be omitted when no external source
 exists. Hashes are optional and apply only to immutable `raw/` dumps, not the codebase. `Related`
@@ -76,8 +76,8 @@ Aliases are retrieval names for the fact a page owns, not extra prose and not a 
   script) only when that exact string is expected in rg.
 - A glossary (or one `concepts/` page) owns shared term definitions. Other pages list names for
   their own fact; they do not copy definitions.
-- One home: YAML only for `aliases`, `source`, `status`, and ADR `date` / `deciders` /
-  `superseded_by`. Do not add a `## Aliases` section or a Source heading that copies YAML. A
+- One home: frontmatter only for `aliases`, `source`, `status`, and ADR `date` / `deciders` /
+  `superseded_by`. Do not add a `## Aliases` section or a Source heading that copies frontmatter. A
   duplicated H2 alias list was tried for heading extract and is superseded.
 
 When ingesting or recording, add aliases in the same edit. Lint thin alias lists the same way as
@@ -125,7 +125,7 @@ Use `## [YYYY-MM-DD] kind | title`, where kind is `ingest`, `lint`, `crystallize
 - Preserve dead ends and superseded claims.
 - Reject title-only or heading-only stubs because they pollute retrieval without answering.
 - Reject empty or single-synonym `aliases` on content pages; expect a handful of high-signal
-  YAML names, no body restamp of frontmatter keys, and shared definitions on one glossary page.
+  frontmatter names, no body restamp of frontmatter keys, and shared definitions on one glossary page.
 
 ## Hot memory and embedding
 

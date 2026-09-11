@@ -89,7 +89,7 @@ Do not run two indexers. If `raw/` is huge, **propose** narrower stored paths (`
 
 Markdown is split **by heading**, and YAML frontmatter is its own chunk. Templates should force H2 sections (What / Why / Related), short pages, no heading-less walls. Stubs with only a title still rank and still answer nothing — keep that warning.
 
-Put **aliases** in YAML `aliases` on the owning page (not only glossary) so rg/fts can hit カナ and English from that file. Do not copy them into a `## Aliases` heading.
+Put **aliases** in frontmatter `aliases` on the owning page (not only glossary) so rg/fts can hit カナ and English from that file. Do not copy them into a `## Aliases` heading.
 
 ### Ops mapped to zg modes
 
@@ -125,8 +125,8 @@ Target packages: `skills/zvec-llm-wiki/zvec-llm-wiki/` and `zvec-llm-wiki-ja/`, 
 
 1. **Scaffold** — `index.md` (grouped by kind), `log.md`, `sources/`, `entities/`, `concepts/`, `analyses/`. Optional overlay: `decisions/`, `runbooks/`. Optional `raw/` convention in the schema (immutable; not created full of binaries).
 2. **Hot memory** — wiki path, **read index first**, then wiki-scoped zg; involved writes (plan then edit); incremental `zg index`.
-3. **SKILL.md** — ingest / query / lint / record; staged zg routing; involved only (no strict); stop rule; PDF caveat; multilingual default.
-4. **Templates** — headingful entity/source pages + alias line; log prefix; keep ADR template for coding overlay.
+3. **SKILL.md** — ingest / query / lint / record / crystallize; staged zg routing; involved only (no strict); stop rule; PDF caveat; multilingual default.
+4. **Templates** — headingful pages with frontmatter `aliases` (no body alias list); log prefix; ADR and runbook templates for the coding overlay.
 5. **references/wiki-workflow.md** — replace "optional qmd-style search" with the staged table above; coding overlay documented separately.
 6. **This catalog's wiki** — migrate to Karpathy kinds in the same change as the skill rewrite (glossary/architecture/gotchas/runbooks re-filed; ADRs can remain `decisions/` as the coding overlay).
 
@@ -138,7 +138,7 @@ Reviewed against this ADR. **Take** (skill/schema, no new engine). **Later** (op
 
 - **One-line lead + headings** — progressive-disclosure result: compact index + summaries cut query tokens ~33–50%. Templates: first line = index blurb; real H2s for zg section extract.
 - **Relative `.md` links + link lint** — relative links work in GitHub and local viewers. Lint: every wiki file is in `index.md` and every link resolves. Obsidian-only `[[wikilinks]]` are deferred.
-- **Thin frontmatter** — OKF/confidence articles, without OKF as a format. Keys: `status` (`working`|`decided`), `aliases`, `source` (root `raw/`, code path, or URL). Retrieval names live only in YAML `aliases`. Not a write-lock. A duplicated `## Aliases` H2 was tried for heading extract and superseded 2026-09-10: zg already chunks YAML, and the second list drifted.
+- **Thin frontmatter** — OKF/confidence articles, without OKF as a format. Keys: `status` (`working`|`decided`), `aliases`, `source` (root `raw/`, code path, or URL). Retrieval names live only in frontmatter `aliases`. Not a write-lock. A duplicated `## Aliases` H2 was tried for heading extract and superseded 2026-09-10: zg already chunks frontmatter, and the second list drifted.
 - **Contradiction isolation** — Hermes: conflicting claims get a visible conflict note (or `analyses/` page), not a silent merge. Lint owns this.
 - **Split oversized pages** — Hermes file-size threshold. Keeps zg chunks addressable.
 - **Crystallize** — file a good query answer into `analyses/` (Karpathy query-can-be-filed; vanillaflava crystallize).

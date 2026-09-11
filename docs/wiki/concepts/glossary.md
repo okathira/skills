@@ -23,6 +23,7 @@ source:
 | **Cold memory** | `docs/wiki/**`, retrieved on demand after reading the registry. |
 | **Crystallize** | File a durable answer or synthesis from a query into `analyses/` so it compounds. |
 | **Dogfood** | This catalog runs zvec-llm-wiki on itself (`docs/wiki/`, `AGENTS.md`, one zg index). |
+| **Frontmatter** | The YAML block between `---` at the top of a wiki page. Home for `status`, `aliases`, `source`, and ADR lifecycle. |
 | **Hot memory** | Short `AGENTS.md` block loaded every session. |
 | **Ingest** | Compile an immutable source into maintained source/entity/concept/analysis pages. |
 | **Install** | Copy a skill package into an agent skill directory (`install.sh`). Distinct from bootstrap. |
