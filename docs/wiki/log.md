@@ -2,6 +2,16 @@
 
 Append-only timeline for substantial wiki operations. Use `## [YYYY-MM-DD] kind | title`; record ingest, lint, crystallize, and large record operations, not routine queries.
 
+## [2026-10-07] record | deciders shapes and Node pin
+
+- Documented ADR `deciders` identifier shape rules in both skill `wiki-workflow` page contracts; [Conventions](concepts/conventions.md) links there; added **Deciders** and **Owner** to [Glossary](concepts/glossary.md).
+- Pinned repo-root `.node-version` to current Node LTS `24.21.0`; noted it in [skill-setup](runbooks/skill-setup.md).
+
+## [2026-10-06] record | deciders identifier notation
+
+- ADR `deciders` is a YAML list of `@handle`, email, `owner`, or `agent:<name>` only; free-form display names are superseded.
+- Updated [Conventions](concepts/conventions.md), both skill locales (`wiki-workflow`, `adr` template, `SKILL.md`), and normalized ADR-0001–0003 to `owner`.
+
 ## [2026-09-11] record | Re-dogfood skill install and loop name
 
 - Reinstalled `zvec-llm-wiki` with `--force` and re-ran `zg-bootstrap.sh --target cursor` from the repo root. Existing wiki stayed in place; hot memory unchanged; incremental index.

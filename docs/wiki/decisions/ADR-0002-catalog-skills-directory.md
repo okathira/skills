@@ -1,7 +1,8 @@
 ---
 status: accepted
 date: 2026-09-07
-deciders: Catalog maintainers
+deciders:
+  - owner
 aliases:
   - catalog skills directory
   - ADR-0002

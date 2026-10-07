@@ -1,7 +1,8 @@
 ---
 status: proposed # proposed (working) | accepted (decided) | superseded
 date: YYYY-MM-DD
-deciders: <名前>
+deciders:
+  - <@handle | メール | owner | agent:name>
 aliases:
   - ADR-NNNN
   - <この決定の高シグナルな名前>
@@ -33,5 +34,5 @@ source: <path、URL、またはこのキーを省略>
 wiki グラフのみ。`source` の URL や path はここに再掲しない。
 
 <!-- この ADR を 1 行要約付きで docs/wiki/index.md に登録し、log.md に追記後、増分 `zg index` を
-実行する。status、date、deciders、superseded_by、aliases、source は frontmatter だけ。空キーは
-省略し、superseded_by は置き換え時だけ足す。 -->
+実行する。status、date、deciders、superseded_by、aliases、source は frontmatter だけ。deciders は
+@handle、メール、owner、agent:<name> のリスト。空キーは省略し、superseded_by は置き換え時だけ足す。 -->

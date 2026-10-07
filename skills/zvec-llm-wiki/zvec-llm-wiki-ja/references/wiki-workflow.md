@@ -55,9 +55,27 @@ schema とタイムラインなので素のままにする。zg は frontmatter 
 ---
 status: accepted # proposed は working、accepted と superseded は decided
 date: 2026-09-08
-deciders: 名前
+deciders:
+  - owner
 ---
 ```
+
+`deciders` は常に YAML リスト。各要素は次の識別子のいずれか（チーム名などの自由記述の表示名は不可）:
+
+| 形式 | 用途 |
+| --- | --- |
+| `@handle` | GitHub アカウント。多人数プロジェクトでは第一候補 |
+| `user@example.com` | GitHub を使わない場合のメール |
+| `owner` | 個人プロジェクト用の役割トークン（リポジトリ所有者。実名やハンドルは書かない） |
+| `agent:<name>` | AI エージェント（例 `agent:cursor`）。`accepted` でも単独で可 |
+
+lint 用の形の規則:
+
+- `@handle` は `@` で始まり、その後が空でない。
+- メールは `@` が 1 つだけで、前後が空でない。
+- `owner` はトークン `owner` と完全一致。
+- `agent:<name>` はコロンの後が空でなく、空白を含まない。
+- `deciders` を空にしない。
 
 置き換える ADR ができるまで `superseded_by` は書かない。外部の来歴がなければ `source` は
 省略する。空キーは残さない。
@@ -124,6 +142,8 @@ ingest や record の同じ編集で aliases を足す。薄い alias リスト�
 - 検索を汚して答えを持たない、タイトルだけ・見出しだけの stub を拒否する。
 - 内容ページの `aliases` が空または同義語 1 個なら拒否する。高シグナルな frontmatter 名が複数、
   frontmatter の本文再掲なし、共有定義は glossary 1 ページ、を期待する。
+- ADR ページでは `deciders` が空、または `@handle`・メール・`owner`・`agent:<name>` 以外の
+  要素があれば拒否する。
 
 ## ホットメモリと埋め込み
 

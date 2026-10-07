@@ -16,7 +16,7 @@ No entity pages yet.
 |------|------------------|
 | [concepts/glossary.md](concepts/glossary.md) | Ubiquitous language for the catalog, Karpathy operations, and zg retrieval |
 | [concepts/catalog-layout.md](concepts/catalog-layout.md) | Repository layout and boundaries between packages, raw code, wiki, and hot memory |
-| [concepts/conventions.md](concepts/conventions.md) | Locale policy, alias policy, the skill loop, and involved writes |
+| [concepts/conventions.md](concepts/conventions.md) | Locale policy, alias policy, ADR deciders identifiers, the skill loop, and involved writes |
 | [concepts/gotchas.md](concepts/gotchas.md) | Dogfooding pitfalls around bootstrap, stale installs, empty stubs, MCP, and Japanese aliases |
 | [concepts/deferred-wiki-tooling.md](concepts/deferred-wiki-tooling.md) | Working list of optional viewer, conversion, claim, and maintenance tooling |
 

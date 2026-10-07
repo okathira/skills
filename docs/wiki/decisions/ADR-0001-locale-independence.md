@@ -1,7 +1,8 @@
 ---
 status: accepted
 date: 2026-09-03
-deciders: Catalog maintainers
+deciders:
+  - owner
 aliases:
   - locale independence
   - ADR-0001

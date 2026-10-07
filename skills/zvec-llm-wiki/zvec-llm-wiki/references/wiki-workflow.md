@@ -57,9 +57,28 @@ lifecycle has exactly one home instead of a body line that drifts from frontmatt
 ---
 status: accepted # proposed = working; accepted and superseded = decided
 date: 2026-09-08
-deciders: name
+deciders:
+  - owner
 ---
 ```
+
+`deciders` is always a YAML list. Each entry must be one of these identifiers (no free-form display
+names such as team titles):
+
+| Form | Use |
+| --- | --- |
+| `@handle` | GitHub account; preferred for multi-person projects |
+| `user@example.com` | Email when GitHub is not used |
+| `owner` | Role token for a personal project (repository owner; no legal name or handle) |
+| `agent:<name>` | AI agent (e.g. `agent:cursor`); may be the only entry on `accepted` |
+
+Shape rules for lint:
+
+- `@handle` starts with `@` and has a non-empty remainder.
+- Email contains exactly one `@` with non-empty local and domain parts.
+- `owner` is the exact token `owner`.
+- `agent:<name>` has a non-empty name after `:` with no whitespace.
+- Do not leave `deciders` empty.
 
 Omit `superseded_by` until another ADR replaces this one. Omit `source` when there is no external
 provenance. Do not leave blank keys.
@@ -126,6 +145,8 @@ Use `## [YYYY-MM-DD] kind | title`, where kind is `ingest`, `lint`, `crystallize
 - Reject title-only or heading-only stubs because they pollute retrieval without answering.
 - Reject empty or single-synonym `aliases` on content pages; expect a handful of high-signal
   frontmatter names, no body restamp of frontmatter keys, and shared definitions on one glossary page.
+- On ADR pages, reject empty `deciders` or entries that are not `@handle`, email, `owner`, or
+  `agent:<name>`.
 
 ## Hot memory and embedding
 

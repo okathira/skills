@@ -1,7 +1,8 @@
 ---
 status: proposed # proposed (working) | accepted (decided) | superseded
 date: YYYY-MM-DD
-deciders: <names>
+deciders:
+  - <@handle | email | owner | agent:name>
 aliases:
   - ADR-NNNN
   - <high-signal name for this decision>
@@ -34,4 +35,5 @@ Wiki graph only. Do not restamp `source` URLs or paths here.
 
 <!-- Register this ADR with a one-line summary in docs/wiki/index.md, append log.md, then run
 incremental `zg index`. Keep status, date, deciders, superseded_by, aliases, and source only in
-frontmatter. Omit empty keys; add superseded_by only when replaced. -->
+frontmatter. deciders is a list of @handle, email, owner, or agent:<name>. Omit empty keys; add
+superseded_by only when replaced. -->

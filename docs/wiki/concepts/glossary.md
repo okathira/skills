@@ -22,6 +22,7 @@ source:
 | **Coding overlay** | Optional `decisions/` and `runbooks/` on top of Karpathy source/entity/concept/analysis pages. |
 | **Cold memory** | `docs/wiki/**`, retrieved on demand after reading the registry. |
 | **Crystallize** | File a durable answer or synthesis from a query into `analyses/` so it compounds. |
+| **Deciders** | Who accepted an ADR — a YAML list in frontmatter. Allowed identifier shapes are owned by the skill page contract via [Conventions](conventions.md). |
 | **Dogfood** | This catalog runs zvec-llm-wiki on itself (`docs/wiki/`, `AGENTS.md`, one zg index). |
 | **Frontmatter** | The YAML block between `---` at the top of a wiki page. Home for `status`, `aliases`, `source`, and ADR lifecycle. |
 | **Hot memory** | Short `AGENTS.md` block loaded every session. |
@@ -30,6 +31,7 @@ source:
 | **Involved write** | Show the intended pages, then edit unless the user stops. Not a wiki write-lock. |
 | **LLM Wiki** | Karpathy's persistent, interlinked Markdown compiled from raw sources. This skill uses zg only. |
 | **One home** | One maintained page per fact; link instead of copying. |
+| **Owner** | Role token in ADR `deciders` for a personal project (repository owner); not a legal name or handle. |
 | **Raw** | Executable code and optional immutable `raw/` dumps. Index and query them; do not compile the tree into wiki prose. |
 | **Registry** | `docs/wiki/index.md` — grouped catalog of every wiki page with one-line summaries. |
 | **Ubiquitous language** | Shared English names for catalog facts. Definitions live here; retrieval names live in page `aliases`. |

@@ -44,6 +44,9 @@ Ingest, record, crystallize, and lint use involved writes: show the pages, then 
 - Every page has a one-line lead and meaningful H2 sections so zg can return addressable evidence.
 - Entity and concept aliases, provenance, and ADR lifecycle live only in YAML frontmatter.
 - Do not restamp `status`, `source`, `date`, `deciders`, `superseded_by`, or `aliases` in the body.
+- ADR `deciders` is a YAML list of identifiers only: `@handle`, email, `owner`, or `agent:<name>`.
+  Free-form display names (e.g. team titles) are superseded. Identifier shape rules live in the
+  skill [page contract](../../../skills/zvec-llm-wiki/zvec-llm-wiki/references/wiki-workflow.md#page-contract).
 - Every page is registered in `index.md`; one fact has one maintained home.
 
 ## Ubiquitous language and aliases
