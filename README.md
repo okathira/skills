@@ -28,9 +28,10 @@ English is the default locale so agents spend fewer tokens. Japanese is opt-in.
 |---|---------|----------|
 | **Skills** | `skills/<skill-name>/<skill-name>/` — folder name matches `name` in `SKILL.md` | `skills/<skill-name>/<skill-name>-ja/` — distinct `name` (suffix `-ja`) |
 | **This landing page** | [`README.md`](README.md) (GitHub default) | [`README.ja.md`](README.ja.md) |
+| **Catalog talks** | [`talks/decks/zvec-llm-wiki/`](talks/decks/zvec-llm-wiki/) | [`talks/decks/zvec-llm-wiki-ja/`](talks/decks/zvec-llm-wiki-ja/) |
 
-- **Independence:** each skill locale folder is a complete package. Extracting that folder alone is enough to install and run it. Locales of the same skill stay one-to-one; there are no symlinks or cross-locale runtime deps. Behavior and flags stay aligned; only natural language and `name` differ.
-- **Maintenance:** when a skill's behavior changes, update every locale of that skill in the same change. When catalog landing copy changes, update `README.md` and `README.ja.md` together (same sections, same facts). Pick one locale per install.
+- **Independence:** each skill locale folder is a complete package. Extracting that folder alone is enough to install and run it. Locales of the same skill stay one-to-one; there are no symlinks or cross-locale runtime deps. Behavior and flags stay aligned; only natural language and `name` differ. Talk decks follow the same pairing; each deck folder is standalone.
+- **Maintenance:** when a skill's behavior changes, update every locale of that skill in the same change. When catalog landing copy changes, update `README.md` and `README.ja.md` together (same sections, same facts). When facts the catalog talks describe change, update both `talks/decks/zvec-llm-wiki/` and `talks/decks/zvec-llm-wiki-ja/` in the same change and run `bunx dekc lint` from `talks/`. Pick one locale per install.
 
 ## Related
 

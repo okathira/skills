@@ -1,0 +1,667 @@
+/*
+ * why-dek — a Swiss handout.
+ * Light paper, near-black ink, one signal colour (cobalt) and one highlighter (yellow).
+ * A 12-column grid, visible as ticks under the running head. Every page states its point
+ * as its heading and carries its own figure, so the PDF reads without the talk.
+ */
+.slide {
+  --fg: #141414;
+  --bg: #f3f1ec;
+  --accent: #1c3fd4;
+  --muted: #5b5a56;
+  --paper-deep: #e8e5dd;
+  --line: #141414;
+  --line-soft: #c8c4ba;
+  --hi: #f6e64b;
+  --accent-tint: #dde3fa;
+  --font-title: "Helvetica Neue", "Hiragino Sans", "Hiragino Kaku Gothic ProN", sans-serif;
+  --font-body: "Helvetica Neue", "Hiragino Sans", "Hiragino Kaku Gothic ProN", sans-serif;
+  --font-mono: "SF Mono", "Menlo", "Hiragino Sans", monospace;
+  --size-hero: 112px;
+  --size-numeral: 88px;
+  --size-stat: 60px;
+  --size-title: 40px;
+  --size-lede: 19px;
+  --size-body: 16px;
+  --size-small: 14px;
+  --size-code: 13px;
+  --size-caption: 12px;
+  --gap: 24px;
+  --margin: 56px;
+  --head-top: 24px;
+  --head-rule: 52px;
+  --foot-rule: 680px;
+  --pad: 84px var(--margin) 56px;
+  --radius: 0px;
+  --hair: 1px;
+  --rule: 3px;
+  --tick: 6px;
+  --col: 75.33px;
+  --track: 99.33px;
+  --grid-width: 1168px;
+  --rise: 10px;
+  --card-h: 240px;
+  --arrow: 14px;
+  --step-transition: 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-sizing: border-box;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  padding: var(--pad);
+  background-color: var(--bg);
+  background-image:
+    repeating-linear-gradient(
+      to right,
+      var(--line) 0 var(--hair),
+      transparent var(--hair) var(--col),
+      var(--line) var(--col) calc(var(--col) + var(--hair)),
+      transparent calc(var(--col) + var(--hair)) var(--track)
+    ),
+    linear-gradient(var(--line-soft), var(--line-soft));
+  background-size:
+    calc(var(--grid-width) + var(--hair)) var(--tick),
+    var(--grid-width) var(--hair);
+  background-position:
+    var(--margin) var(--head-rule),
+    var(--margin) var(--foot-rule);
+  background-repeat: no-repeat;
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: var(--size-body);
+  line-height: 1.6;
+  font-feature-settings: "palt";
+  word-break: auto-phrase;
+  -webkit-font-smoothing: antialiased;
+}
+
+.slide *,
+.slide *::before,
+.slide *::after {
+  box-sizing: border-box;
+}
+
+/* Running head: the talk on the left, the folio on the right, over a ruled line. */
+.slide {
+  counter-reset: folio var(--dek-slide-number) folios var(--dek-slide-count);
+}
+
+.slide::before,
+.slide::after {
+  position: absolute;
+  top: var(--head-top);
+  font-size: var(--size-caption);
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0.08em;
+}
+
+.slide::before {
+  content: "Agent Skills カタログと zvec-llm-wiki\3000—\3000 skills catalog 2026";
+  left: var(--margin);
+  right: var(--margin);
+  height: calc(var(--head-rule) - var(--head-top));
+  border-bottom: var(--hair) solid var(--line);
+}
+
+.slide::after {
+  content: counter(folio, decimal-leading-zero) " / " counter(folios, decimal-leading-zero);
+  right: var(--margin);
+  font-variant-numeric: tabular-nums;
+}
+
+.slide h2,
+.slide h3,
+.slide p,
+.slide ul,
+.slide ol,
+.slide dl,
+.slide dd,
+.slide figure,
+.slide pre {
+  margin: 0;
+}
+
+.slide ul,
+.slide ol {
+  padding: 0;
+  list-style: none;
+}
+
+.slide .slide-title {
+  font-family: var(--font-title);
+  font-size: var(--size-title);
+  font-weight: 800;
+  line-height: 1.22;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+/* The section number, set large in the signal colour. */
+.slide .numeral {
+  font-family: var(--font-title);
+  font-size: var(--size-numeral);
+  font-weight: 800;
+  line-height: 0.8;
+  letter-spacing: -0.04em;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Left empty, a numeral prints the slide's place in script.md, so it follows the script as slides move. */
+.slide .numeral:empty::before {
+  content: counter(folio, decimal-leading-zero);
+}
+
+.slide .lede {
+  font-size: var(--size-lede);
+  line-height: 1.7;
+  text-wrap: pretty;
+}
+
+.slide .note {
+  font-size: var(--size-small);
+  line-height: 1.7;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+.slide .note strong,
+.slide .lede strong {
+  font-weight: 700;
+  color: var(--fg);
+}
+
+/* Where a figure's numbers come from, under the bottom rule. */
+.slide .source {
+  position: absolute;
+  left: var(--margin);
+  right: var(--margin);
+  bottom: calc(var(--gap) * 0.6);
+  font-size: var(--size-caption);
+  line-height: 1.5;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+.slide .label {
+  display: block;
+  font-size: var(--size-caption);
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0.12em;
+  color: var(--fg);
+}
+
+.slide .signal {
+  color: var(--accent);
+}
+
+/* Highlighter: a band under the lower half of the line. */
+.slide .mark {
+  background: linear-gradient(transparent 52%, var(--hi) 52%, var(--hi) 92%, transparent 92%);
+  font-weight: 700;
+}
+
+.slide .stat {
+  display: block;
+  font-family: var(--font-title);
+  font-size: var(--size-stat);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.slide .unit {
+  margin-left: 0.2em;
+  font-size: var(--size-body);
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.slide .chip {
+  display: inline-block;
+  padding: 0.05em 0.45em;
+  border: var(--hair) solid var(--line);
+  font-family: var(--font-mono);
+  font-size: var(--size-caption);
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.slide .col {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* The area that holds the figure. */
+.slide .stage {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+}
+
+.slide .panel {
+  border-top: var(--rule) solid var(--line);
+  padding-top: calc(var(--gap) * 0.5);
+}
+
+.slide .figure {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Code: a light panel with a ruled title bar, so it prints. */
+.slide .code {
+  overflow: hidden;
+  padding: calc(var(--gap) * 0.6) calc(var(--gap) * 0.75);
+  background: var(--paper-deep);
+  font-family: var(--font-mono);
+  font-size: var(--size-code);
+  line-height: 1.75;
+  white-space: pre;
+  font-feature-settings: normal;
+}
+
+.slide .code-head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--gap);
+  margin: calc(var(--gap) * -0.6) calc(var(--gap) * -0.75) calc(var(--gap) * 0.5);
+  padding: calc(var(--gap) * 0.3) calc(var(--gap) * 0.75);
+  background: var(--fg);
+  color: var(--bg);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.slide .tok-h {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.slide .tok-s {
+  font-weight: 700;
+}
+
+.slide .tok-c {
+  color: var(--muted);
+}
+
+/* @layout cover
+<section class="slide" data-layout="cover">
+  <p class="label">Event　2026.09.25</p>
+  <h2 class="slide-title">The talk in one line</h2>
+  <p class="lede">What the audience takes home, in one sentence.</p>
+  <ol class="stage">
+    <li><span class="numeral">1</span> The first part</li>
+  </ol>
+</section>
+*/
+.slide[data-layout="cover"] {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  column-gap: var(--gap);
+  align-content: stretch;
+}
+
+.slide[data-layout="cover"] > .label {
+  grid-column: 1 / -1;
+}
+
+.slide[data-layout="cover"] > .slide-title {
+  grid-column: 1 / -1;
+  align-self: end;
+  font-size: var(--size-hero);
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+}
+
+.slide[data-layout="cover"] > .lede {
+  grid-column: 1 / 9;
+  margin-top: var(--gap);
+}
+
+.slide[data-layout="cover"] > .stage {
+  grid-column: 1 / -1;
+  margin-top: calc(var(--gap) * 1.5);
+}
+
+/* @layout page
+<section class="slide" data-layout="page">
+  <p class="numeral"></p>
+  <h2 class="slide-title">The point, as a full sentence</h2>
+  <p class="lede">One or two sentences that explain the figure.</p>
+  <div class="stage">
+    <div class="panel" data-step="1">A figure on the full width of the grid</div>
+  </div>
+  <p class="source">Where the numbers come from</p>
+</section>
+*/
+.slide[data-layout="page"] {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-rows: auto auto minmax(0, 1fr);
+  column-gap: var(--gap);
+  align-content: start;
+}
+
+.slide[data-layout="page"] > .numeral {
+  grid-column: 1 / 3;
+  grid-row: 1 / 3;
+}
+
+.slide[data-layout="page"] > .slide-title {
+  grid-column: 3 / -1;
+  grid-row: 1;
+}
+
+.slide[data-layout="page"] > .lede {
+  grid-column: 3 / 11;
+  grid-row: 2;
+  margin-top: calc(var(--gap) * 0.6);
+}
+
+.slide[data-layout="page"] > .stage {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-content: start;
+  margin-top: calc(var(--gap) * 1.4);
+}
+
+/* @layout split
+<section class="slide" data-layout="split">
+  <div class="col">
+    <p class="numeral"></p>
+    <h2 class="slide-title">Text on the left</h2>
+    <p class="lede">The claim, explained.</p>
+    <p class="note" data-step="1">A detail that arrives on a beat.</p>
+  </div>
+  <div class="stage">
+    <pre class="code"><span class="code-head"><span>file.md</span></span>a figure on the right</pre>
+  </div>
+  <p class="source">Where the numbers come from</p>
+</section>
+*/
+.slide[data-layout="split"] {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--gap);
+  align-items: start;
+}
+
+.slide[data-layout="split"] > .col {
+  grid-column: 1 / 6;
+  align-self: stretch;
+  gap: calc(var(--gap) * 0.8);
+}
+
+.slide[data-layout="split"] > .col > .numeral {
+  margin-bottom: calc(var(--gap) * 0.4);
+}
+
+.slide[data-layout="split"] > .stage {
+  grid-column: 6 / -1;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+}
+
+/* @layout title
+<section class="slide" data-layout="title">
+  <h2 class="slide-title">A skeleton for a section with no beats</h2>
+</section>
+*/
+.slide[data-layout="title"] {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.slide[data-layout="title"] > .slide-title {
+  max-width: 80%;
+  font-size: calc(var(--size-title) * 1.5);
+}
+
+/* @layout default
+<section class="slide" data-layout="default">
+  <h2 class="slide-title">A skeleton, as dekc sync writes it</h2>
+  <ul>
+    <li data-step="1">One beat per ruled line</li>
+    <li data-step="2">The next beat</li>
+  </ul>
+</section>
+*/
+.slide[data-layout="default"] {
+  display: flex;
+  flex-direction: column;
+}
+
+.slide[data-layout="default"] > ul {
+  margin-top: calc(var(--gap) * 1.4);
+  border-top: var(--rule) solid var(--line);
+}
+
+.slide[data-layout="default"] > ul > li {
+  padding: calc(var(--gap) * 0.55) 0;
+  border-bottom: var(--hair) solid var(--line-soft);
+  font-size: var(--size-lede);
+}
+
+/* Shared figure patterns (why-dek handout). */
+.slide .problem {
+  grid-column: span 6;
+  min-height: var(--card-h);
+  padding: calc(var(--gap) * 0.6) calc(var(--gap) * 0.7) calc(var(--gap) * 0.7);
+  background: var(--paper-deep);
+  border-top: var(--rule) solid var(--accent);
+}
+
+.slide .problem.is-third {
+  grid-column: span 4;
+}
+
+.slide .problem-n {
+  font-size: var(--size-caption);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+}
+
+.slide .problem h3 {
+  margin: calc(var(--gap) * 0.1) 0 calc(var(--gap) * 0.25);
+  font-size: calc(var(--size-title) * 0.75);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.slide .cost {
+  margin-top: calc(var(--gap) * 0.5);
+  padding-top: calc(var(--gap) * 0.4);
+  border-top: var(--hair) solid var(--line-soft);
+  font-size: var(--size-body);
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.slide .flow-label {
+  grid-column: 1 / -1;
+  margin-bottom: calc(var(--gap) * 0.4);
+  color: var(--accent);
+}
+
+.slide .flow {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+}
+
+.slide .flow li {
+  grid-column: span 3;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(var(--gap) * 0.2);
+  padding: calc(var(--gap) * 0.6) calc(var(--gap) * 0.7) calc(var(--gap) * 0.7);
+  background: var(--paper-deep);
+  border-top: var(--rule) solid var(--accent);
+}
+
+.slide .flow li.is-quarter {
+  grid-column: span 4;
+}
+
+.slide .flow li + li::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: calc(var(--gap) * -0.5 - var(--arrow) / 2);
+  width: 0;
+  height: 0;
+  border-top: calc(var(--arrow) / 2) solid transparent;
+  border-bottom: calc(var(--arrow) / 2) solid transparent;
+  border-left: var(--arrow) solid var(--fg);
+  transform: translate(25%, -50%);
+}
+
+.slide .flow .first {
+  background: var(--fg);
+  color: var(--bg);
+  border-top-color: var(--fg);
+}
+
+.slide .flow .first .problem-n {
+  color: var(--bg);
+}
+
+.slide .flow .first .chip {
+  border-color: var(--bg);
+}
+
+.slide .flow h3 {
+  font-size: calc(var(--size-title) * 0.8);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.slide .takeaways li {
+  grid-column: span 4;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--gap) * 0.45);
+  padding-top: calc(var(--gap) * 0.5);
+  border-top: var(--rule) solid var(--line);
+}
+
+.slide .big-n {
+  font-size: var(--size-hero);
+  font-weight: 800;
+  line-height: 0.85;
+  letter-spacing: -0.04em;
+  color: var(--accent);
+}
+
+.slide .takeaways h3 {
+  font-size: var(--size-title);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.slide .see {
+  margin-top: calc(var(--gap) * 0.3);
+  padding-top: calc(var(--gap) * 0.3);
+  border-top: var(--hair) solid var(--line-soft);
+  font-size: var(--size-caption);
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.slide .takeaways .closing {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  align-self: end;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-top: calc(var(--gap) * 0.5);
+  border-top: var(--hair) solid var(--line);
+  font-size: var(--size-lede);
+  font-weight: 800;
+}
+
+.slide[data-layout="page"] > .stage.takeaways,
+.slide[data-layout="page"] > .stage:has(.takeaways) {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+/* Beats: hidden until reached, with no layout shift, so every beat measures the same. */
+.slide.is-current [data-step] {
+  opacity: 0;
+  transform: translateY(var(--rise));
+  transition:
+    opacity var(--step-transition),
+    transform var(--step-transition);
+}
+
+.slide.is-current [data-step].is-shown {
+  opacity: 1;
+  transform: none;
+}
+
+/* Page turn: the old page holds still and the new one is wiped in from the right over it, like a sheet laid down. */
+@keyframes page-in {
+  from {
+    clip-path: inset(0 0 0 100%);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes page-hold {
+  from,
+  to {
+    opacity: 1;
+  }
+}
+
+::view-transition-old(slide),
+::view-transition-new(slide),
+::view-transition-group(*) {
+  --page-transition: 0.55s cubic-bezier(0.7, 0, 0.2, 1) both;
+  --morph: 0.7s;
+}
+
+::view-transition-old(slide) {
+  animation: page-hold var(--page-transition);
+}
+
+::view-transition-new(slide) {
+  animation: page-in var(--page-transition);
+}
+
+::view-transition-group(*) {
+  --morph-ease: cubic-bezier(0.6, 0, 0.2, 1);
+  animation-duration: var(--morph);
+  animation-timing-function: var(--morph-ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slide.is-current [data-step] {
+    transition: none;
+    transform: none;
+  }
+
+  ::view-transition-old(slide),
+  ::view-transition-new(slide),
+  ::view-transition-group(*) {
+    animation: none;
+  }
+}

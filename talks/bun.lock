@@ -1,0 +1,38 @@
+{
+  "lockfileVersion": 2,
+  "configVersion": 1,
+  "workspaces": {
+    "": {
+      "devDependencies": {
+        "@hajimism/dek": "0.3.1",
+        "playwright": "^1.64.0",
+        "rumdl": "^0.2.78",
+      },
+    },
+  },
+  "packages": {
+    "@hajimism/dek": ["@hajimism/dek@0.3.1", "https://npm.flatt.tech/@hajimism/dek/-/dek-0.3.1.tgz", { "dependencies": { "zod": "^4.6.5" }, "bin": { "dekc": "src/cli.ts" } }, "sha512-qKqaCCz55eV8r5fHV8tOE9Dk2avfeozkB3TkxGC0rpTQbQ5CCWWVGN2atqnFDwk0gfULlN91k6+c53DpI9nWOA=="],
+
+    "@rumdl/cli-darwin-arm64": ["@rumdl/cli-darwin-arm64@0.2.78", "https://npm.flatt.tech/@rumdl/cli-darwin-arm64/-/cli-darwin-arm64-0.2.78.tgz", { "os": "darwin", "cpu": "arm64" }, "sha512-wuY7EL6Eda+2LyrOROr1OsenfxASDX/Zo8yel6HTmulhpUmjR1G4Bfr45KRii4pSr1e+WlGAgOejHY+AVT7suw=="],
+
+    "@rumdl/cli-darwin-x64": ["@rumdl/cli-darwin-x64@0.2.78", "https://npm.flatt.tech/@rumdl/cli-darwin-x64/-/cli-darwin-x64-0.2.78.tgz", { "os": "darwin", "cpu": "x64" }, "sha512-L1Zz8/0i0qwkncx3/SirHsTQDgqav4R91wp9EFVcp54mKxbpOejZm14/dCzJ0LRzypkBRNECmCYG4H86g6gTiA=="],
+
+    "@rumdl/cli-linux-arm64": ["@rumdl/cli-linux-arm64@0.2.78", "https://npm.flatt.tech/@rumdl/cli-linux-arm64/-/cli-linux-arm64-0.2.78.tgz", { "os": "linux", "cpu": "arm64" }, "sha512-j3r4Fe8+iydQSLUlko5apW4bvLITvD+Kqp848kZE7NzGhgKPRTlm9nFqrpQnZ2dBWjBCxa5Lj4b3O7BjdWRo1Q=="],
+
+    "@rumdl/cli-linux-arm64-musl": ["@rumdl/cli-linux-arm64-musl@0.2.78", "https://npm.flatt.tech/@rumdl/cli-linux-arm64-musl/-/cli-linux-arm64-musl-0.2.78.tgz", { "os": "linux", "cpu": "arm64" }, "sha512-1zRG9dOGiasBR4R8/qAoMzVRBjT9yeB8ysCoXemJHM5KiRJidw6NM336BOkAT4Ujj/FWgZcpCLE/iQBvtItnmw=="],
+
+    "@rumdl/cli-linux-x64": ["@rumdl/cli-linux-x64@0.2.78", "https://npm.flatt.tech/@rumdl/cli-linux-x64/-/cli-linux-x64-0.2.78.tgz", { "os": "linux", "cpu": "x64" }, "sha512-zkrnqmxV+/eBDVg98TDPW3ZSL8CfXjwm1QsOO/vEREa5cgbE03iUP1D/UJE3z4Rypv2GRcnRiOtgsuhhebOEgA=="],
+
+    "@rumdl/cli-linux-x64-musl": ["@rumdl/cli-linux-x64-musl@0.2.78", "https://npm.flatt.tech/@rumdl/cli-linux-x64-musl/-/cli-linux-x64-musl-0.2.78.tgz", { "os": "linux", "cpu": "x64" }, "sha512-E477aK9qrunFkE4XTNZLrfz5BU4KS+W13VnjTv5Qh8fdxlAVxlh6aWoYB7BzbzXQSEgNe/yi1u3r3EHcwgP+dw=="],
+
+    "@rumdl/cli-win32-x64": ["@rumdl/cli-win32-x64@0.2.78", "https://npm.flatt.tech/@rumdl/cli-win32-x64/-/cli-win32-x64-0.2.78.tgz", { "os": "win32", "cpu": "x64" }, "sha512-4DaBXu3tFVNc/2eflJADguC4Hf8ookxYh3ie7XsLFxYEJrfXeGqD1j1ZIVXg+dZDG22+R1VEwFT6JsCOG3ntWA=="],
+
+    "playwright": ["playwright@1.64.0", "https://npm.flatt.tech/playwright/-/playwright-1.64.0.tgz", { "dependencies": { "playwright-core": "1.64.0" }, "bin": { "playwright": "cli.js" } }, "sha512-kVzTnYFYEyQ9RGzBjNCd2+yEqWmVbxl3AHPynv3qQ6JTjv4a+kwRcnqQwIpuP3NnrnIrE/Q6wWAIAvMfIE2/Yg=="],
+
+    "playwright-core": ["playwright-core@1.64.0", "https://npm.flatt.tech/playwright-core/-/playwright-core-1.64.0.tgz", { "bin": { "playwright-core": "cli.js" } }, "sha512-T9r+MZkTECl2+oUcZ26YgZzTrYidTsIhYYkJix+6iDOymOb1FB2RLLSOxRGnZGv5DStt+aduIVbt+E8WygXYpg=="],
+
+    "rumdl": ["rumdl@0.2.78", "https://npm.flatt.tech/rumdl/-/rumdl-0.2.78.tgz", { "optionalDependencies": { "@rumdl/cli-darwin-arm64": "0.2.78", "@rumdl/cli-darwin-x64": "0.2.78", "@rumdl/cli-linux-arm64": "0.2.78", "@rumdl/cli-linux-arm64-musl": "0.2.78", "@rumdl/cli-linux-x64": "0.2.78", "@rumdl/cli-linux-x64-musl": "0.2.78", "@rumdl/cli-win32-x64": "0.2.78" }, "bin": { "rumdl": "bin/rumdl" } }, "sha512-nm40qNFQnrpYiLetMrsq14qaItqKT7cUoi7wtlTtx0n/3xWn6a7/ZwkgChvBbfP24cZQYz1n5IJ+DBPIrQQfFQ=="],
+
+    "zod": ["zod@4.6.5", "https://npm.flatt.tech/zod/-/zod-4.6.5.tgz", {}, "sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q=="],
+  }
+}

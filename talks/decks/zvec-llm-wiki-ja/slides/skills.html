@@ -1,0 +1,24 @@
+<section class="slide" data-layout="page">
+  <p class="numeral"></p>
+  <h2 class="slide-title">メインのスキルは、生きた wiki を zg で回す zvec-llm-wiki です</h2>
+  <p class="lede">ソースと設計判断を <code>docs/wiki/</code> に編纂し、検索エンジンは zvec-grep の <code>zg</code> だけにします。</p>
+  <div class="stage">
+    <p class="chip-row" data-step="skills-locales">
+      <span class="chip">zvec-llm-wiki</span>
+      <span class="chip">zvec-llm-wiki-ja</span>
+      <span class="note">同挙動・別 name（ロケールは独立フォルダ）</span>
+    </p>
+    <article class="problem" data-step="skills-locales">
+      <p class="problem-n">locale</p>
+      <h3>英語と日本語</h3>
+      <p class="note">シンボリックリンクなし。挙動は揃え、自然語と name だけ変える。</p>
+    </article>
+    <article class="problem" data-step="skills-what">
+      <p class="problem-n">wiki</p>
+      <h3>何ができるか</h3>
+      <p class="note">ingest / query / lint / crystallize の運用ループ。</p>
+      <p class="cost">Query → Work → 記録 → Lint → <span class="chip">zg index</span></p>
+    </article>
+  </div>
+  <p class="source">スキル名は SKILL.md の frontmatter とフォルダ名が一致。</p>
+</section>

@@ -1,0 +1,21 @@
+<section class="slide" data-layout="split">
+  <div class="col">
+    <p class="numeral"></p>
+    <h2 class="slide-title">情報は raw、wiki、ホットメモリ、README の四層に分かれる</h2>
+    <p class="lede">どの層を触るか決まれば、エージェントも人も迷いません。</p>
+    <p class="note" data-step="layers-raw"><strong>Raw</strong> — コードは wiki に焼き込まない。</p>
+    <p class="note" data-step="layers-wiki"><strong>Wiki</strong> — コンパイル済み知識の本体。</p>
+    <p class="note" data-step="layers-agents"><strong>Hot</strong> — 毎ターンの入口。</p>
+    <p class="note" data-step="layers-readme"><strong>README</strong> — 人向けランディングのみ。</p>
+  </div>
+  <div class="stage">
+    <p class="label">上から入口へ</p>
+    <div class="stack">
+      <p class="layer" data-step="layers-readme"><strong>README.md</strong>インストーラー UI（スキルに非同梱）</p>
+      <p class="layer is-hot" data-step="layers-agents"><strong>AGENTS.md + SKILL</strong>ホットメモリとインストール済みスキル</p>
+      <p class="layer" data-step="layers-wiki"><strong>docs/wiki/</strong>index · concepts · ADR · runbook</p>
+      <p class="layer" data-step="layers-raw"><strong>raw / コード</strong>索引はするが prose にコンパイルしない</p>
+    </div>
+  </div>
+  <p class="source">レイアウトの詳細は docs/wiki/concepts/catalog-layout.md。</p>
+</section>

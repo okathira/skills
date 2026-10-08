@@ -21,6 +21,13 @@ source:
 - Each locale is a complete package; there are no cross-locale runtime dependencies.
 - Behavioral changes update every locale in the same change.
 - Root `README.md` and `README.ja.md` have the same sections and facts.
+- Catalog talks live under `talks/decks/<name>/` (English) and
+  `talks/decks/<name>-ja/` (Japanese). Same slide structure and beat ids;
+  each deck is a standalone copy (no shared theme across locales).
+- When catalog facts that the talks describe change (catalog role, skill loop,
+  layers, install vs bootstrap, locale policy), update both talk decks in the
+  same change as the skill locales and the README pair. Run `bunx dekc lint`
+  from `talks/` (use `--visual` when slides changed).
 
 ## Wiki workflow
 

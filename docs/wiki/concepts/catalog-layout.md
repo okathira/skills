@@ -17,23 +17,26 @@ source:
 ## Layout
 
 ```text
+README.md
+README.ja.md
 skills/
-  README.md
-  README.ja.md
-  skills/
+  zvec-llm-wiki/
     zvec-llm-wiki/
-      zvec-llm-wiki/
-      zvec-llm-wiki-ja/
-  docs/wiki/
-    index.md
-    log.md
-    sources/
-    entities/
-    concepts/
-    analyses/
-    decisions/
-    runbooks/
-  AGENTS.md
+    zvec-llm-wiki-ja/
+talks/                    # dek project (presentations, not skill packages)
+  decks/
+    zvec-llm-wiki/
+    zvec-llm-wiki-ja/
+docs/wiki/
+  index.md
+  log.md
+  sources/
+  entities/
+  concepts/
+  analyses/
+  decisions/
+  runbooks/
+AGENTS.md
 ```
 
 Skill packages are self-contained folders with `SKILL.md`, `install/`, `scripts/`, `references/`, and `templates/`.
@@ -44,6 +47,7 @@ Skill packages are self-contained folders with `SKILL.md`, `install/`, `scripts/
 - **Wiki:** living project knowledge under `docs/wiki/`.
 - **Schema / hot memory:** the marked block in `AGENTS.md` plus the installed skill.
 - **Human landing pages:** root `README.md` and `README.ja.md` remain outside the wiki as installer UI.
+- **Talks:** `talks/` is a [dek](https://github.com/hajimism/dek) project for catalog presentations; decks are locale-paired like skills (`zvec-llm-wiki` / `zvec-llm-wiki-ja`).
 
 ## Install vs bootstrap
 
