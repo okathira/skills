@@ -27,7 +27,8 @@ source:
 | **Frontmatter** | The YAML block between `---` at the top of a wiki page. Home for `status`, `aliases`, `source`, and ADR lifecycle. |
 | **Hot memory** | Short `AGENTS.md` block loaded every session. |
 | **Ingest** | Compile an immutable source into maintained source/entity/concept/analysis pages. |
-| **Install** | Copy a skill package into an agent skill directory (`install.sh`). Distinct from bootstrap. |
+| **Install** | Copy a skill package into an agent skill directory (`install.sh`). Default: `.agents/skills/` in the repo (commit). Distinct from bootstrap. |
+| **Project MCP** | Committed `.cursor/mcp.json` / `.mcp.json` wiring agents to local zvec-grep; distinct from user-level `zg install`. |
 | **Involved write** | Show the intended pages, then edit unless the user stops. Not a wiki write-lock. |
 | **LLM Wiki** | Karpathy's persistent, interlinked Markdown compiled from raw sources. This skill uses zg only. |
 | **One home** | One maintained page per fact; link instead of copying. |

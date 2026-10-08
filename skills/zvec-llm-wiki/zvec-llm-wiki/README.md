@@ -28,28 +28,29 @@ The skill `name` is `zvec-llm-wiki` and matches this folder. `install.sh` copies
 
 Two setup steps — do not confuse them:
 
-1. **Install the skill** (once per machine or per repo) — `install/install.sh`
+1. **Install the skill** (per repo; commit `.agents/skills/`) — `install/install.sh`
 2. **Bootstrap a target repo** (once per project) — `scripts/zg-bootstrap.sh`
 
 ## 1. Install the skill
 
-Copies the skill into `.agents/skills/zvec-llm-wiki` (Cursor, Codex, OpenCode) or optionally `.claude/skills/` (Claude Code).
+Copies the skill into `.agents/skills/zvec-llm-wiki` (Cursor, Codex, OpenCode) by default, or optionally `.claude/skills/` (Claude Code). **Commit** the project install so teammates and Cloud Agents share the same revision.
 
 ```bash
-# User-wide (default) — Cursor / Codex / OpenCode
-sh skills/zvec-llm-wiki/zvec-llm-wiki/install/install.sh
-
-# Project-scoped — team repos, Cloud Agents
 cd your-repo
-sh /path/to/skills/skills/zvec-llm-wiki/zvec-llm-wiki/install/install.sh --project
 
-# Also install for Claude Code
+# Project (default) — team repos, Cloud Agents
+sh /path/to/skills/skills/zvec-llm-wiki/zvec-llm-wiki/install/install.sh
+
+# User-wide on one machine
+sh skills/zvec-llm-wiki/zvec-llm-wiki/install/install.sh --user
+
+# Also install for Claude Code (native path)
 sh skills/zvec-llm-wiki/zvec-llm-wiki/install/install.sh --claude
-sh skills/zvec-llm-wiki/zvec-llm-wiki/install/install.sh --project --claude
+sh skills/zvec-llm-wiki/zvec-llm-wiki/install/install.sh --user --claude
 ```
 
 Use `--force` to overwrite an existing install. After updating this catalog, re-run with
-`--force` so `~/.agents/skills/` (or `.agents/skills/` in a project) picks up changes.
+`--force` and commit `.agents/skills/` (or refresh `~/.agents/skills/` when using `--user`).
 
 On Windows, run from Git Bash or another POSIX shell.
 
@@ -81,9 +82,10 @@ zg help models
 npx --yes @zvec/zvec-grep help models
 ```
 
-If `zg` is missing, the script runs `npm install -g @zvec/zvec-grep` before `zg install`.
-MCP stdio config always launches the `zg` binary (`zg install` does not install the npm package),
-so an npx-only bootstrap would leave agents with `command not found: zg`. For a new wiki it creates
+Bootstrap upserts **committed** `.cursor/mcp.json` and `.mcp.json` with `npx @zvec/zvec-grep server --stdio`
+so agents do not require a global `zg`. The CLI uses `zg` on PATH or `npx @zvec/zvec-grep`.
+Pass `--target codex` (etc.) for optional user-level `zg install`; Cursor/Claude use the project MCP files.
+For a new wiki it creates
 a useful registry, operation log, and category directories without empty stubs; an existing wiki is
 untouched. It then upserts `AGENTS.md` hot memory and builds the first index with zg default file
 discovery. Restart the agent after MCP configuration.

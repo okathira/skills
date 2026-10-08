@@ -2,12 +2,14 @@
 # Install the zvec-llm-wiki skill into agent skill directories.
 #
 # Usage:
-#   install.sh              # ~/.agents/skills/zvec-llm-wiki
-#   install.sh --project    # .agents/skills/ in the current repo
+#   install.sh              # .agents/skills/ in the current repo (default)
+#   install.sh --user       # ~/.agents/skills/zvec-llm-wiki
+#   install.sh --project    # same as default (compatibility alias)
 #   install.sh --claude     # also copy to .claude/skills/ (Claude Code)
 #   install.sh --force      # overwrite an existing install
 #
 # Cursor, Codex, and OpenCode read .agents/skills/. Claude Code reads .claude/skills/.
+# Commit project installs so Cloud Agents and teammates share the same skill revision.
 # On Windows, run from Git Bash or another POSIX shell.
 #
 set -e
@@ -16,23 +18,27 @@ SCRIPT_DIR=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
 ROOT_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
 SKILL_NAME=zvec-llm-wiki
 
-PROJECT=0
+USER_SCOPE=0
 CLAUDE=0
 FORCE=0
+PROJECT_EXPLICIT=0
 
 usage() {
   cat <<'EOF'
-Usage: install.sh [--project] [--claude] [--force]
+Usage: install.sh [--user | --project] [--claude] [--force]
 
-  --project   Install to .agents/skills/ in the current directory
-  --claude    Also install to .claude/skills/ (same scope as --project or user)
+  (default)   Install to .agents/skills/ in the current directory (commit in team repos)
+  --user      Install to ~/.agents/skills/ instead
+  --project   Same as default (compatibility alias)
+  --claude    Also install to .claude/skills/ (same scope as default or --user)
   --force     Overwrite an existing installation
 EOF
 }
 
 while [ $# -gt 0 ]; do
   case "$1" in
-    --project) PROJECT=1 ;;
+    --user) USER_SCOPE=1 ;;
+    --project) PROJECT_EXPLICIT=1 ;;
     --claude) CLAUDE=1 ;;
     --force) FORCE=1 ;;
     -h|--help)
@@ -47,6 +53,11 @@ while [ $# -gt 0 ]; do
   esac
   shift
 done
+
+if [ "$USER_SCOPE" -eq 1 ] && [ "$PROJECT_EXPLICIT" -eq 1 ]; then
+  echo "error: --user and --project cannot be used together" >&2
+  exit 1
+fi
 
 if [ ! -f "$ROOT_DIR/SKILL.md" ]; then
   echo "error: skill package not found at $ROOT_DIR" >&2
@@ -69,15 +80,15 @@ copy_skill() {
 
 HOME_DIR=${HOME:-$(cd ~ && pwd)}
 
-if [ "$PROJECT" -eq 1 ]; then
-  copy_skill ".agents/skills/$SKILL_NAME"
-  if [ "$CLAUDE" -eq 1 ]; then
-    copy_skill ".claude/skills/$SKILL_NAME"
-  fi
-else
+if [ "$USER_SCOPE" -eq 1 ]; then
   copy_skill "$HOME_DIR/.agents/skills/$SKILL_NAME"
   if [ "$CLAUDE" -eq 1 ]; then
     copy_skill "$HOME_DIR/.claude/skills/$SKILL_NAME"
+  fi
+else
+  copy_skill ".agents/skills/$SKILL_NAME"
+  if [ "$CLAUDE" -eq 1 ]; then
+    copy_skill ".claude/skills/$SKILL_NAME"
   fi
 fi
 

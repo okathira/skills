@@ -2,12 +2,14 @@
 # zvec-llm-wiki-ja スキルをエージェントのスキルディレクトリへインストールする。
 #
 # 使い方:
-#   install.sh              # ~/.agents/skills/zvec-llm-wiki-ja
-#   install.sh --project    # 現在のリポジトリの .agents/skills/
+#   install.sh              # 現在のリポジトリの .agents/skills/（既定）
+#   install.sh --user       # ~/.agents/skills/zvec-llm-wiki-ja
+#   install.sh --project    # 既定と同じ（互換用）
 #   install.sh --claude     # .claude/skills/ にもコピー（Claude Code）
 #   install.sh --force      # 既存インストールを上書き
 #
 # Cursor、Codex、OpenCode は .agents/skills/ を読む。Claude Code は .claude/skills/ を読む。
+# プロジェクトへのインストールはコミットし、Cloud Agents とチームが同じ版を共有する。
 # Windows では Git Bash など POSIX シェルから実行する。
 #
 set -e
@@ -16,23 +18,27 @@ SCRIPT_DIR=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
 ROOT_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
 SKILL_NAME=zvec-llm-wiki-ja
 
-PROJECT=0
+USER_SCOPE=0
 CLAUDE=0
 FORCE=0
+PROJECT_EXPLICIT=0
 
 usage() {
   cat <<'EOF'
-使い方: install.sh [--project] [--claude] [--force]
+使い方: install.sh [--user | --project] [--claude] [--force]
 
-  --project   カレントディレクトリの .agents/skills/ へインストール
-  --claude    .claude/skills/ にもインストール（--project と同じスコープ、またはユーザー全体）
+  （既定）    カレントディレクトリの .agents/skills/ へ（チームリポジトリではコミット）
+  --user      ~/.agents/skills/ へ
+  --project   既定と同じ（互換用）
+  --claude    .claude/skills/ にもインストール（既定または --user と同じスコープ）
   --force     既存インストールを上書き
 EOF
 }
 
 while [ $# -gt 0 ]; do
   case "$1" in
-    --project) PROJECT=1 ;;
+    --user) USER_SCOPE=1 ;;
+    --project) PROJECT_EXPLICIT=1 ;;
     --claude) CLAUDE=1 ;;
     --force) FORCE=1 ;;
     -h|--help)
@@ -47,6 +53,11 @@ while [ $# -gt 0 ]; do
   esac
   shift
 done
+
+if [ "$USER_SCOPE" -eq 1 ] && [ "$PROJECT_EXPLICIT" -eq 1 ]; then
+  echo "エラー: --user と --project は同時に指定できません" >&2
+  exit 1
+fi
 
 if [ ! -f "$ROOT_DIR/SKILL.md" ]; then
   echo "エラー: スキルパッケージが見つかりません: $ROOT_DIR" >&2
@@ -69,15 +80,15 @@ copy_skill() {
 
 HOME_DIR=${HOME:-$(cd ~ && pwd)}
 
-if [ "$PROJECT" -eq 1 ]; then
-  copy_skill ".agents/skills/$SKILL_NAME"
-  if [ "$CLAUDE" -eq 1 ]; then
-    copy_skill ".claude/skills/$SKILL_NAME"
-  fi
-else
+if [ "$USER_SCOPE" -eq 1 ]; then
   copy_skill "$HOME_DIR/.agents/skills/$SKILL_NAME"
   if [ "$CLAUDE" -eq 1 ]; then
     copy_skill "$HOME_DIR/.claude/skills/$SKILL_NAME"
+  fi
+else
+  copy_skill ".agents/skills/$SKILL_NAME"
+  if [ "$CLAUDE" -eq 1 ]; then
+    copy_skill ".claude/skills/$SKILL_NAME"
   fi
 fi
 
