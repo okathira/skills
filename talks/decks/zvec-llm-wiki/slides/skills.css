@@ -1,0 +1,8 @@
+.chip-row {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: calc(var(--gap) * 0.35);
+  margin-bottom: calc(var(--gap) * 0.6);
+}

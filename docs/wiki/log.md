@@ -2,6 +2,14 @@
 
 Append-only timeline for substantial wiki operations. Use `## [YYYY-MM-DD] kind | title`; record ingest, lint, crystallize, and large record operations, not routine queries.
 
+## [2026-10-08] record | Bilingual catalog talk decks
+
+- Renamed the Japanese dek deck to `talks/decks/zvec-llm-wiki-ja/`; added English
+  `talks/decks/zvec-llm-wiki/` with the same slide structure and beat ids.
+- [Conventions](concepts/conventions.md), [catalog layout](concepts/catalog-layout.md),
+  root README pair, `AGENTS.md` hot memory, and `talks/README` pair now require both
+  talk decks to move together when catalog facts the talks describe change.
+
 ## [2026-10-07] record | deciders shapes and Node pin
 
 - Documented ADR `deciders` identifier shape rules in both skill `wiki-workflow` page contracts; [Conventions](concepts/conventions.md) links there; added **Deciders** and **Owner** to [Glossary](concepts/glossary.md).

@@ -1,0 +1,8 @@
+{
+  "dependencies": {},
+  "devDependencies": {
+    "@hajimism/dek": "0.3.1",
+    "playwright": "^1.64.0",
+    "rumdl": "^0.2.78"
+  }
+}

@@ -1,0 +1,31 @@
+<section class="slide" data-layout="page">
+  <p class="numeral"></p>
+  <h2 class="slide-title">知識は Query から index まで、同じループで積み上がる</h2>
+  <p class="lede">調べて動き、記録して lint し、wiki を触ったら索引を差分更新する。これが毎ターンの型です。</p>
+  <div class="stage">
+    <p class="label flow-label">zvec-llm-wiki のループ</p>
+    <ol class="flow">
+      <li class="first" data-step="loop-query">
+        <p class="problem-n">1</p>
+        <h3>Query</h3>
+        <p class="chip">index.md → zg → rg</p>
+      </li>
+      <li data-step="loop-work">
+        <p class="problem-n">2</p>
+        <h3>Work</h3>
+        <p class="chip">実装・調査</p>
+      </li>
+      <li data-step="loop-ingest">
+        <p class="problem-n">3</p>
+        <h3>Ingest</h3>
+        <p class="chip">ページ案 → 編集</p>
+      </li>
+      <li data-step="loop-lint">
+        <p class="problem-n">4</p>
+        <h3>Lint + index</h3>
+        <p class="chip">zg index</p>
+      </li>
+    </ol>
+  </div>
+  <p class="source">破壊的な index 操作は明示の承認が必要（SKILL.md）。</p>
+</section>

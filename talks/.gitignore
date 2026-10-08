@@ -1,0 +1,8 @@
+# dek
+dist/
+.cache/
+.dek/server.json
+.dek/marks.json
+.dek/annotations.json
+node_modules/
+refs/

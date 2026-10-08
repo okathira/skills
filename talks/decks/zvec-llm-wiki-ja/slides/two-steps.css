@@ -1,0 +1,24 @@
+.pairs {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap);
+  margin-top: calc(var(--gap) * 0.5);
+}
+
+.pair {
+  padding: calc(var(--gap) * 0.65);
+  background: var(--paper-deep);
+  border-top: var(--rule) solid var(--accent);
+}
+
+.pair h3 {
+  font-size: calc(var(--size-title) * 0.72);
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: calc(var(--gap) * 0.35);
+}
+
+.pair .chip {
+  margin-top: calc(var(--gap) * 0.25);
+}
