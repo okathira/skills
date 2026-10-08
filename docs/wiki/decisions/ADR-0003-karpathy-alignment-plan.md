@@ -1,7 +1,8 @@
 ---
 status: accepted
 date: 2026-09-08
-deciders: takahiro.imai
+deciders:
+  - owner
 aliases:
   - Karpathy alignment
   - ADR-0003

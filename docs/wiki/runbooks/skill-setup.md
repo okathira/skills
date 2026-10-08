@@ -16,7 +16,7 @@ source:
 
 ## Prerequisites
 
-- Node.js 22+
+- Node.js 22+; this catalog pins dogfood Node in the repo-root `.node-version` (version managers that read that file pick it up automatically).
 - POSIX shell (Git Bash on Windows)
 
 ## 1. Install the skill (once per machine)

@@ -54,7 +54,8 @@ supported. Use relative `.md` links, never `[[wikilinks]]`.
 - Find existing homes using wiki-scoped hybrid plus rg on exact aliases.
 - Deep-compile documents into a few short pages; shallow-index code without compiling it.
 - Put `status` and `aliases` in the page frontmatter (the YAML block between `---`). Add
-  `source` when there is provenance. ADR pages also put `date` and `deciders` there. Do not
+  `source` when there is provenance. ADR pages also put `date` and `deciders` there (`deciders` is a
+  list of `@handle`, email, `owner`, or `agent:<name>`). Do not
   copy those keys into headings or body prose (no `## Aliases`, no Source section that repeats
   `source`). Omit keys with no value (`superseded_by` only when replaced).
 - Treat aliases as ubiquitous language: about 3–6 high-signal names for the fact this page owns,

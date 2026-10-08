@@ -59,7 +59,8 @@ ingest 前に Markdown へ変換すること。PDF のネイティブ ingest は
 - wiki スコープの hybrid と完全一致 alias の rg で既存ホームを探す。
 - 文書は少数の短いページへ深く編纂し、コードは編纂せず浅く索引する。
 - 各ページ先頭の frontmatter（`---` で囲む YAML）に `status` と `aliases` を置く。来歴があれば
-  `source` も置く。ADR なら `date` と `deciders` もここ。同じキーを見出しや本文へ写さない
+  `source` も置く。ADR なら `date` と `deciders` もここ（`deciders` は `@handle`、メール、`owner`、
+  `agent:<name>` のリスト）。同じキーを見出しや本文へ写さない
   （`## Aliases` や、`source` を繰り返す Source 節は置かない）。値のないキーは書かない
   （`superseded_by` は置き換え時だけ）。
 - aliases はユビキタス言語: そのページが所有する事実の高シグナルな名前をおおよそ 3–6 個、
