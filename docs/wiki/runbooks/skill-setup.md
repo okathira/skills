@@ -59,7 +59,7 @@ Optional user-level agents (Codex, OpenCode, …):
 bash skills/zvec-llm-wiki/zvec-llm-wiki/scripts/zg-bootstrap.sh --target codex opencode
 ```
 
-Bootstrap does **not** run user-level `zg install` when `--target` is omitted. Cursor and Claude use the committed project MCP files instead of `~/.cursor/mcp.json` / user Claude config.
+Bootstrap does **not** run user-level `zg install` when `--target` is omitted. Cursor and Claude use the committed project MCP files instead of `~/.cursor/mcp.json` / user Claude config. Re-running the project upsert updates the `zvec_grep` command and args, keeps compatible fields such as `env`, and stops if that server is already an HTTP transport. When `--target` names a user-level agent and `zg` is not on PATH, bootstrap installs `@zvec/zvec-grep` globally and checks that `zg` launches before `zg install` writes `command: zg`.
 
 Supported embeddings are whatever the installed zg lists — do not copy a model table into this wiki. Inspect the catalog:
 

@@ -22,7 +22,9 @@ Usage: zg-bootstrap.sh [--target <agent>]... [--embedding <model>]
                        (if zg is not on PATH: npx --yes @zvec/zvec-grep help models)
 
 With no --target, upserts committed project MCP (.cursor/mcp.json, .mcp.json) only.
-Pass --target codex (etc.) for user-level zg install; cursor/claude use the project files.
+Pass --target codex (etc.) for user-level zg install. If zg is not on PATH, this
+installs @zvec/zvec-grep globally and checks that zg launches. cursor/claude use
+the project files.
 Requires Node.js 22+.
 EOF
 }
@@ -119,6 +121,7 @@ EOF
 }
 
 # Team-shareable MCP (Cursor + Claude Code). Uses npx so teammates need not install zg globally.
+# Re-runs update command/args, keep compatible fields (for example env), and refuse HTTP transports.
 upsert_project_mcp() {
   local rel_path="$1"
   mkdir -p "$(dirname "$rel_path")"
@@ -129,6 +132,19 @@ const entry = {
   command: "npx",
   args: ["--yes", "@zvec/zvec-grep", "server", "--stdio", "--mcp-toolset", "agent"],
 };
+
+function isHttpTransport(server) {
+  if (typeof server.url === "string" || typeof server.httpUrl === "string") return true;
+  const type = typeof server.type === "string" ? server.type.toLowerCase() : "";
+  return (
+    type === "http" ||
+    type === "sse" ||
+    type === "streamable-http" ||
+    type === "streamable_http" ||
+    type === "remote"
+  );
+}
+
 let root = {};
 if (fs.existsSync(path)) {
   try {
@@ -138,10 +154,29 @@ if (fs.existsSync(path)) {
     process.exit(1);
   }
 }
-if (!root.mcpServers || typeof root.mcpServers !== "object") {
+if (!root || typeof root !== "object" || Array.isArray(root)) {
+  console.error(`error: ${path} must contain a JSON object`);
+  process.exit(1);
+}
+if (!root.mcpServers || typeof root.mcpServers !== "object" || Array.isArray(root.mcpServers)) {
   root.mcpServers = {};
 }
-root.mcpServers.zvec_grep = entry;
+const existing = root.mcpServers.zvec_grep;
+if (existing && typeof existing === "object" && !Array.isArray(existing)) {
+  if (isHttpTransport(existing)) {
+    console.error(
+      `error: ${path} mcpServers.zvec_grep uses an HTTP transport. Refusing to merge it into the stdio npx entry; migrate that server explicitly.`,
+    );
+    process.exit(1);
+  }
+  root.mcpServers.zvec_grep = {
+    ...existing,
+    command: entry.command,
+    args: entry.args,
+  };
+} else {
+  root.mcpServers.zvec_grep = entry;
+}
 fs.writeFileSync(path, `${JSON.stringify(root, null, 2)}\n`);
 NODE
   say "Updated project MCP: $rel_path (commit for teammates and Cloud Agents)"
@@ -156,6 +191,29 @@ filter_user_install_targets() {
       *) FILTERED_TARGETS+=("$t") ;;
     esac
   done
+}
+
+# zg install writes command "zg". A one-shot npx invocation does not leave that binary on PATH.
+ensure_persistent_zg() {
+  if command -v zg >/dev/null 2>&1; then
+    ZG=(zg)
+    return 0
+  fi
+  if ! command -v npm >/dev/null 2>&1; then
+    echo "error: user-level targets need zg on PATH, and npm is not available to install it." >&2
+    exit 1
+  fi
+  say "Installing @zvec/zvec-grep globally so user-level agents can launch zg"
+  npm install -g @zvec/zvec-grep
+  hash -r
+  if ! command -v zg >/dev/null 2>&1 || ! zg --version >/dev/null 2>&1; then
+    local prefix
+    prefix="$(npm prefix -g 2>/dev/null || true)"
+    echo "error: installed @zvec/zvec-grep, but zg does not launch. Add ${prefix:-the npm global bin directory} to PATH, then rerun." >&2
+    exit 1
+  fi
+  ZG=(zg)
+  say "Using zg ($(zg --version 2>/dev/null || echo unknown))"
 }
 
 # 1) Node.js 22+ check --------------------------------------------------------
@@ -196,6 +254,7 @@ else
   filter_user_install_targets
   if [[ ${#FILTERED_TARGETS[@]} -gt 0 ]]; then
     say "Configuring user-level agent integration: ${FILTERED_TARGETS[*]} (cursor/claude use committed project MCP)"
+    ensure_persistent_zg
     INSTALL_CMD=("${ZG[@]}" install --yes)
     for target in "${FILTERED_TARGETS[@]}"; do
       INSTALL_CMD+=(--target "$target")

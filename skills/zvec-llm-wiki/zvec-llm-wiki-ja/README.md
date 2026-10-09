@@ -81,7 +81,7 @@ zg help models
 npx --yes @zvec/zvec-grep help models
 ```
 
-ブートストラップは **コミットする** `.cursor/mcp.json` と `.mcp.json` を `npx @zvec/zvec-grep server --stdio` で upsert するため、エージェントにグローバル `zg` は不要。CLI は PATH の `zg` または `npx @zvec/zvec-grep`。ユーザー全体の `zg install` は `--target codex` 等で任意。Cursor/Claude はプロジェクト MCP を使う。新規 wiki には空 stub なしで有用なレジストリ、操作ログ、種別ディレクトリを作り、既存 wiki には触れない。その後 `AGENTS.md` ホットメモリを upsert し、zg デフォルト探索で最初のインデックスを構築する。MCP 設定後にエージェントを再起動する。
+ブートストラップは **コミットする** `.cursor/mcp.json` と `.mcp.json` を `npx @zvec/zvec-grep server --stdio` で upsert するため、エージェントにグローバル `zg` は不要。再実行時はそのサーバーの command と args を更新し、`env` など互換フィールドは残す。既存の HTTP トランスポートは結合せず拒否する。CLI は PATH の `zg` または `npx @zvec/zvec-grep`。ユーザー全体の `zg install` は `--target codex` 等で任意。`zg` が PATH に無いときは `@zvec/zvec-grep` をグローバルインストールし、設定を書く前に `zg` が起動することを確認する。Cursor/Claude はプロジェクト MCP を使う。新規 wiki には空 stub なしで有用なレジストリ、操作ログ、種別ディレクトリを作り、既存 wiki には触れない。その後 `AGENTS.md` ホットメモリを upsert し、zg デフォルト探索で最初のインデックスを構築する。MCP 設定後にエージェントを再起動する。
 
 ## スキルパッケージの内容
 

@@ -83,8 +83,12 @@ npx --yes @zvec/zvec-grep help models
 ```
 
 Bootstrap upserts **committed** `.cursor/mcp.json` and `.mcp.json` with `npx @zvec/zvec-grep server --stdio`
-so agents do not require a global `zg`. The CLI uses `zg` on PATH or `npx @zvec/zvec-grep`.
-Pass `--target codex` (etc.) for optional user-level `zg install`; Cursor/Claude use the project MCP files.
+so agents do not require a global `zg`. A re-run updates that server's command and args, keeps
+compatible fields such as `env`, and refuses to merge an existing HTTP transport.
+The CLI uses `zg` on PATH or `npx @zvec/zvec-grep`.
+Pass `--target codex` (etc.) for optional user-level `zg install`. If `zg` is not on PATH, bootstrap
+installs `@zvec/zvec-grep` globally and checks that `zg` launches before writing that config.
+Cursor/Claude use the project MCP files.
 For a new wiki it creates
 a useful registry, operation log, and category directories without empty stubs; an existing wiki is
 untouched. It then upserts `AGENTS.md` hot memory and builds the first index with zg default file

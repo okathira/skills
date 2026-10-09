@@ -22,7 +22,9 @@ usage() {
                        （PATH に無いときは npx --yes @zvec/zvec-grep help models）
 
 --target なしの場合はコミット用プロジェクト MCP（.cursor/mcp.json、.mcp.json）のみ更新する。
-Codex などユーザー全体設定は --target codex 等を指定。cursor/claude はプロジェクト MCP を使う。
+Codex などユーザー全体設定は --target codex 等を指定。zg が PATH に無いときは
+@zvec/zvec-grep をグローバルインストールし、zg が起動することを確認する。
+cursor/claude はプロジェクト MCP を使う。
 Node.js 22+ が必要。
 EOF
 }
@@ -119,6 +121,7 @@ EOF
 }
 
 # チーム共有 MCP（Cursor + Claude Code）。npx 起動のため zg のグローバルインストールは不要。
+# 再実行時は command/args を更新し、env など互換フィールドは残す。HTTP トランスポートは拒否する。
 upsert_project_mcp() {
   local rel_path="$1"
   mkdir -p "$(dirname "$rel_path")"
@@ -129,6 +132,19 @@ const entry = {
   command: "npx",
   args: ["--yes", "@zvec/zvec-grep", "server", "--stdio", "--mcp-toolset", "agent"],
 };
+
+function isHttpTransport(server) {
+  if (typeof server.url === "string" || typeof server.httpUrl === "string") return true;
+  const type = typeof server.type === "string" ? server.type.toLowerCase() : "";
+  return (
+    type === "http" ||
+    type === "sse" ||
+    type === "streamable-http" ||
+    type === "streamable_http" ||
+    type === "remote"
+  );
+}
+
 let root = {};
 if (fs.existsSync(path)) {
   try {
@@ -138,10 +154,29 @@ if (fs.existsSync(path)) {
     process.exit(1);
   }
 }
-if (!root.mcpServers || typeof root.mcpServers !== "object") {
+if (!root || typeof root !== "object" || Array.isArray(root)) {
+  console.error(`エラー: ${path} は JSON オブジェクトである必要があります`);
+  process.exit(1);
+}
+if (!root.mcpServers || typeof root.mcpServers !== "object" || Array.isArray(root.mcpServers)) {
   root.mcpServers = {};
 }
-root.mcpServers.zvec_grep = entry;
+const existing = root.mcpServers.zvec_grep;
+if (existing && typeof existing === "object" && !Array.isArray(existing)) {
+  if (isHttpTransport(existing)) {
+    console.error(
+      `エラー: ${path} の mcpServers.zvec_grep は HTTP トランスポートです。stdio の npx エントリへは結合しません。明示的に移行してください。`,
+    );
+    process.exit(1);
+  }
+  root.mcpServers.zvec_grep = {
+    ...existing,
+    command: entry.command,
+    args: entry.args,
+  };
+} else {
+  root.mcpServers.zvec_grep = entry;
+}
 fs.writeFileSync(path, `${JSON.stringify(root, null, 2)}\n`);
 NODE
   say "プロジェクト MCP を更新: $rel_path（チームと Cloud Agents 向けにコミット）"
@@ -156,6 +191,29 @@ filter_user_install_targets() {
       *) FILTERED_TARGETS+=("$t") ;;
     esac
   done
+}
+
+# zg install は command に "zg" を書く。一時的な npx 実行ではその実行ファイルは PATH に残らない。
+ensure_persistent_zg() {
+  if command -v zg >/dev/null 2>&1; then
+    ZG=(zg)
+    return 0
+  fi
+  if ! command -v npm >/dev/null 2>&1; then
+    echo "エラー: ユーザー全体ターゲットには PATH 上の zg が必要ですが、インストールに使う npm がありません。" >&2
+    exit 1
+  fi
+  say "@zvec/zvec-grep をグローバルインストールします（ユーザー全体エージェントが zg を起動できるようにするため）"
+  npm install -g @zvec/zvec-grep
+  hash -r
+  if ! command -v zg >/dev/null 2>&1 || ! zg --version >/dev/null 2>&1; then
+    local prefix
+    prefix="$(npm prefix -g 2>/dev/null || true)"
+    echo "エラー: @zvec/zvec-grep をインストールしましたが、zg を起動できません。${prefix:-npm のグローバル bin} を PATH に追加して再実行してください。" >&2
+    exit 1
+  fi
+  ZG=(zg)
+  say "zg を使用 ($(zg --version 2>/dev/null || echo 不明))"
 }
 
 # 1) Node.js 22+ の確認 -------------------------------------------------------
@@ -196,6 +254,7 @@ else
   filter_user_install_targets
   if [[ ${#FILTERED_TARGETS[@]} -gt 0 ]]; then
     say "ユーザー全体のエージェント連携: ${FILTERED_TARGETS[*]}（cursor/claude はコミット済みプロジェクト MCP）"
+    ensure_persistent_zg
     INSTALL_CMD=("${ZG[@]}" install --yes)
     for target in "${FILTERED_TARGETS[@]}"; do
       INSTALL_CMD+=(--target "$target")

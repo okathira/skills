@@ -50,7 +50,8 @@ For MCP, Cursor and Claude Code recommend **committing** project configuration (
 ## Consequences
 
 - After changing skill behavior, re-run `install.sh --force` and commit `.agents/skills/` in the same change.
-- Developers may still run `zg install` for personal Codex/OpenCode config; it must not replace committed Cursor/Claude project MCP without review.
+- Developers may still run `zg install` for personal Codex/OpenCode config; it must not replace committed Cursor/Claude project MCP without review. Bootstrap `--target` installs a persistent `zg` when the binary is missing, because those user-level entries launch `zg` rather than `npx`.
+- Project MCP re-runs keep compatible `zvec_grep` fields such as `env` and refuse an existing HTTP transport instead of merging it into the stdio entry.
 - `.zvec-grep/` remains gitignored; indexes are local.
 
 ## References
