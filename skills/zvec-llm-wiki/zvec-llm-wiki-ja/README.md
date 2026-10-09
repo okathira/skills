@@ -29,27 +29,28 @@ skills/zvec-llm-wiki/zvec-llm-wiki-ja/
 
 2 つのセットアップ手順 — 混同しないこと:
 
-1. **スキルのインストール**（マシンまたはリポジトリごとに 1 回）— `install/install.sh`
+1. **スキルのインストール**（リポジトリごと; `.agents/skills/` をコミット）— `install/install.sh`
 2. **対象リポジトリのブートストラップ**（プロジェクトごとに 1 回）— `scripts/zg-bootstrap.sh`
 
 ## 1. スキルのインストール
 
-`.agents/skills/zvec-llm-wiki-ja`（Cursor、Codex、OpenCode）または任意で `.claude/skills/`（Claude Code）へコピーする。
+既定で `.agents/skills/zvec-llm-wiki-ja`（Cursor、Codex、OpenCode）へコピーする。任意で `.claude/skills/`（Claude Code）。**プロジェクトへのインストールはコミット**し、チームと Cloud Agents が同じ版を共有する。
 
 ```bash
-# ユーザー全体（デフォルト）— Cursor / Codex / OpenCode
-sh skills/zvec-llm-wiki/zvec-llm-wiki-ja/install/install.sh
-
-# プロジェクトスコープ — チームリポジトリ、Cloud Agents
 cd your-repo
-sh /path/to/skills/skills/zvec-llm-wiki/zvec-llm-wiki-ja/install/install.sh --project
+
+# プロジェクト（既定）— チーム、Cloud Agents
+sh /path/to/skills/skills/zvec-llm-wiki/zvec-llm-wiki-ja/install/install.sh
+
+# マシン全体
+sh skills/zvec-llm-wiki/zvec-llm-wiki-ja/install/install.sh --user
 
 # Claude Code 向けにもインストール
 sh skills/zvec-llm-wiki/zvec-llm-wiki-ja/install/install.sh --claude
-sh skills/zvec-llm-wiki/zvec-llm-wiki-ja/install/install.sh --project --claude
+sh skills/zvec-llm-wiki/zvec-llm-wiki-ja/install/install.sh --user --claude
 ```
 
-既存インストールを上書きするには `--force` を使う。カタログ更新後は `--force` で再実行し、`~/.agents/skills/`（またはプロジェクト内の `.agents/skills/`）に変更を反映する。
+既存インストールを上書きするには `--force` を使う。カタログ更新後は `--force` で再実行し、`.agents/skills/` をコミットする（`--user` のときは `~/.agents/skills/`）。
 
 Windows では Git Bash など POSIX シェルから実行する。
 
@@ -80,7 +81,7 @@ zg help models
 npx --yes @zvec/zvec-grep help models
 ```
 
-`zg` が無いときは、`zg install` の前に `npm install -g @zvec/zvec-grep` を実行する。MCP の stdio 設定は常に `zg` バイナリを起動し（`zg install` は npm パッケージを入れない）、npx だけのブートストラップだとエージェントが `command not found: zg` になる。新規 wiki には空 stub なしで有用なレジストリ、操作ログ、種別ディレクトリを作り、既存 wiki には触れない。その後 `AGENTS.md` ホットメモリを upsert し、zg デフォルト探索で最初のインデックスを構築する。MCP 設定後にエージェントを再起動する。
+ブートストラップは **コミットする** `.cursor/mcp.json` と `.mcp.json` を `npx @zvec/zvec-grep server --stdio` で upsert するため、エージェントにグローバル `zg` は不要。再実行時はそのサーバーの command と args を更新し、`env` など互換フィールドは残す。既存の HTTP トランスポートは結合せず拒否する。CLI は PATH の `zg` または `npx @zvec/zvec-grep`。ユーザー全体の `zg install` は `--target codex` 等で任意。`zg` が PATH に無いときは `@zvec/zvec-grep` をグローバルインストールし、設定を書く前に `zg` が起動することを確認する。Cursor/Claude はプロジェクト MCP を使う。新規 wiki には空 stub なしで有用なレジストリ、操作ログ、種別ディレクトリを作り、既存 wiki には触れない。その後 `AGENTS.md` ホットメモリを upsert し、zg デフォルト探索で最初のインデックスを構築する。MCP 設定後にエージェントを再起動する。
 
 ## スキルパッケージの内容
 

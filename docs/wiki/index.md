@@ -31,6 +31,7 @@ No crystallized analyses yet. Accepted design synthesis lives in ADR-0003.
 | [decisions/ADR-0001-locale-independence.md](decisions/ADR-0001-locale-independence.md) | Locale folders are standalone packages without symlinks |
 | [decisions/ADR-0002-catalog-skills-directory.md](decisions/ADR-0002-catalog-skills-directory.md) | Distributable packages live under `skills/<name>/` |
 | [decisions/ADR-0003-karpathy-alignment-plan.md](decisions/ADR-0003-karpathy-alignment-plan.md) | zg-only, Karpathy-aligned architecture and first rewrite |
+| [decisions/ADR-0004-project-skill-install.md](decisions/ADR-0004-project-skill-install.md) | Default project skill install and committed MCP for teams and Cloud Agents |
 
 ## Runbooks (coding overlay)
 
