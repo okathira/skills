@@ -34,9 +34,12 @@ skills/
     decisions/
     runbooks/
   AGENTS.md
+  .agents/skills/          # committed runtime skill install (default install.sh)
+  .cursor/mcp.json         # committed Cursor MCP (bootstrap)
+  .mcp.json                # committed Claude Code MCP (bootstrap)
 ```
 
-Skill packages are self-contained folders with `SKILL.md`, `install/`, `scripts/`, `references/`, and `templates/`.
+Skill packages are self-contained folders with `SKILL.md`, `install/`, `scripts/`, `references/`, and `templates/`. The package under `skills/` is the distributable source; `.agents/skills/` is the agent runtime copy ([ADR-0004](../decisions/ADR-0004-project-skill-install.md)).
 
 ## Layer boundaries
 
@@ -49,8 +52,8 @@ Skill packages are self-contained folders with `SKILL.md`, `install/`, `scripts/
 
 | Step | Script | Result |
 |------|--------|--------|
-| Install the skill | `skills/zvec-llm-wiki/zvec-llm-wiki/install/install.sh` | Copies the package into an agent skill directory |
-| Bootstrap a project | `skills/zvec-llm-wiki/zvec-llm-wiki/scripts/zg-bootstrap.sh` | Creates a new wiki, hot memory, MCP wiring, and one zg workspace index |
+| Install the skill | `skills/zvec-llm-wiki/zvec-llm-wiki/install/install.sh` | Copies the package into `.agents/skills/` (default; commit) or `~/.agents/skills/` with `--user` |
+| Bootstrap a project | `skills/zvec-llm-wiki/zvec-llm-wiki/scripts/zg-bootstrap.sh` | Wiki, hot memory, committed `.cursor/mcp.json` / `.mcp.json`, and zg index |
 
 The local `.zvec-grep/` index is gitignored and is never the source of truth.
 

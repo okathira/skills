@@ -22,6 +22,13 @@ source:
 - Behavioral changes update every locale in the same change.
 - Root `README.md` and `README.ja.md` have the same sections and facts.
 
+## Install boundaries
+
+- **Default skill install** is project-scoped: `.agents/skills/<name>/`, committed for teams and Cloud Agents. User-wide installs use `install.sh --user`.
+- **Claude Code** may also need `.claude/skills/` (`install.sh --claude`); Codex/Cursor/OpenCode read `.agents/skills/`.
+- **MCP** for zvec-grep in this workflow is project-scoped: `.cursor/mcp.json` and root `.mcp.json`, committed, with `npx` launching `@zvec/zvec-grep` (see [ADR-0004](../decisions/ADR-0004-project-skill-install.md)).
+- Distributable packages stay under `skills/<skill-name>/`; do not confuse them with `.agents/skills/` runtime copies.
+
 ## Wiki workflow
 
 The accepted loop is the same as `zvec-llm-wiki`:

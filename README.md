@@ -18,7 +18,7 @@ A growing catalog of **independent** Agent Skills. Each skill is its own package
 
 Open the skill folder and follow **its** README. The usual first step is `install/install.sh`, then restart the agent. Re-run with `--force` after pulling catalog updates, if that skill's README says so.
 
-Install copies skill files into agent directories — not this catalog README. Anything extra (bootstrap, tools, project wiring) is documented per skill.
+Install copies skill files into agent directories — not this catalog README. By default that is `.agents/skills/` in the repo; **commit** that copy so teammates and Cloud Agents share the same skill revision. Use `install.sh --user` for a machine-wide install. Anything extra (bootstrap, tools, project MCP) is documented per skill.
 
 ## Language policy
 

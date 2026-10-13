@@ -2,6 +2,17 @@
 
 Append-only timeline for substantial wiki operations. Use `## [YYYY-MM-DD] kind | title`; record ingest, lint, crystallize, and large record operations, not routine queries.
 
+## [2026-10-09] record | Bootstrap MCP merge and persistent zg
+
+- Project MCP upsert keeps compatible `zvec_grep` fields such as `env` and refuses an existing HTTP transport. Noted in [gotchas](concepts/gotchas.md), [skill-setup](runbooks/skill-setup.md), and [ADR-0004](decisions/ADR-0004-project-skill-install.md).
+- User-level `--target` installs `@zvec/zvec-grep` globally when `zg` is not on PATH, then checks that `zg` launches before `zg install`.
+
+## [2026-10-08] record | Project skill install and committed MCP
+
+- Default `install.sh` targets `.agents/skills/`; `--user` keeps the old home-directory install. Documented in [ADR-0004](decisions/ADR-0004-project-skill-install.md), [skill-setup](runbooks/skill-setup.md), and both skill locales.
+- `zg-bootstrap.sh` upserts `.cursor/mcp.json` and `.mcp.json` with `npx @zvec/zvec-grep` stdio; CLI may use `npx` when `zg` is absent. User-level `zg install` is optional via `--target` (cursor/claude use project files).
+- Dogfood: committed `.agents/skills/zvec-llm-wiki/`, `.cursor/mcp.json`, `.mcp.json`.
+
 ## [2026-10-07] record | deciders shapes and Node pin
 
 - Documented ADR `deciders` identifier shape rules in both skill `wiki-workflow` page contracts; [Conventions](concepts/conventions.md) links there; added **Deciders** and **Owner** to [Glossary](concepts/glossary.md).

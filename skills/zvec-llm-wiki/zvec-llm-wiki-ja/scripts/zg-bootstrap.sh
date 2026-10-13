@@ -21,7 +21,10 @@ usage() {
                        対応一覧は zg help models
                        （PATH に無いときは npx --yes @zvec/zvec-grep help models）
 
---target なしの場合は zg install --yes（自動検出）を実行する。
+--target なしの場合はコミット用プロジェクト MCP（.cursor/mcp.json、.mcp.json）のみ更新する。
+Codex などユーザー全体設定は --target codex 等を指定。zg が PATH に無いときは
+@zvec/zvec-grep をグローバルインストールし、zg が起動することを確認する。
+cursor/claude はプロジェクト MCP を使う。
 Node.js 22+ が必要。
 EOF
 }
@@ -117,6 +120,102 @@ EOF
   rm -f "$block_file"
 }
 
+# チーム共有 MCP（Cursor + Claude Code）。npx 起動のため zg のグローバルインストールは不要。
+# 再実行時は command/args を更新し、env など互換フィールドは残す。HTTP トランスポートは拒否する。
+upsert_project_mcp() {
+  local rel_path="$1"
+  mkdir -p "$(dirname "$rel_path")"
+  node - "$rel_path" <<'NODE'
+const fs = require("fs");
+const path = process.argv[2];
+const entry = {
+  command: "npx",
+  args: ["--yes", "@zvec/zvec-grep", "server", "--stdio", "--mcp-toolset", "agent"],
+};
+
+function isHttpTransport(server) {
+  if (typeof server.url === "string" || typeof server.httpUrl === "string") return true;
+  const type = typeof server.type === "string" ? server.type.toLowerCase() : "";
+  return (
+    type === "http" ||
+    type === "sse" ||
+    type === "streamable-http" ||
+    type === "streamable_http" ||
+    type === "remote"
+  );
+}
+
+let root = {};
+if (fs.existsSync(path)) {
+  try {
+    root = JSON.parse(fs.readFileSync(path, "utf8"));
+  } catch (error) {
+    console.error(`エラー: ${path} の JSON が不正です`);
+    process.exit(1);
+  }
+}
+if (!root || typeof root !== "object" || Array.isArray(root)) {
+  console.error(`エラー: ${path} は JSON オブジェクトである必要があります`);
+  process.exit(1);
+}
+if (!root.mcpServers || typeof root.mcpServers !== "object" || Array.isArray(root.mcpServers)) {
+  root.mcpServers = {};
+}
+const existing = root.mcpServers.zvec_grep;
+if (existing && typeof existing === "object" && !Array.isArray(existing)) {
+  if (isHttpTransport(existing)) {
+    console.error(
+      `エラー: ${path} の mcpServers.zvec_grep は HTTP トランスポートです。stdio の npx エントリへは結合しません。明示的に移行してください。`,
+    );
+    process.exit(1);
+  }
+  root.mcpServers.zvec_grep = {
+    ...existing,
+    command: entry.command,
+    args: entry.args,
+  };
+} else {
+  root.mcpServers.zvec_grep = entry;
+}
+fs.writeFileSync(path, `${JSON.stringify(root, null, 2)}\n`);
+NODE
+  say "プロジェクト MCP を更新: $rel_path（チームと Cloud Agents 向けにコミット）"
+}
+
+filter_user_install_targets() {
+  FILTERED_TARGETS=()
+  local t
+  for t in "${TARGETS[@]}"; do
+    case "$t" in
+      cursor|claude) ;;
+      *) FILTERED_TARGETS+=("$t") ;;
+    esac
+  done
+}
+
+# zg install は command に "zg" を書く。一時的な npx 実行ではその実行ファイルは PATH に残らない。
+ensure_persistent_zg() {
+  if command -v zg >/dev/null 2>&1; then
+    ZG=(zg)
+    return 0
+  fi
+  if ! command -v npm >/dev/null 2>&1; then
+    echo "エラー: ユーザー全体ターゲットには PATH 上の zg が必要ですが、インストールに使う npm がありません。" >&2
+    exit 1
+  fi
+  say "@zvec/zvec-grep をグローバルインストールします（ユーザー全体エージェントが zg を起動できるようにするため）"
+  npm install -g @zvec/zvec-grep
+  hash -r
+  if ! command -v zg >/dev/null 2>&1 || ! zg --version >/dev/null 2>&1; then
+    local prefix
+    prefix="$(npm prefix -g 2>/dev/null || true)"
+    echo "エラー: @zvec/zvec-grep をインストールしましたが、zg を起動できません。${prefix:-npm のグローバル bin} を PATH に追加して再実行してください。" >&2
+    exit 1
+  fi
+  ZG=(zg)
+  say "zg を使用 ($(zg --version 2>/dev/null || echo 不明))"
+}
+
 # 1) Node.js 22+ の確認 -------------------------------------------------------
 if ! command -v node >/dev/null 2>&1; then
   echo "zvec-grep の実行には Node.js 22+ が必要です。先に Node をインストールしてください。" >&2
@@ -128,23 +227,14 @@ if (( NODE_MAJOR < 22 )); then
   exit 1
 fi
 
-# 2) PATH 上の zg を解決する。`zg install` は MCP の command に "zg" を書き、
-# npm パッケージは入れない — npx だけのブートストラップはエージェントが command not found になる。
-ZG=(zg)
-
+# 2) インデックス用 CLI。プロジェクト MCP は npx 起動。zg のグローバルインストールは任意。
+ZG=()
 if command -v zg >/dev/null 2>&1; then
+  ZG=(zg)
   say "zg を使用 ($(zg --version 2>/dev/null || echo 不明))"
 elif command -v npm >/dev/null 2>&1; then
-  say "zg が PATH にないため、MCP が zg を起動できるよう @zvec/zvec-grep をグローバルインストールします"
-  npm install -g @zvec/zvec-grep
-  PATH="$(npm prefix -g)/bin:${PATH}"
-  export PATH
-  hash -r 2>/dev/null || true
-  if ! command -v zg >/dev/null 2>&1; then
-    echo "@zvec/zvec-grep を入れましたが zg がまだ PATH にありません。$(npm prefix -g)/bin を PATH に追加して再実行してください。" >&2
-    exit 1
-  fi
-  say "zg を使用 ($(zg --version 2>/dev/null || echo 不明))"
+  ZG=(npx --yes @zvec/zvec-grep)
+  say "CLI は npx @zvec/zvec-grep を使用（短いコマンドがよければ zg をグローバルインストール）"
 else
   echo "zg も npm も見つかりません。先に Node.js 22+ をインストールしてください。" >&2
   exit 1
@@ -154,17 +244,25 @@ run_zg() {
   "${ZG[@]}" "$@"
 }
 
-# 3) エージェント MCP 連携 -----------------------------------------------------
+# 3) プロジェクト MCP（コミット）+ 任意のユーザー全体インストール ----------------
+upsert_project_mcp ".cursor/mcp.json"
+upsert_project_mcp ".mcp.json"
+
 if [[ ${#TARGETS[@]} -eq 0 ]]; then
-  say "エージェント連携を設定します（自動検出）"
-  run_zg install --yes
+  say "ユーザー全体の zg install はスキップ（自動）。.cursor/mcp.json と .mcp.json を使う。Codex/OpenCode は zg install --target <agent> を別途実行。"
 else
-  say "エージェント連携を設定します: ${TARGETS[*]}"
-  INSTALL_CMD=("${ZG[@]}" install --yes)
-  for target in "${TARGETS[@]}"; do
-    INSTALL_CMD+=(--target "$target")
-  done
-  "${INSTALL_CMD[@]}"
+  filter_user_install_targets
+  if [[ ${#FILTERED_TARGETS[@]} -gt 0 ]]; then
+    say "ユーザー全体のエージェント連携: ${FILTERED_TARGETS[*]}（cursor/claude はコミット済みプロジェクト MCP）"
+    ensure_persistent_zg
+    INSTALL_CMD=("${ZG[@]}" install --yes)
+    for target in "${FILTERED_TARGETS[@]}"; do
+      INSTALL_CMD+=(--target "$target")
+    done
+    "${INSTALL_CMD[@]}"
+  else
+    say "cursor/claude のみ指定 — プロジェクト MCP で十分。ユーザー全体の zg install は不要"
+  fi
 fi
 
 # 4) wiki のひな形 ------------------------------------------------------------

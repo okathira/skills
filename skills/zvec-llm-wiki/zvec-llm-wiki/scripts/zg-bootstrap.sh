@@ -21,7 +21,10 @@ Usage: zg-bootstrap.sh [--target <agent>]... [--embedding <model>]
                        List models: zg help models
                        (if zg is not on PATH: npx --yes @zvec/zvec-grep help models)
 
-With no --target, runs: zg install --yes (auto-detect).
+With no --target, upserts committed project MCP (.cursor/mcp.json, .mcp.json) only.
+Pass --target codex (etc.) for user-level zg install. If zg is not on PATH, this
+installs @zvec/zvec-grep globally and checks that zg launches. cursor/claude use
+the project files.
 Requires Node.js 22+.
 EOF
 }
@@ -117,6 +120,102 @@ EOF
   rm -f "$block_file"
 }
 
+# Team-shareable MCP (Cursor + Claude Code). Uses npx so teammates need not install zg globally.
+# Re-runs update command/args, keep compatible fields (for example env), and refuse HTTP transports.
+upsert_project_mcp() {
+  local rel_path="$1"
+  mkdir -p "$(dirname "$rel_path")"
+  node - "$rel_path" <<'NODE'
+const fs = require("fs");
+const path = process.argv[2];
+const entry = {
+  command: "npx",
+  args: ["--yes", "@zvec/zvec-grep", "server", "--stdio", "--mcp-toolset", "agent"],
+};
+
+function isHttpTransport(server) {
+  if (typeof server.url === "string" || typeof server.httpUrl === "string") return true;
+  const type = typeof server.type === "string" ? server.type.toLowerCase() : "";
+  return (
+    type === "http" ||
+    type === "sse" ||
+    type === "streamable-http" ||
+    type === "streamable_http" ||
+    type === "remote"
+  );
+}
+
+let root = {};
+if (fs.existsSync(path)) {
+  try {
+    root = JSON.parse(fs.readFileSync(path, "utf8"));
+  } catch (error) {
+    console.error(`error: invalid JSON in ${path}`);
+    process.exit(1);
+  }
+}
+if (!root || typeof root !== "object" || Array.isArray(root)) {
+  console.error(`error: ${path} must contain a JSON object`);
+  process.exit(1);
+}
+if (!root.mcpServers || typeof root.mcpServers !== "object" || Array.isArray(root.mcpServers)) {
+  root.mcpServers = {};
+}
+const existing = root.mcpServers.zvec_grep;
+if (existing && typeof existing === "object" && !Array.isArray(existing)) {
+  if (isHttpTransport(existing)) {
+    console.error(
+      `error: ${path} mcpServers.zvec_grep uses an HTTP transport. Refusing to merge it into the stdio npx entry; migrate that server explicitly.`,
+    );
+    process.exit(1);
+  }
+  root.mcpServers.zvec_grep = {
+    ...existing,
+    command: entry.command,
+    args: entry.args,
+  };
+} else {
+  root.mcpServers.zvec_grep = entry;
+}
+fs.writeFileSync(path, `${JSON.stringify(root, null, 2)}\n`);
+NODE
+  say "Updated project MCP: $rel_path (commit for teammates and Cloud Agents)"
+}
+
+filter_user_install_targets() {
+  FILTERED_TARGETS=()
+  local t
+  for t in "${TARGETS[@]}"; do
+    case "$t" in
+      cursor|claude) ;;
+      *) FILTERED_TARGETS+=("$t") ;;
+    esac
+  done
+}
+
+# zg install writes command "zg". A one-shot npx invocation does not leave that binary on PATH.
+ensure_persistent_zg() {
+  if command -v zg >/dev/null 2>&1; then
+    ZG=(zg)
+    return 0
+  fi
+  if ! command -v npm >/dev/null 2>&1; then
+    echo "error: user-level targets need zg on PATH, and npm is not available to install it." >&2
+    exit 1
+  fi
+  say "Installing @zvec/zvec-grep globally so user-level agents can launch zg"
+  npm install -g @zvec/zvec-grep
+  hash -r
+  if ! command -v zg >/dev/null 2>&1 || ! zg --version >/dev/null 2>&1; then
+    local prefix
+    prefix="$(npm prefix -g 2>/dev/null || true)"
+    echo "error: installed @zvec/zvec-grep, but zg does not launch. Add ${prefix:-the npm global bin directory} to PATH, then rerun." >&2
+    exit 1
+  fi
+  ZG=(zg)
+  say "Using zg ($(zg --version 2>/dev/null || echo unknown))"
+}
+
 # 1) Node.js 22+ check --------------------------------------------------------
 if ! command -v node >/dev/null 2>&1; then
   echo "Node.js 22+ is required to run zvec-grep. Install Node first." >&2
@@ -128,23 +227,14 @@ if (( NODE_MAJOR < 22 )); then
   exit 1
 fi
 
-# 2) Resolve zg on PATH. `zg install` writes MCP command "zg" and does not
-# install the npm package — npx-only bootstrap leaves agents with command not found.
-ZG=(zg)
-
+# 2) Resolve zg for CLI indexing. Project MCP uses npx; a global zg is optional.
+ZG=()
 if command -v zg >/dev/null 2>&1; then
+  ZG=(zg)
   say "Using zg ($(zg --version 2>/dev/null || echo unknown))"
 elif command -v npm >/dev/null 2>&1; then
-  say "zg is not on PATH; installing @zvec/zvec-grep globally so MCP can spawn zg"
-  npm install -g @zvec/zvec-grep
-  PATH="$(npm prefix -g)/bin:${PATH}"
-  export PATH
-  hash -r 2>/dev/null || true
-  if ! command -v zg >/dev/null 2>&1; then
-    echo "Installed @zvec/zvec-grep but zg is still not on PATH. Add $(npm prefix -g)/bin to PATH and retry." >&2
-    exit 1
-  fi
-  say "Using zg ($(zg --version 2>/dev/null || echo unknown))"
+  ZG=(npx --yes @zvec/zvec-grep)
+  say "Using npx @zvec/zvec-grep for CLI (install zg globally if you prefer a shorter command)"
 else
   echo "Neither zg nor npm found. Install Node.js 22+ first." >&2
   exit 1
@@ -154,17 +244,25 @@ run_zg() {
   "${ZG[@]}" "$@"
 }
 
-# 3) Wire the agent MCP integration -------------------------------------------
+# 3) Project MCP (commit) + optional user-level agent installers ----------------
+upsert_project_mcp ".cursor/mcp.json"
+upsert_project_mcp ".mcp.json"
+
 if [[ ${#TARGETS[@]} -eq 0 ]]; then
-  say "Configuring agent integration (auto-detect)"
-  run_zg install --yes
+  say "Skipping user-level zg install (auto). Use project .cursor/mcp.json and .mcp.json; run zg install --target <agent> for Codex/OpenCode user config."
 else
-  say "Configuring agent integration: ${TARGETS[*]}"
-  INSTALL_CMD=("${ZG[@]}" install --yes)
-  for target in "${TARGETS[@]}"; do
-    INSTALL_CMD+=(--target "$target")
-  done
-  "${INSTALL_CMD[@]}"
+  filter_user_install_targets
+  if [[ ${#FILTERED_TARGETS[@]} -gt 0 ]]; then
+    say "Configuring user-level agent integration: ${FILTERED_TARGETS[*]} (cursor/claude use committed project MCP)"
+    ensure_persistent_zg
+    INSTALL_CMD=("${ZG[@]}" install --yes)
+    for target in "${FILTERED_TARGETS[@]}"; do
+      INSTALL_CMD+=(--target "$target")
+    done
+    "${INSTALL_CMD[@]}"
+  else
+    say "Only cursor/claude requested — project MCP files are enough; no user-level zg install"
+  fi
 fi
 
 # 4) Scaffold the wiki --------------------------------------------------------
