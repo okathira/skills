@@ -1,90 +1,86 @@
 # LLM wiki ワークフローとガバナンス
 
-ingest、query、lint、record、crystallize の詳細リファレンス。
+ingest、query、lint、record、crystallize の詳細リファレンス。書式は OKF v0.3 で、フィールドの規則は
+公式の `okf-generate` スキルが担う。このファイルには llm-wiki が加えるもの・決めたものだけを書く。
 
 ## Karpathy との対応
 
 | Karpathy の層/操作 | このスキル |
 | --- | --- |
-| Raw sources（不変） | 任意の `raw/` インポート済み Markdown。実行コードは raw な証拠のまま |
-| Wiki（編纂・複利） | `sources/`、`entities/`、`concepts/`、`analyses/` |
+| Raw sources（不変） | bundle 外の任意の `docs/raw/` インポート済み Markdown。実行コードは raw な証拠のまま |
+| Wiki（編纂・複利） | `summaries/`、`entities/`、`concepts/`、`analyses/` |
 | 任意の coding overlay | `decisions/`、`runbooks/` |
-| Schema | `index.md`、ページの frontmatter/見出し、`AGENTS.md` ホットブロック |
-| Ingest | 文書を深く編纂、コードを浅く索引、レジストリとログを更新 |
-| Query | index → wiki スコープ zg hybrid → 名前は rg → widen |
-| Lint | 登録、リンク、矛盾、鮮度、サイズ、リネーム、履歴 |
+| Schema | OKF frontmatter、生成される `index.md`、`AGENTS.md` ホットブロック |
+| Ingest | 文書を深く編纂、コードを浅く索引、log 追記と index 再生成 |
+| Query | index 群 → wiki スコープ zg hybrid → 名前は rg → widen |
+| Lint | `llm_wiki.py lint --strict`（`validate.py` も実行）、その後に判断が要る確認 |
 | Record | 予定ページを示し、止められなければ書く（involved） |
 | Crystallize | 永続化すべき query の統合結果を `analyses/` に保存 |
-| Log | 追記専用の `log.md` タイムライン |
+| Log | 新しい日付が上の OKF `log.md` |
 
 検索エンジンは zg だけ。qmd 連携、第 2 の index、strict な wiki 書き込みロックはない。
 
 ## 不変条件
 
-1. `docs/wiki/` が生きた知識のホーム。ミラーは正ではない。
+1. `docs/wiki/` が bundle root であり、生きた知識のホーム。ミラーは正ではない。
 2. 1 事実 1 ホーム。相対 `.md` リンクを使い、文章コピーや `[[wikilinks]]` は使わない。
-3. 全ページを 1 行要約付きで `index.md` からリンクし、zg で索引する。
+3. 中身のあるディレクトリにはすべて生成された `index.md` がある。ルートの frontmatter より下は
+   手で編集しない。
 4. 書き込みは involved: ページ計画と根拠を示し、ユーザーが止めなければ編集する。
-5. 矛盾は見える形で隔離し、却下した経路は `superseded` として保持する。
+5. 矛盾は見える形で隔離し、置き換えたページは `deprecated` と `superseded_by` で残す。
 6. 増分 `zg index` は通常操作。`--rebuild`、`--drop`、`--reset-paths` は明示的な承認必須。
 
-## ページ契約
-
-ページは薄い YAML frontmatter を使う:
+## ページ契約（OKF への llm-wiki の追加）
 
 ```yaml
 ---
-status: working # working | decided
-aliases:
-  - 完全一致させる別名
-source: raw/example.md # プロジェクトルートの raw path、リポジトリ path、または URL
+type: Concept                     # 下のディレクトリ対応表から
+title: Involved な書き込み
+description: 1 文。ディレクトリ index がこれを写す。
+x-zvec-aliases:
+  - involved write
+  - 書き込み計画
+  - 止められなければ編集
+generated: { by: "cursor/<model>", at: "2026-11-20T10:00:00Z" }
+sources:
+  - id: readme
+    resource: ../../README.md     # リポジトリ内ファイル: このページからの相対パス、OKF では外部
+    title: プロジェクト README
 ---
+
+# What
+主張を含む本文。[^readme]
+
+[^readme]: プロジェクト README
 ```
 
-この frontmatter は coding overlay を含むすべての内容ページに置く。`index.md` と `log.md` は
-schema とタイムラインなので素のままにする。zg は frontmatter を独立チャンクとして索引し、rg は
-ファイル全体を読むので、frontmatter のキーを本文へ複製しない。続けて 1 行リードと `What`、
-`Why`、`Related` などの有用な H2 節を置く。外部 source がなければ `source` は省略する。hash は
-任意で、不変の `raw/` ダンプだけに使い、コードベースには使わない。`Related` と ADR の
-`References` は wiki グラフであり、`source` に既にある URL や path を再掲しない。
-
-`decisions/` のページは enum を ADR ライフサイクルに置き換え、決定のメタデータを加える。
-本文の行と frontmatter がずれないよう、ライフサイクルのホームは 1 つだけにする:
-
-```yaml
----
-status: accepted # proposed は working、accepted と superseded は decided
-date: 2026-09-08
-deciders:
-  - owner
----
-```
-
-`deciders` は常に YAML リスト。各要素は次の識別子のいずれか（チーム名などの自由記述の表示名は不可）:
-
-| 形式 | 用途 |
+| ディレクトリ | `type` |
 | --- | --- |
-| `@handle` | GitHub アカウント。多人数プロジェクトでは第一候補 |
-| `user@example.com` | GitHub を使わない場合のメール |
-| `owner` | 個人プロジェクト用の役割トークン（リポジトリ所有者。実名やハンドルは書かない） |
-| `agent:<name>` | AI エージェント（例 `agent:cursor`）。`accepted` でも単独で可 |
+| `summaries/` | `Reference` |
+| `entities/` | `Entity` |
+| `concepts/` | `Concept` |
+| `analyses/` | `Analysis` |
+| `decisions/` | `Decision Record` |
+| `runbooks/` | `Playbook` |
 
-lint 用の形の規則:
-
-- `@handle` は `@` で始まり、その後が空でない。
-- メールは `@` が 1 つだけで、前後が空でない。
-- `owner` はトークン `owner` と完全一致。
-- `agent:<name>` はコロンの後が空でなく、空白を含まない。
-- `deciders` を空にしない。
-
-置き換える ADR ができるまで `superseded_by` は書かない。外部の来歴がなければ `source` は
-省略する。空キーは残さない。
+- 本文は内容か H1 の節から始める。H1 タイトルとリード行の代わりに `title` と `description` を使い、
+  本文で繰り返さない。
+- stable なページは `status` を書かない。作業中は `draft`、置き換えたページは `deprecated` と
+  `superseded_by`（`/` 始まりのパス）。
+- `generated.by` は書いたエージェント（`<tool>/<model>`）。`generated.at` は意味が変わったときだけ更新する。
+- `verified` には、内容を確認し ID を明示した人が必要。使える形は `human:owner`（個人プロジェクトの
+  役割名）、`human:@handle`、`human:user@example.com`。エージェントは `agent:<name>` の記録を付けられるが、
+  人間レビュー済みの信頼度にはならない。
+- ADR の承認は `verified` の記録で表す。`date` や `deciders` キーは使わない。
+- `sources[].resource` は URL、`/` 始まりの bundle 内パス、またはページからの相対パスで書いたリポジトリ
+  内ファイル。個々の主張は `[^id]` 脚注で引用する。`Related` は wiki グラフであり `sources` を再掲しない。
 
 出発点として `templates/wiki-page.md`、`templates/adr.md`、`templates/runbook.md` を使う。
 
 ## ユビキタス言語と aliases
 
-aliases はそのページが所有する事実の検索用の名前であり、追加の本文でも第 2 の glossary でもない。
+`x-zvec-aliases` はそのページが所有する事実の検索用の名前であり、追加の本文でも第 2 の glossary でもない。
+OKF の `tags` は横断的な分類なので、alias を入れない。
 
 - 人が実際に打つ高シグナルな句を **おおよそ 3–6 個**（`involved write`、`hot memory`、
   `zg-bootstrap` など）。同義語 1 個は薄すぎ、シソーラスは厚すぎ。
@@ -92,63 +88,68 @@ aliases はそのページが所有する事実の検索用の名前であり、
   ときだけ足す。
 - glossary（または `concepts/` の 1 ページ）が共有用語の定義を所有する。他ページは自分の
   事実の名前だけを列挙し、定義をコピーしない。
-- ホームは 1 つ: `aliases`、`source`、`status`、ADR の `date` / `deciders` /
-  `superseded_by` は frontmatter だけ。frontmatter を写す `## Aliases` や Source 見出しは置かない。見出し
-  抽出のための H2 複製は試して superseded。
-
-ingest や record の同じ編集で aliases を足す。薄い alias リストは frontmatter 欠けと同じ lint
-対象。
+- frontmatter を写す `# Aliases` や `# Sources` 節は置かない。
 
 ## 段階的 query
 
-1. `docs/wiki/index.md` を読む。
-2. カタログで足りなければ `docs/wiki/**` にスコープした zg hybrid 検索を使う。
+1. `docs/wiki/index.md` を読み、タスクに関係するディレクトリの index を読む。
+2. index で足りなければ、`docs/wiki/**` にスコープした zg hybrid 検索を使う。
 3. 既知の名前、alias、path、日本語固有名詞には zg managed rg（または native rg）を使う。
-4. wiki の証拠が不足した後だけ `raw/**` またはコードへ広げる。
-5. 証拠が十分なら止める。
+4. wiki の証拠が不足した後だけ `docs/raw/**` またはコードへ広げる。
+5. 証拠が十分なら止める。`okf-consume` の信頼度、status、鮮度、矛盾の規則を適用する。
 
 現在の構文は `zg help query` を使う。1 つの workspace index がすべての scope を担う。
 
 ## Ingest の深さ
 
-- **文書:** PDF/Office はまず Markdown に変換する。インポートした `raw/` は不変として扱い、
-  hybrid と alias rg でホームを探し、主張を少数の短い wiki ページへ編纂する。
+- **文書:** PDF/Office はまず Markdown に変換する。インポートは `docs/raw/` に置き、変更しない。
+  hybrid と alias rg でホームを探し、主張を少数の短い concept へ編纂して `sources` で引用する。
 - **コード:** raw な証拠として索引・検索する。リポジトリツリーを wiki ページへ編纂しない。
 - **生きた Markdown:** 2 つ目のコピーを維持せず wiki へ移動する。
 
-各 ingest で `index.md` を更新し、`log.md` に追記し、増分 `zg index` を実行する。次の query
-前に freshness を確認する。
+各 ingest で `log.md` に追記し、index を再生成し、増分 `zg index` を実行する。次の query 前に
+freshness を確認する。
 
 ## ログ契約
 
-`## [YYYY-MM-DD] kind | title` を使う。kind は `ingest`、`lint`、`crystallize`、`record`。
+OKF の log 形式: `## YYYY-MM-DD` 見出しを新しい順に並べ、各 entry は操作名の太字
+（`**Ingest**`、`**Record**`、`**Crystallize**`、`**Lint**`）で始める。今日の見出しの下に追記する。
 
 ```md
-## [2026-09-08] ingest | 製品概要
+## 2026-11-20
 
-- [製品](entities/product.md) を追加し、[価格](concepts/pricing.md) を更新。
-- Source: `raw/product-brief.md`
+* **Ingest**: 製品概要
+  - [製品](entities/product.md) を追加し、[価格](concepts/pricing.md) を更新。
 ```
 
 ## Lint
 
-- wiki の `.md` ファイルと `index.md` を比較し孤児を見つける。
-- 全相対 `.md` リンクを解決し、wikilink を許可しない。
+`scripts/llm_wiki.py lint --strict` が両方の層を確認する:
+
+- `okf-generate/scripts/validate.py` — OKF 準拠、frontmatter の形、actor、タイムスタンプ、脚注 ID、
+  bundle 内のリンク（`--strict` ではリンク切れで失敗）。指摘はすべて報告する。concept ではない
+  Markdown は bundle ではなく `docs/raw/` に置く。末尾の OKF change report は `I204`（意味の変更で
+  未検証になった）と `I201`（`stale_after` を過ぎた）の件数を出す。これらは info である。ずれの検出に
+  ソースファイルのハッシュは使わない。
+- llm-wiki の確認 — ディレクトリと type の対応、`x-zvec-aliases` の数、OKF 以前の
+  キーの残り、bundle 外を指すリポジトリパスの実在、wikilink、本文での frontmatter 再掲、`generated` や
+  `description` の欠け、生成 index の古さ。
+
+判断が要る確認:
+
 - hybrid 検索で意味的な矛盾を探し、競合する主張を統合せず隔離する。
-- `raw/` から編纂したページの source path と任意 hash を確認する。
+- `docs/raw/` から編纂したページをソースと照合する。
 - 1 事実または有用な見出し単位を超えたページを分割する。
 - リネーム後の古い名前を rg で探す。
-- 行き止まりと superseded な主張を保持する。
+- 行き止まりと deprecated な主張を保持する。
 - 検索を汚して答えを持たない、タイトルだけ・見出しだけの stub を拒否する。
-- 内容ページの `aliases` が空または同義語 1 個なら拒否する。高シグナルな frontmatter 名が複数、
-  frontmatter の本文再掲なし、共有定義は glossary 1 ページ、を期待する。
-- ADR ページでは `deciders` が空、または `@handle`・メール・`owner`・`agent:<name>` 以外の
-  要素があれば拒否する。
+- `generated.at` が `verified` の記録より新しくなって信頼度が下がったページを報告する。
 
 ## ホットメモリと埋め込み
 
-ホットブロックは、まず `index.md`、次に wiki スコープの zg、書き込み計画を示して止められなければ
-続行、編集後に増分 `zg index`、という順序を示す。
+ホットブロックは、wiki が OKF bundle であること、まず index 群、次に wiki スコープの zg、書き込みは
+`okf-generate`、信頼度は `okf-consume`、書き込み計画を示して止められなければ続行、編集後に index
+再生成・lint・増分 `zg index`、という順序を示す。
 
 デフォルトは `local/potion-multilingual-128m` のまま。より高品質な同一エンジンの選択肢は
 `local/qwen3-embedding-0.6b`。切り替えには rebuild と明示的な承認が必要。インストール済み

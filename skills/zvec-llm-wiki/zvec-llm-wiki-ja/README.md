@@ -7,11 +7,16 @@
 書き込みは involved: ページ計画を示し、ユーザーが止めなければ編集する。破壊的な index 操作は
 引き続き承認必須。
 
-Karpathy 型の既定 wiki は `index.md`、`log.md`、`sources/`、`entities/`、`concepts/`、
-`analyses/`。`decisions/` と `runbooks/` は任意の coding overlay、プロジェクトルートの
-`raw/` は任意かつ不変。
-Query は index、wiki スコープ zg hybrid、完全一致名の rg、不足時だけ raw/code へ拡大、の順。
-qmd は使わない。
+wiki は [Open Knowledge Format（OKF）v0.3](https://github.com/open-knowledge-format/open-knowledge-format/blob/main/SPEC.md)
+の bundle。書式・検証・信頼度の規則は公式の `okf-generate` と `okf-consume` スキルが担い、
+このスキルは Karpathy の操作、段階的な zg 検索、`x-zvec-*` 拡張を加える。
+
+Karpathy 型の既定 wiki は `index.md`、`log.md`、`summaries/`、`entities/`、`concepts/`、
+`analyses/` で、それぞれ OKF の `type` に対応する。`decisions/` と `runbooks/` は任意の coding
+overlay。任意かつ不変のインポート資料は bundle の外の `docs/raw/` に置く。
+Query は index 群、wiki スコープ zg hybrid、完全一致名の rg、不足時だけ範囲を拡大、の順。
+qmd は使わない。OKF 以前に書かれた wiki は別スキル
+[`zvec-llm-wiki-okf-migrate-ja`](../../zvec-llm-wiki-okf-migrate/zvec-llm-wiki-okf-migrate-ja/) で移行する。
 
 ## レイアウト
 
@@ -21,11 +26,12 @@ skills/zvec-llm-wiki/zvec-llm-wiki-ja/
   install/install.sh              # スキルをエージェントのスキルディレクトリへコピー
   SKILL.md                        # エージェント向けエントリポイント
   scripts/zg-bootstrap.sh         # 対象リポジトリで zg + docs/wiki をブートストラップ
+  scripts/llm_wiki.py             # index.md の生成と llm-wiki 規則の lint
   references/
   templates/
 ```
 
-スキル `name` は `zvec-llm-wiki-ja` で、このフォルダに対応する。`install.sh` は `SKILL.md`、`scripts/`、`references/`、`templates/` だけをコピーする — この README と `install/` はコピーしない。このフォルダは単体で完結し、英語版へ依存しない。
+スキル `name` は `zvec-llm-wiki-ja` で、このフォルダに対応する。`install.sh` は `SKILL.md`、`scripts/`、`references/`、`templates/` だけをコピーする — この README と `install/` はコピーしない。あわせて公式の `okf-generate` と `okf-consume` スキルを OKF リポジトリの固定コミットから同じスキルディレクトリへ取得する（Apache-2.0。`LICENSE.md` もコピーする）。不要なら `--no-okf` を付ける。このフォルダは単体で完結し、英語版へ依存しない。
 
 2 つのセットアップ手順 — 混同しないこと:
 
@@ -58,7 +64,7 @@ Windows では Git Bash など POSIX シェルから実行する。
 
 ## 2. 対象リポジトリのブートストラップ
 
-作業中の **プロジェクト** から実行する（このカタログからではない）。**Node.js 22+** が必要 — zvec-grep にスタンドアロンバイナリはない。
+作業中の **プロジェクト** から実行する（このカタログからではない）。**Node.js 22+** が必要 — zvec-grep にスタンドアロンバイナリはない。`llm_wiki.py` と `validate.py` には **PyYAML 入りの Python 3.9+**（`pip install pyyaml`）も必要。
 
 ```bash
 cd your-repo
@@ -81,7 +87,7 @@ zg help models
 npx --yes @zvec/zvec-grep help models
 ```
 
-ブートストラップは **コミットする** `.cursor/mcp.json` と `.mcp.json` を `npx @zvec/zvec-grep server --stdio` で upsert するため、エージェントにグローバル `zg` は不要。再実行時はそのサーバーの command と args を更新し、`env` など互換フィールドは残す。既存の HTTP トランスポートは結合せず拒否する。CLI は PATH の `zg` または `npx @zvec/zvec-grep`。ユーザー全体の `zg install` は `--target codex` 等で任意。`zg` が PATH に無いときは `@zvec/zvec-grep` をグローバルインストールし、設定を書く前に `zg` が起動することを確認する。Cursor/Claude はプロジェクト MCP を使う。新規 wiki には空 stub なしで有用なレジストリ、操作ログ、種別ディレクトリを作り、既存 wiki には触れない。その後 `AGENTS.md` ホットメモリを upsert し、zg デフォルト探索で最初のインデックスを構築する。MCP 設定後にエージェントを再起動する。
+ブートストラップは **コミットする** `.cursor/mcp.json` と `.mcp.json` を `npx @zvec/zvec-grep server --stdio` で upsert するため、エージェントにグローバル `zg` は不要。再実行時はそのサーバーの command と args を更新し、`env` など互換フィールドは残す。既存の HTTP トランスポートは結合せず拒否する。CLI は PATH の `zg` または `npx @zvec/zvec-grep`。ユーザー全体の `zg install` は `--target codex` 等で任意。`zg` が PATH に無いときは `@zvec/zvec-grep` をグローバルインストールし、設定を書く前に `zg` が起動することを確認する。Cursor/Claude はプロジェクト MCP を使う。新規 wiki には空 stub なしで OKF のルート `index.md`、操作ログ、種別ディレクトリを作り、既存 wiki には触れない（OKF 以前の wiki には移行の警告を出す）。その後 `AGENTS.md` ホットメモリを upsert し、zg デフォルト探索で最初のインデックスを構築する。MCP 設定後にエージェントを再起動する。
 
 ## スキルパッケージの内容
 
@@ -90,12 +96,14 @@ npx --yes @zvec/zvec-grep help models
 | `SKILL.md` | エントリポイント: 操作、wiki レイヤー、段階的 zg ルーティング |
 | `references/wiki-workflow.md` | ページ/ログ契約、ingest 深度、lint ルール、埋め込み |
 | `scripts/zg-bootstrap.sh` | 冪等で非破壊的なリポジトリセットアップ |
-| `templates/wiki-page.md` | source / entity / concept / analysis ページのテンプレート |
+| `scripts/llm_wiki.py` | `index` でディレクトリ index を再生成、`lint` で llm-wiki 層を検査 |
+| `templates/wiki-page.md` | summary / entity / concept / analysis ページのテンプレート |
 | `templates/adr.md` | Architecture Decision Record テンプレート（coding overlay） |
 | `templates/runbook.md` | 手順テンプレート（coding overlay） |
 
 ## 設計の出典
 
+- [Open Knowledge Format](https://github.com/open-knowledge-format/open-knowledge-format) — bundle の書式、`okf-generate` / `okf-consume` スキル、`validate.py`
 - [zvec-grep](https://github.com/zvec-ai/zvec-grep) — zg の挙動と CLI リファレンス（`zg help`）
 - [Karpathy LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) — 永続的な編纂 wiki、種別、操作、index 先読み、log
 - [zvec-grep オープンソース記事](https://zvec.org/en/blog/2026-08-28-zvec-grep-open-source/) — semantic/hybrid discovery と rg verification を段階化した 1 エンジン

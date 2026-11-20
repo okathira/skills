@@ -1,26 +1,33 @@
 ---
-status: decided
-aliases:
+type: Playbook
+title: "Runbook: Install skill and bootstrap this repo"
+description: Install the skill and its OKF sibling skills, bootstrap this repo, and refresh indexes after wiki edits.
+x-zvec-aliases:
   - skill setup
   - bootstrap runbook
   - zg-bootstrap
   - install.sh
   - incremental zg index
   - project MCP
-source:
-  - ../../../skills/zvec-llm-wiki/zvec-llm-wiki/scripts/zg-bootstrap.sh
+generated: { by: "cursor/auto", at: "2026-11-20T10:52:00Z" }
+verified:
+  - { by: "human:owner", at: "2026-11-20T15:31:00Z" }
+sources:
+  - id: zg-bootstrap-sh
+    resource: ../../../skills/zvec-llm-wiki/zvec-llm-wiki/scripts/zg-bootstrap.sh
+    title: zvec-llm-wiki bootstrap script
+  - id: install-sh
+    resource: ../../../skills/zvec-llm-wiki/zvec-llm-wiki/install/install.sh
+    title: zvec-llm-wiki install script
 ---
 
-# Runbook: Install skill and bootstrap this repo
-
-> Verified setup steps for the Agent Skills catalog (re-dogfooded 2026-10-08).
-
-## Prerequisites
+# Prerequisites
 
 - Node.js 22+; this catalog pins dogfood Node in the repo-root `.node-version` (version managers that read that file pick it up automatically).
-- POSIX shell (Git Bash on Windows)
+- Python 3.9+ with PyYAML (`pip3 install --user pyyaml`) for `llm_wiki.py` and `validate.py`
+- POSIX shell (Git Bash on Windows), plus `curl` and `tar` to fetch the OKF skills
 
-## 1. Install the skill (per repo; commit the result)
+# 1. Install the skill (per repo; commit the result)
 
 From the **target project root** (for this catalog, the repo root):
 
@@ -28,7 +35,9 @@ From the **target project root** (for this catalog, the repo root):
 sh skills/zvec-llm-wiki/zvec-llm-wiki/install/install.sh --force
 ```
 
-Installs to `.agents/skills/zvec-llm-wiki`. **Commit** `.agents/skills/` so teammates and Cloud Agents load the same skill revision. Restart the agent after install.
+Installs to `.agents/skills/zvec-llm-wiki` and fetches `okf-generate` and `okf-consume` from the pinned OKF commit into `.agents/skills/` (existing copies are kept unless `--force`; `--no-okf` skips them).[^install-sh] **Commit** `.agents/skills/` so teammates and Cloud Agents load the same skill revision. Restart the agent after install.
+
+The one-time migration skill installs the same way: `sh skills/zvec-llm-wiki-okf-migrate/zvec-llm-wiki-okf-migrate/install/install.sh --force`.
 
 - **User-wide** (all repos on one machine): add `--user` → `~/.agents/skills/`.
 - **Claude Code native path**: add `--claude` → `.claude/skills/` (same scope as default or `--user`).
@@ -39,7 +48,7 @@ Japanese locale:
 sh skills/zvec-llm-wiki/zvec-llm-wiki-ja/install/install.sh --force
 ```
 
-## 2. Bootstrap the target repo (once per project)
+# 2. Bootstrap the target repo (once per project)
 
 From the **project root** (not the skill package folder):
 
@@ -49,7 +58,7 @@ bash skills/zvec-llm-wiki/zvec-llm-wiki/scripts/zg-bootstrap.sh
 
 Creates or updates:
 
-- `docs/wiki/`, `AGENTS.md`, `.zvec-grep/` (local index; gitignored)
+- `docs/wiki/` as an OKF bundle (only when absent; a pre-OKF wiki gets a migration warning), `AGENTS.md`, `.zvec-grep/` (local index; gitignored)[^zg-bootstrap-sh]
 - **Committed MCP**: `.cursor/mcp.json` (Cursor) and `.mcp.json` (Claude Code) with `npx @zvec/zvec-grep` stdio — no global `zg` required for agents
 - First or incremental `zg index` with `local/potion-multilingual-128m` on a new wiki
 
@@ -72,35 +81,44 @@ npx --yes @zvec/zvec-grep help models   # if zg is not on PATH
 
 **Git**: add `.zvec-grep/` to `.gitignore` (local index only). Commit `.agents/skills/`, `.cursor/mcp.json`, and `.mcp.json`.
 
-## 3. After wiki edits
+# 3. After wiki edits
 
 ```bash
+python3 .agents/skills/zvec-llm-wiki/scripts/llm_wiki.py index
+python3 .agents/skills/zvec-llm-wiki/scripts/llm_wiki.py lint --strict
 npx --yes @zvec/zvec-grep index    # or `zg index` if on PATH
 npx --yes @zvec/zvec-grep status --check-ready
 ```
 
 Restart the agent after first MCP configuration.
 
-## Verification
+# Verification
 
 - `.agents/skills/zvec-llm-wiki/SKILL.md` matches `skills/zvec-llm-wiki/zvec-llm-wiki/SKILL.md` (same for `references/` and `templates/`).
 - `.cursor/mcp.json` and `.mcp.json` contain a `zvec_grep` server using `npx` and `@zvec/zvec-grep`.
 - `AGENTS.md` still contains the `ZVEC_LLM_WIKI` hot block; existing `docs/wiki/` pages were not replaced by the scaffold.
+- `.agents/skills/okf-generate/LICENSE.md` and `.agents/skills/okf-consume/LICENSE.md` exist.
+- `llm_wiki.py lint --strict` exits 0; it also runs `okf-generate`'s `validate.py`.
 - `zg status --check-ready` succeeds after incremental `zg index`.
 
-## Troubleshooting
+# Troubleshooting
 
 | Issue | Action |
 |-------|--------|
 | MCP `zvec_grep` missing in Cursor | Confirm `.cursor/mcp.json` is committed; restart Cursor. Approve the server if prompted. |
 | MCP works locally but not on a fresh clone | Install skill (step 1) and bootstrap (step 2); ensure Node 22+ and network for first `npx`. |
 | `zg` not on PATH for CLI | Use `npx --yes @zvec/zvec-grep …` or `npm install -g @zvec/zvec-grep`. MCP does not require global `zg` when project MCP uses `npx`. |
-| Query misses a new wiki page | Confirm it is registered in `index.md`, then run incremental `zg index` |
+| Query misses a new wiki page | Run `llm_wiki.py index` so its directory index lists it, then run incremental `zg index` |
+| `PyYAML is required` from a wiki script | Install it with `pip3 install --user pyyaml`; sandboxed agent shells need network access to PyPI. |
 | Agent follows old frontmatter or loop rules | Catalog `SKILL.md` changed but `.agents/skills/` did not. Re-run step 1 with `--force`, commit, and restart the agent. |
 
-## Related
+# Related
 
 - [ADR-0004](../decisions/ADR-0004-project-skill-install.md)
 - [Catalog layout](../concepts/catalog-layout.md)
 - [Conventions](../concepts/conventions.md)
 - [Gotchas](../concepts/gotchas.md)
+- [ADR-0005](../decisions/ADR-0005-okf-alignment.md)
+
+[^install-sh]: zvec-llm-wiki install script
+[^zg-bootstrap-sh]: zvec-llm-wiki bootstrap script

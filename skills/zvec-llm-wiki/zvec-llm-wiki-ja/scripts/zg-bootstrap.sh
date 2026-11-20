@@ -25,7 +25,7 @@ usage() {
 Codex などユーザー全体設定は --target codex 等を指定。zg が PATH に無いときは
 @zvec/zvec-grep をグローバルインストールし、zg が起動することを確認する。
 cursor/claude はプロジェクト MCP を使う。
-Node.js 22+ が必要。
+Node.js 22+ が必要。wiki のスクリプトには PyYAML 入りの Python 3.9+ が必要。
 EOF
 }
 
@@ -87,9 +87,10 @@ upsert_agents_md() {
 <!-- ZVEC_LLM_WIKI_START -->
 ## プロジェクト知識（LLM wiki）
 
-- 生きた wiki: `docs/wiki/`（レジストリ: `docs/wiki/index.md`）
-- Query 順序: `index.md` を読み、次に `docs/wiki/**` にスコープした zg hybrid、完全一致名は rg、不足時だけ範囲を広げる
-- Wiki 書き込みは involved: ページ計画を示し、止められなければ編集する。編集後は増分 `zg index`
+- 生きた wiki: `docs/wiki/`、OKF v0.3 の bundle（`docs/wiki/index.md` から始め、次にディレクトリの index）
+- Query 順序: index 群、次に `docs/wiki/**` にスコープした zg hybrid、完全一致名は rg、不足時だけ docs/raw かコードへ広げる
+- 書き込みは `okf-generate`、信頼度と鮮度の報告は `okf-consume`、llm-wiki の規則は `zvec-llm-wiki-ja` に従う
+- Wiki 書き込みは involved: ページ計画を示し、止められなければ編集する。編集後は index 再生成、lint、増分 `zg index`
 
 <!-- ZVEC_LLM_WIKI_END -->
 EOF
@@ -179,7 +180,7 @@ if (existing && typeof existing === "object" && !Array.isArray(existing)) {
 }
 fs.writeFileSync(path, `${JSON.stringify(root, null, 2)}\n`);
 NODE
-  say "プロジェクト MCP を更新: $rel_path（チームと Cloud Agents 向けにコミット）"
+  say "プロジェクト MCP を更新: ${rel_path}（チームと Cloud Agents 向けにコミット）"
 }
 
 filter_user_install_targets() {
@@ -226,6 +227,9 @@ if (( NODE_MAJOR < 22 )); then
   echo "Node.js 22+ が必要です（検出: v$(node -v)）。中止します。" >&2
   exit 1
 fi
+if ! python3 -c 'import sys, yaml; sys.exit(sys.version_info < (3, 9))' >/dev/null 2>&1; then
+  warn "llm_wiki.py と okf-generate の validate.py には PyYAML 入りの Python 3.9+ が必要です（pip install pyyaml）"
+fi
 
 # 2) インデックス用 CLI。プロジェクト MCP は npx 起動。zg のグローバルインストールは任意。
 ZG=()
@@ -267,43 +271,31 @@ fi
 
 # 4) wiki のひな形 ------------------------------------------------------------
 if [[ ! -d docs/wiki ]]; then
-  say "docs/wiki/ のひな形を作成します"
-  mkdir -p docs/wiki/sources docs/wiki/entities docs/wiki/concepts docs/wiki/analyses
-  cat > docs/wiki/index.md <<'EOF'
-# Wiki レジストリ
+  say "docs/wiki/ を OKF v0.3 の bundle としてひな形作成します"
+  mkdir -p docs/wiki/summaries docs/wiki/entities docs/wiki/concepts docs/wiki/analyses
+  WIKI_TITLE="$(basename "$PWD") wiki"
+  cat > docs/wiki/index.md <<EOF
+---
+okf_version: "0.3"
+title: ${WIKI_TITLE}
+description: 人とエージェントが共有する生きたプロジェクト知識。この index を読み、次にディレクトリの index を読む。
+---
 
-最初にこのカタログを読む。すべての wiki ページを相対 `.md` リンクと 1 行要約付きで登録する。
+# ${WIKI_TITLE}
 
-## Core
-
-- [操作ログ](log.md) — ingest、lint、crystallize、大きな record の追記履歴。
-
-## Sources
-
-ソース要約と来歴ページは `sources/` に置く。
-
-## Entities
-
-人、システム、プロジェクト、製品は `entities/` に置く。
-
-## Concepts
-
-用語、パターン、ルール、アイデアは `concepts/` に置く。
-
-## Analyses
-
-統合分析と crystallize した query 回答は `analyses/` に置く。
-
-任意の coding overlay として `decisions/` と `runbooks/` を追加できる。任意の不変な
-インポート済み Markdown はプロジェクトルートの `raw/`（`docs/` の隣）に置ける。
+* [操作ログ](log.md) - wiki 操作の履歴。新しい日付が上。
 EOF
-  cat > docs/wiki/log.md <<'EOF'
+  cat > docs/wiki/log.md <<EOF
 # Wiki 操作ログ
 
-大きな操作を `## [YYYY-MM-DD] kind | title` として追記する。kind は `ingest`、`lint`、
-`crystallize`、`record`。変更ページを相対 `.md` リンクで示し、該当時は source path を記録する。
-過去の entry は書き換えない。
+新しい日付が上。各 entry は **Ingest**、**Record**、**Crystallize**、**Lint** などの操作名の太字で始め、変更したページへリンクする。
+
+## $(date -u +%Y-%m-%d)
+
+* **Creation**: OKF の wiki bundle をひな形作成した。
 EOF
+elif [[ -f docs/wiki/index.md ]] && ! head -n 1 docs/wiki/index.md | grep -qx -- '---'; then
+  warn "docs/wiki/ は OKF 以前の形式です（index.md に frontmatter がない）。zvec-llm-wiki-okf-migrate-ja スキルで移行してください。"
 else
   say "docs/wiki/ は既に存在するため変更しません"
 fi
@@ -330,3 +322,6 @@ run_zg status --check-ready
 
 say "完了。MCP を今設定した場合はエージェントを再起動してください。"
 say "ホットメモリ: AGENTS.md。まず docs/wiki/index.md を読む。zg の使い方: zg help"
+if [[ ! -d .agents/skills/okf-generate && ! -d "${HOME}/.agents/skills/okf-generate" ]]; then
+  warn "okf-generate が未インストールです。エージェントが OKF を書いて検証できるよう install.sh（--no-okf なし）を実行してください"
+fi

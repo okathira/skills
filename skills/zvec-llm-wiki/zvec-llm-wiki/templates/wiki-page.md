@@ -1,27 +1,31 @@
 ---
-status: working
-aliases:
+type: <Reference | Entity | Concept | Analysis — from the directory>
+title: <The one fact this page owns>
+description: <One sentence; directory indexes copy it.>
+x-zvec-aliases:
   - <high-signal name agents type>
   - <spoken synonym>
   - <short form or code-name>
-source: <raw/path.md, repository path, URL, or omit this key>
+generated: { by: "<tool>/<model>", at: "<YYYY-MM-DDTHH:MM:SSZ>" }
+sources:
+  - id: <source-id>
+    resource: <URL, /path.md inside the bundle, or a repository path such as ../../raw/file.md>
+    title: <Source title>
 ---
 
-# <Page title = the one fact this page owns>
+# What
 
-One-line summary of what this page is the single source of truth for.
+The current state. Keep it focused and link to evidence instead of copying it.[^<source-id>]
 
-## What
-
-The current state. Keep it focused and link to evidence instead of copying it.
-
-## Why
+# Why
 
 Intent, constraints, conflicts, and preserved dead ends that the source alone does not explain.
 
-## Related
+# Related
 
 - [Related page](../concepts/related-page.md) — use relative `.md` links, not wikilinks.
 
-<!-- Register this page with a one-line summary in docs/wiki/index.md, append log.md for a
-substantial operation, then run incremental `zg index`. -->
+[^<source-id>]: <Source title>
+
+<!-- Delete keys you cannot fill from a source. Omit status for stable pages; use draft or
+deprecated + superseded_by. Append log.md, run llm_wiki.py index, lint, then incremental `zg index`. -->

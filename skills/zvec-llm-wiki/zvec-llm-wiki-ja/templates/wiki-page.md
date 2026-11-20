@@ -1,27 +1,31 @@
 ---
-status: working
-aliases:
+type: <Reference | Entity | Concept | Analysis — ディレクトリから>
+title: <このページが所有する 1 事実>
+description: <1 文。ディレクトリ index がこれを写す。>
+x-zvec-aliases:
   - <エージェントが打つ高シグナルな名前>
   - <会話で使う同義語>
   - <短い形またはコード名>
-source: <raw/path.md、リポジトリ path、URL、またはこのキーを省略>
+generated: { by: "<tool>/<model>", at: "<YYYY-MM-DDTHH:MM:SSZ>" }
+sources:
+  - id: <source-id>
+    resource: <URL、bundle 内の /path.md、または ../../raw/file.md のようなこのページからの相対パス>
+    title: <ソースのタイトル>
 ---
 
-# <ページタイトル = このページが所有する 1 事実>
+# What
 
-このページが単一の正（source of truth）であることの 1 行要約。
+現状。焦点を保ち、根拠をコピーせずリンクする。[^<source-id>]
 
-## What
-
-現状。焦点を保ち、根拠をコピーせずリンクする。
-
-## Why
+# Why
 
 source だけでは説明できない意図、制約、矛盾、保持すべき行き止まり。
 
-## Related
+# Related
 
 - [関連ページ](../concepts/related-page.md) — wikilink ではなく相対 `.md` リンクを使う。
 
-<!-- このページを 1 行要約付きで docs/wiki/index.md に登録し、大きな操作なら log.md に追記後、
-増分 `zg index` を実行する。 -->
+[^<source-id>]: <ソースのタイトル>
+
+<!-- ソースで埋められないキーは消す。stable なページは status を書かず、draft か
+deprecated + superseded_by を使う。log.md に追記し、llm_wiki.py index、lint、増分 `zg index` を実行する。 -->

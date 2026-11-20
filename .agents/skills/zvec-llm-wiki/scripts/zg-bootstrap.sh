@@ -25,7 +25,7 @@ With no --target, upserts committed project MCP (.cursor/mcp.json, .mcp.json) on
 Pass --target codex (etc.) for user-level zg install. If zg is not on PATH, this
 installs @zvec/zvec-grep globally and checks that zg launches. cursor/claude use
 the project files.
-Requires Node.js 22+.
+Requires Node.js 22+. The wiki scripts need Python 3.9+ with PyYAML.
 EOF
 }
 
@@ -87,9 +87,10 @@ upsert_agents_md() {
 <!-- ZVEC_LLM_WIKI_START -->
 ## Project knowledge (LLM wiki)
 
-- Living wiki: `docs/wiki/` (registry: `docs/wiki/index.md`)
-- Query order: read `index.md`; then zg hybrid scoped to `docs/wiki/**`; then rg for exact names; widen only if needed
-- Wiki writes are involved: show the page plan, then edit unless stopped; after edits run incremental `zg index`
+- Living wiki: `docs/wiki/`, an OKF v0.3 bundle (start at `docs/wiki/index.md`, then directory indexes)
+- Query order: indexes; then zg hybrid scoped to `docs/wiki/**`; then rg for exact names; widen to docs/raw or code only if needed
+- Write with `okf-generate`; report trust and freshness with `okf-consume`; llm-wiki rules live in `zvec-llm-wiki`
+- Wiki writes are involved: show the page plan, then edit unless stopped; after edits regenerate indexes, lint, and run incremental `zg index`
 
 <!-- ZVEC_LLM_WIKI_END -->
 EOF
@@ -226,6 +227,9 @@ if (( NODE_MAJOR < 22 )); then
   echo "Node.js 22+ required (found v$(node -v)). Aborting." >&2
   exit 1
 fi
+if ! python3 -c 'import sys, yaml; sys.exit(sys.version_info < (3, 9))' >/dev/null 2>&1; then
+  warn "Python 3.9+ with PyYAML is needed for llm_wiki.py and okf-generate's validate.py (pip install pyyaml)"
+fi
 
 # 2) Resolve zg for CLI indexing. Project MCP uses npx; a global zg is optional.
 ZG=()
@@ -267,43 +271,31 @@ fi
 
 # 4) Scaffold the wiki --------------------------------------------------------
 if [[ ! -d docs/wiki ]]; then
-  say "Scaffolding docs/wiki/"
-  mkdir -p docs/wiki/sources docs/wiki/entities docs/wiki/concepts docs/wiki/analyses
-  cat > docs/wiki/index.md <<'EOF'
-# Wiki registry
+  say "Scaffolding docs/wiki/ as an OKF v0.3 bundle"
+  mkdir -p docs/wiki/summaries docs/wiki/entities docs/wiki/concepts docs/wiki/analyses
+  WIKI_TITLE="$(basename "$PWD") wiki"
+  cat > docs/wiki/index.md <<EOF
+---
+okf_version: "0.3"
+title: ${WIKI_TITLE}
+description: Living project knowledge for people and agents; read this index, then the directory indexes.
+---
 
-Read this catalog first. Register every wiki page with a relative `.md` link and one-line summary.
+# ${WIKI_TITLE}
 
-## Core
-
-- [Operation log](log.md) — append-only history of ingest, lint, crystallize, and substantial records.
-
-## Sources
-
-Source summaries and provenance pages belong in `sources/`.
-
-## Entities
-
-People, systems, projects, and products belong in `entities/`.
-
-## Concepts
-
-Terms, patterns, rules, and ideas belong in `concepts/`.
-
-## Analyses
-
-Syntheses and crystallized query answers belong in `analyses/`.
-
-Optional coding overlays may add `decisions/` and `runbooks/`. Optional immutable imported Markdown
-may live in project-root `raw/` (a sibling of `docs/`).
+* [Operation log](log.md) - History of wiki operations, newest date first.
 EOF
-  cat > docs/wiki/log.md <<'EOF'
-# Wiki operation log
+  cat > docs/wiki/log.md <<EOF
+# Wiki log
 
-Append substantial operations as `## [YYYY-MM-DD] kind | title`, where kind is `ingest`, `lint`,
-`crystallize`, or `record`. Describe changed pages with relative `.md` links and record source paths
-when applicable; do not rewrite earlier entries.
+Newest date first. Each entry starts with the operation in bold, such as **Ingest**, **Record**, **Crystallize**, or **Lint**, and links the pages it changed.
+
+## $(date -u +%Y-%m-%d)
+
+* **Creation**: Scaffolded the OKF wiki bundle.
 EOF
+elif [[ -f docs/wiki/index.md ]] && ! head -n 1 docs/wiki/index.md | grep -qx -- '---'; then
+  warn "docs/wiki/ predates OKF (index.md has no frontmatter). Migrate it with the zvec-llm-wiki-okf-migrate skill."
 else
   say "docs/wiki/ already exists — leaving it untouched"
 fi
@@ -330,3 +322,6 @@ run_zg status --check-ready
 
 say "Done. Restart your agent if MCP was just configured."
 say "Hot memory: AGENTS.md. Read docs/wiki/index.md first. For zg usage: zg help"
+if [[ ! -d .agents/skills/okf-generate && ! -d "${HOME}/.agents/skills/okf-generate" ]]; then
+  warn "okf-generate is not installed; run install.sh (without --no-okf) so agents can write and validate OKF"
+fi
