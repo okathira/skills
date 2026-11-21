@@ -9,10 +9,13 @@ x-zvec-aliases:
   - install.sh
   - incremental zg --index
   - project MCP
-generated: { by: "codex/gpt-6.2-sol", at: "2026-11-21T12:57:19Z" }
+generated: { by: "codex/gpt-6.2-sol", at: "2026-11-21T13:04:56Z" }
 verified:
   - { by: "human:owner", at: "2026-11-20T15:31:00Z" }
 sources:
+  - id: node-release-index
+    resource: https://nodejs.org/dist/index.json
+    title: Node.js release index with bundled npm versions
   - id: zg-bootstrap-sh
     resource: ../../../skills/zvec-llm-wiki/zvec-llm-wiki/scripts/zg-bootstrap.sh
     title: zvec-llm-wiki bootstrap script
@@ -23,7 +26,7 @@ sources:
 
 # Prerequisites
 
-- Node.js 22+; this catalog pins dogfood Node in the repo-root `.node-version` (version managers that read that file pick it up automatically).
+- Node.js 22+ for installation into other projects. For development and dogfooding in this repository, select the exact release in `.node-version` and use its bundled npm. Compare `node --version` and `npm --version` with `.node-version` and `.npm-version` if your shell has multiple toolchains. CI selects the Node pin and checks the bundled npm version.[^node-release-index]
 - Python 3.9+ with PyYAML (`pip3 install --user pyyaml`) for `llm_wiki.py` and `validate.py`
 - POSIX shell (Git Bash on Windows), plus `curl` and `tar` to fetch the OKF skills
 
@@ -123,3 +126,5 @@ An index created by zg 0.2.2 was reported as needing a rebuild by 0.3.1. If the 
 
 [^install-sh]: zvec-llm-wiki install script
 [^zg-bootstrap-sh]: zvec-llm-wiki bootstrap script
+
+[^node-release-index]: The official Node.js release index lists each LTS version and its bundled npm.
