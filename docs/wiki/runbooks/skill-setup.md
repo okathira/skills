@@ -9,10 +9,13 @@ x-zvec-aliases:
   - install.sh
   - incremental zg --index
   - project MCP
-generated: { by: "codex/gpt-6.2-sol", at: "2026-11-21T13:04:56Z" }
+generated: { by: "codex/gpt-6.2-sol", at: "2026-11-21T14:47:14Z" }
 verified:
   - { by: "human:owner", at: "2026-11-20T15:31:00Z" }
 sources:
+  - id: npm-release
+    resource: https://registry.npmjs.org/npm/12.2.3
+    title: npm 12.2.3 package metadata and Node.js compatibility
   - id: node-release-index
     resource: https://nodejs.org/dist/index.json
     title: Node.js release index with bundled npm versions
@@ -26,7 +29,7 @@ sources:
 
 # Prerequisites
 
-- Node.js 22+ for installation into other projects. For development and dogfooding in this repository, select the exact release in `.node-version` and use its bundled npm. Compare `node --version` and `npm --version` with `.node-version` and `.npm-version` if your shell has multiple toolchains. CI selects the Node pin and checks the bundled npm version.[^node-release-index]
+- Node.js 22+ for installation into other projects. For development and dogfooding in this repository, select the exact release in `.node-version` and install the version in `.npm-version`. For example, with the pinned Node active in your version manager, run `npm install -g npm@12.2.3` and check `npm --version`. CI installs npm into a temporary prefix, adds it to PATH, and verifies the pin.[^node-release-index][^npm-release]
 - Python 3.9+ with PyYAML (`pip3 install --user pyyaml`) for `llm_wiki.py` and `validate.py`
 - POSIX shell (Git Bash on Windows), plus `curl` and `tar` to fetch the OKF skills
 
@@ -128,3 +131,4 @@ An index created by zg 0.2.2 was reported as needing a rebuild by 0.3.1. If the 
 [^zg-bootstrap-sh]: zvec-llm-wiki bootstrap script
 
 [^node-release-index]: The official Node.js release index lists each LTS version and its bundled npm.
+[^npm-release]: The npm package metadata lists compatible versions of Node.js.

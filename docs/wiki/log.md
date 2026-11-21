@@ -4,6 +4,8 @@ Newest date first. Each entry starts with the operation in bold, such as **Inges
 
 ## 2026-11-21
 
+* **Record**: Updated the [development toolchain](runbooks/skill-setup.md) to npm 12.2.3 with Node.js 26.13.1 LTS. CI installs the pinned npm in a temporary prefix.
+
 * **Record**: Pinned development to Node.js 26.13.1 LTS and bundled npm 11.20.0, and checked the npm pin in CI. Documented the development toolchain in [skill setup](runbooks/skill-setup.md).
 
 * **Record**: Updated [skill setup](runbooks/skill-setup.md) and [MCP gotchas](concepts/gotchas.md) for the pinned zg launcher, npm script permission, and version checks. Queued publish jobs so an older validation cannot replace the latest waiting job.

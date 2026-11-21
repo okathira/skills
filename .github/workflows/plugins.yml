@@ -24,12 +24,18 @@ jobs:
         with:
           node-version-file: .node-version
           package-manager-cache: false
-      - name: Verify bundled npm version
+      - name: Install pinned npm
+        run: |
+          version=$(cat .npm-version)
+          prefix="$RUNNER_TEMP/pinned-npm"
+          npm install --global --prefix "$prefix" --ignore-scripts --no-audit --no-fund "npm@$version"
+          echo "$prefix/bin" >> "$GITHUB_PATH"
+      - name: Verify npm version
         run: |
           expected=$(cat .npm-version)
           actual=$(npm --version)
           if [ "$actual" != "$expected" ]; then
-            echo "Expected the pinned Node.js release's bundled npm ($expected), got $actual" >&2
+            echo "Expected npm $expected, got $actual" >&2
             exit 1
           fi
       - uses: actions/setup-python@v6
