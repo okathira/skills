@@ -88,7 +88,7 @@ zg --help models
 npx --yes @zvec/zvec-grep help models
 ```
 
-Bootstrap upserts **committed** `.cursor/mcp.json` and `.mcp.json` with `npx @zvec/zvec-grep@0.3.1 --server --stdio`
+Bootstrap upserts **committed** `.cursor/mcp.json` and `.mcp.json` with an `npx` launcher for a pinned zvec-grep version
 so agents do not require a global `zg`. A re-run updates that server's command and args, keeps
 compatible fields such as `env`, and refuses to merge an existing HTTP transport.
 The CLI uses `zg` on PATH or `npx @zvec/zvec-grep`.

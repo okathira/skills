@@ -21,27 +21,62 @@ LOCALES = {
     "zvec-llm-wiki": "Maintain and search an Open Knowledge Format wiki with zvec-grep.",
     "zvec-llm-wiki-ja": "zvec-grep で Open Knowledge Format の Wiki を検索・メンテナンスします。",
 }
+ZG_BOOTSTRAPS = [SOURCE / name / "scripts/zg-bootstrap.sh" for name in LOCALES] + [
+    REPO / ".agents/skills/zvec-llm-wiki/scripts/zg-bootstrap.sh"
+]
+ZG_CONFIGS = [REPO / ".mcp.json", REPO / ".cursor/mcp.json"]
 
 
-def read_pins():
+def zg_server(package):
+    return {
+        "type": "stdio",
+        "command": "npx",
+        "args": ["--yes", package, "--server", "--stdio", "--mcp-toolset", "agent"],
+    }
+
+
+def sync_zg(write=False):
+    version = (REPO / "plugins/zvec-grep.version").read_text(encoding="utf-8").strip()
+    if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version):
+        raise ValueError("plugins/zvec-grep.version must contain an exact MAJOR.MINOR.PATCH version")
+    package = f"@zvec/zvec-grep@{version}"
+    stale = []
+    for path in ZG_BOOTSTRAPS:
+        before = path.read_text(encoding="utf-8")
+        after, count = re.subn(r'^ZG_PACKAGE="[^"\n]+"$', f'ZG_PACKAGE="{package}"', before, flags=re.MULTILINE)
+        if count != 1:
+            raise ValueError(f"Expected one ZG_PACKAGE assignment in {path.relative_to(REPO)}")
+        if before != after:
+            stale.append(path)
+            if write:
+                path.write_bytes(after.encode("utf-8"))
+    launcher = zg_server(package)
+    for path in ZG_CONFIGS:
+        config = json.loads(path.read_text(encoding="utf-8"))
+        server = config["mcpServers"]["zvec_grep"]
+        fields = {key: launcher[key] for key in ("command", "args")}
+        if any(server.get(key) != value for key, value in fields.items()):
+            stale.append(path)
+            if write:
+                server.update(fields)
+                write_json(path, config)
+    if stale and not write:
+        paths = ", ".join(path.relative_to(REPO).as_posix() for path in stale)
+        raise ValueError(f"Run python plugins/build.py --sync-zg; out of date: {paths}")
+    return package
+
+
+def read_okf_revision():
     revisions = set()
-    packages = set()
     for name in LOCALES:
         installer = (SOURCE / name / "install/install.sh").read_text(encoding="utf-8")
         match = re.search(r"^OKF_COMMIT=([0-9a-f]{40})$", installer, re.MULTILINE)
         if match is None:
             raise ValueError(f"Missing pinned OKF revision in {name} installer")
         revisions.add(match[1])
-        bootstrap = (SOURCE / name / "scripts/zg-bootstrap.sh").read_text(encoding="utf-8")
-        match = re.search(r'^ZG_PACKAGE="(@zvec/zvec-grep@[0-9]+\.[0-9]+\.[0-9]+)"$', bootstrap, re.MULTILINE)
-        if match is None:
-            raise ValueError(f"Missing pinned zvec-grep package in {name} bootstrap")
-        packages.add(match[1])
     if len(revisions) != 1:
         raise ValueError("The standalone installers must pin the same OKF revision")
-    if len(packages) != 1:
-        raise ValueError("The bootstrap scripts must pin the same zvec-grep version")
-    return revisions.pop(), packages.pop()
+    return revisions.pop()
 
 
 def unpack_okf(archive, revision, destination):
@@ -81,7 +116,8 @@ def write_json(path, value):
 
 
 def build(destination, version):
-    revision, package = read_pins()
+    package = sync_zg()
+    revision = read_okf_revision()
     url = f"https://codeload.github.com/open-knowledge-format/open-knowledge-format/tar.gz/{revision}"
     with urlopen(url, timeout=60) as response:
         archive = response.read()
@@ -119,12 +155,7 @@ def build(destination, version):
                 "repository": REPO_URL,
                 "license": "MIT",
             }
-            server = {
-                "type": "stdio",
-                "command": "npx",
-                "args": ["--yes", package, "--server", "--stdio", "--mcp-toolset", "agent"],
-            }
-            mcp = {"mcpServers": {"zvec_grep": server}}
+            mcp = {"mcpServers": {"zvec_grep": zg_server(package)}}
             write_json(plugin / "plugin.json", {"$schema": f"{SCHEMAS}/plugin.schema.json", **manifest})
             write_json(plugin / "mcp.json", {"$schema": f"{SCHEMAS}/mcp.schema.json", **mcp})
             write_json(plugin / ".claude-plugin/plugin.json", manifest)
@@ -147,6 +178,22 @@ def build(destination, version):
             "owner": {"name": "okathira"},
             "plugins": claude_entries,
         })
+        write_json(stage / ".cursor-plugin/marketplace.json", {
+            "name": "agent-tools",
+            "owner": {"name": "okathira"},
+            "plugins": [
+                {"name": name, "source": f"plugins/{name}", "description": description}
+                for name, description in LOCALES.items()
+            ],
+        })
+        shutil.copy2(REPO / "LICENSE", stage)
+        (stage / "README.md").write_text(
+            f"# Agent Tools plugins {version}\n\n"
+            "This branch contains generated plugin packages and marketplace manifests. "
+            "See the [source and installation instructions]"
+            f"({REPO_URL}/tree/main/plugins).\n",
+            encoding="utf-8",
+        )
         stage.rename(destination)
 
 
@@ -154,9 +201,15 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=REPO / "dist/agent-tools")
     parser.add_argument("--version", default="0.1.0")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--sync-zg", action="store_true", help="sync the zg pin to standalone and dogfooding files")
+    mode.add_argument("--check-zg", action="store_true", help="check the zg pin without building a package")
     args = parser.parse_args()
-    if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", args.version):
-        parser.error("--version must use MAJOR.MINOR.PATCH")
+    if args.sync_zg or args.check_zg:
+        print(sync_zg(write=args.sync_zg))
+        return
+    if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+(?:-rc\.[0-9]+)?", args.version):
+        parser.error("--version must use MAJOR.MINOR.PATCH or MAJOR.MINOR.PATCH-rc.N")
     if args.output.exists():
         parser.error(f"Output already exists: {args.output}. Choose a different --output.")
     build(args.output.resolve(), args.version)

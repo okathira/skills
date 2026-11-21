@@ -151,6 +151,6 @@ OKF の log 形式: `## YYYY-MM-DD` 見出しを新しい順に並べ、各 entr
 `okf-generate`、信頼度は `okf-consume`、書き込み計画を示して止められなければ続行、編集後に index
 再生成・lint・増分 `zg --index`、という順序を示す。
 
-デフォルトは `local/potion-multilingual-128m` のまま。より高品質な同一エンジンの選択肢は
-`local/qwen3-embedding-0.6b`。切り替えには rebuild と明示的な承認が必要。インストール済み
+デフォルトは `local/potion-multilingual-128m` のまま。検索品質を比較する候補は `local/embeddinggemma-300m` と
+`local/qwen3-embedding-0.6b`。対応する GPU ランタイムで高速化できる。切り替えには rebuild と明示的な承認が必要。インストール済み
 カタログは `zg --help models` を使う。

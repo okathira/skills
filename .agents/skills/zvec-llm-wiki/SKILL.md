@@ -98,8 +98,9 @@ query.
 This skill defines **when**, not CLI syntax. Run `zg --help search`, `zg --help index`, `zg --help
 install`, or `zg --help models`; do not invent flags. One workspace index serves wiki, references, and
 code through query-time scopes. Keep the multilingual default `local/potion-multilingual-128m`;
-`local/qwen3-embedding-0.6b` is a same-engine quality upgrade that requires a rebuild and therefore
-approval. Do not add qmd or a second indexer.
+Compare `local/embeddinggemma-300m` and `local/qwen3-embedding-0.6b` when evaluating retrieval quality.
+A supported CUDA or Metal runtime can accelerate either model. Switching an existing index requires
+an explicit rebuild and user approval. Do not add qmd or a second indexer.
 
 ## Bootstrap and migration
 

@@ -4,6 +4,8 @@ Newest date first. Each entry starts with the operation in bold, such as **Inges
 
 ## 2026-11-21
 
+* **Record**: Centralized the zvec-grep pin, documented both GPU-capable model choices, and prepared the [plugin distribution branch](concepts/catalog-layout.md).
+
 * **Record**: Broadened the catalog to Agent Tools.
   - Updated the [catalog layout](concepts/catalog-layout.md) with the GitHub rename, MIT distribution, and generated local plugin marketplace.
   - Kept project MCP for dogfooding and added a bootstrap option for plugin-managed MCP. Updated [skill setup](runbooks/skill-setup.md) and [gotchas](concepts/gotchas.md) for the pinned zvec-grep 0.3.1 launcher and CLI syntax.

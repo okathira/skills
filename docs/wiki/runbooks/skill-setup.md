@@ -9,7 +9,7 @@ x-zvec-aliases:
   - install.sh
   - incremental zg --index
   - project MCP
-generated: { by: "codex/gpt-6.2-sol", at: "2026-11-21T09:34:30Z" }
+generated: { by: "codex/gpt-6.2-sol", at: "2026-11-21T10:56:45Z" }
 verified:
   - { by: "human:owner", at: "2026-11-20T15:31:00Z" }
 sources:
@@ -59,7 +59,7 @@ bash skills/zvec-llm-wiki/zvec-llm-wiki/scripts/zg-bootstrap.sh
 Creates or updates:
 
 - `docs/wiki/` as an OKF bundle (only when absent; a pre-OKF wiki gets a migration warning), `AGENTS.md`, `.zvec-grep/` (local index; gitignored)[^zg-bootstrap-sh]
-- **Committed MCP**: `.cursor/mcp.json` (Cursor) and `.mcp.json` (Claude Code) with `npx @zvec/zvec-grep@0.3.1` stdio — no global `zg` required for agents
+- **Committed MCP**: `.cursor/mcp.json` (Cursor) and `.mcp.json` (Claude Code) with an `npx` launcher for the pinned zvec-grep package — no global `zg` required for agents
 - First or incremental `zg --index` with `local/potion-multilingual-128m` on a new wiki
 
 Optional user-level agents (Codex, OpenCode, …):
@@ -86,11 +86,11 @@ npx --yes @zvec/zvec-grep help models   # if zg is not on PATH
 ```bash
 python3 .agents/skills/zvec-llm-wiki/scripts/llm_wiki.py index
 python3 .agents/skills/zvec-llm-wiki/scripts/llm_wiki.py lint --strict
-npx --yes @zvec/zvec-grep@0.3.1 --index    # or `zg --index` if on PATH
+zg --index                          # use the version pinned in plugins/zvec-grep.version
 npx --yes @zvec/zvec-grep status --check-ready
 ```
 
-Restart the agent after first MCP configuration. The committed project launchers use zvec-grep 0.3.1 and its `--server --stdio` syntax. See the [plugin test guide](../../../plugins/README.md) for the separate plugin installation path.
+Restart the agent after first MCP configuration. The committed project launchers use the version in `plugins/zvec-grep.version`. The index is local to each checkout or worktree. In a new session, open the intended worktree with Node/npm on PATH and check that the client connects to `zvec_grep`. See the [plugin test guide](../../../plugins/README.md) for the separate plugin installation path.
 
 # Verification
 

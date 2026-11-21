@@ -12,6 +12,7 @@ TARGETS=()
 EMBEDDING="local/potion-multilingual-128m"
 EMBEDDING_EXPLICIT=0
 SKIP_MCP=0
+# Synced from plugins/zvec-grep.version in the source repository.
 ZG_PACKAGE="@zvec/zvec-grep@0.3.1"
 
 usage() {
@@ -22,7 +23,6 @@ Usage: zg-bootstrap.sh [--target <agent>]... [--embedding <model>] [--skip-mcp]
   --skip-mcp           Prepare the wiki and index without changing MCP configuration
   --embedding <model>  First-index model (default: local/potion-multilingual-128m)
                        List models: zg --help models
-                       (if zg is not on PATH: npx --yes @zvec/zvec-grep@0.3.1 --help models)
 
 With no --target, upserts committed project MCP (.cursor/mcp.json, .mcp.json) only.
 Pass --target codex (etc.) for user-level zg install. If zg is not on PATH, this

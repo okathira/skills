@@ -8,7 +8,21 @@ Python 3.9 以上でローカル導入テスト用の配布物をビルドしま
 python plugins/build.py
 ```
 
-出力先は `dist/agent-tools/` です。別の出力を作る場合は `--output` で新しいパスを指定します。更新テスト用には `--version` で新しい版を指定できます。生成先には両クライアント用のマーケットプレイス定義と、単体で導入できるプラグインが入ります。Git 経由で配布するには、マーケットプレイス定義がルートにあるこの生成ツリーを Git の ref として公開します。
+出力先は `dist/agent-tools/` です。別の出力を作る場合は `--output`、更新テスト用には `--version` を指定します。生成先には3クライアント用のマーケットプレイス定義と、単体で導入できるプラグインが入ります。
+
+## Git からの導入
+
+生成ツリーは `plugin-dist` ブランチで配布します。初回の検証には `plugin-v0.1.0-rc.1` タグを使います。
+
+| クライアント | テストする Git 配布経路 |
+| --- | --- |
+| Codex | `codex plugin marketplace add okathira/agent-tools --ref plugin-v0.1.0-rc.1` を実行し、デスクトップアプリの Plugins で **Agent Tools** から導入します。 |
+| Claude Code | `/plugin marketplace add okathira/agent-tools#plugin-v0.1.0-rc.1` を実行し、使う言語版を導入します。設定を共有するなら `project`、自分だけがそのリポジトリで使うなら `local` を選びます。 |
+| Cursor | `plugin-dist` またはタグを clone し、下記のローカル読み込み手順を使います。Teams／Enterprise ではリポジトリ取り込みで、ブランチを指定できる場合は `plugin-dist` を選びます。 |
+
+更新時は新しいディレクトリに生成し、前回の配布コミットを親として `plugin-dist` にコミットします。そのコミットに `plugin-v<version>` タグを付け、ブランチと一緒に push します。ソースは `main` に置き、配布ツリーにはプロジェクトの MCP 設定やローカルインデックスを含めません。
+
+zg を更新する場合は [zvec-grep.version](zvec-grep.version) を変更し、`python plugins/build.py --sync-zg` を実行します。ビルド時に反映漏れを検出します。新版の配布前に MCP の起動・検索と既存インデックスとの互換性を確認します。
 
 ## ローカル導入テスト
 
@@ -22,7 +36,7 @@ python plugins/build.py
 
 対象はローカル導入です。公式ディレクトリへの申請と OpenAI のウェブ環境での実行は別工程です。
 
-プラグインの zvec-grep は 0.3.1 に固定しています。旧バージョンの zvec-grep デーモンが動いていない環境でテストしてください。同時に動かす場合は別の OS 環境を使います。クライアントのプロファイルを分けてもデーモンは共有されます。
+プラグインは [zvec-grep.version](zvec-grep.version) の版を使います。旧バージョンの zvec-grep デーモンが動いていない環境でテストしてください。同時に動かす場合は別の OS 環境を使います。クライアントのプロファイルを分けてもデーモンは共有されます。
 
 ## 対象リポジトリの準備
 

@@ -8,7 +8,7 @@ x-zvec-aliases:
   - layer boundaries
   - raw vs wiki
   - skills directory
-generated: { by: "codex/gpt-6.2-sol", at: "2026-11-21T09:29:35Z" }
+generated: { by: "codex/gpt-6.2-sol", at: "2026-11-21T10:56:45Z" }
 verified:
   - { by: "human:owner", at: "2026-11-20T15:31:00Z" }
 sources:
@@ -59,7 +59,7 @@ agent-tools/
 
 Each folder under `skills/<group>/<locale>/` is a standalone distribution with its own `SKILL.md`, license, installer, and supporting files.[^readme] The live copies under `.agents/skills/` and the committed root and Cursor MCP settings serve this repository's dogfooding workflow ([ADR-0004](../decisions/ADR-0004-project-skill-install.md)).
 
-The plugin builder takes the English or Japanese skill from `skills/` and fetches both OKF dependencies at the standalone installers' pinned revision. It assembles independent packages with the portable and Claude Code manifests. The generated tree has its own marketplace and MCP configuration.[^builder] See the local installation matrix and workspace-switching checks for the next test phase.[^packaging]
+The plugin builder takes the English or Japanese skill from `skills/` and fetches both OKF dependencies at the standalone installers' pinned revision. It assembles independent packages with the portable and Claude Code manifests. The generated tree has its own marketplace and MCP configuration. The `plugin-dist` branch and version tags hold generated Git distributions. Use the pinned zvec-grep version from `plugins/zvec-grep.version` across the distribution and project launchers.[^builder] See the local installation matrix and workspace-switching checks for the next test phase.[^packaging]
 
 # Layer boundaries
 

@@ -12,6 +12,7 @@ TARGETS=()
 EMBEDDING="local/potion-multilingual-128m"
 EMBEDDING_EXPLICIT=0
 SKIP_MCP=0
+# Synced from plugins/zvec-grep.version in the source repository.
 ZG_PACKAGE="@zvec/zvec-grep@0.3.1"
 
 usage() {
@@ -22,7 +23,6 @@ usage() {
   --skip-mcp           MCP 設定を変更せずに Wiki とインデックスを準備する
   --embedding <model>  初回インデックスのモデル（デフォルト: local/potion-multilingual-128m）
                        対応一覧は zg --help models
-                       （PATH に無いときは npx --yes @zvec/zvec-grep@0.3.1 --help models）
 
 --target なしの場合はコミット用プロジェクト MCP（.cursor/mcp.json、.mcp.json）のみ更新する。
 Codex などユーザー全体設定は --target codex 等を指定。zg が PATH に無いときは

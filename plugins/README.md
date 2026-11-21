@@ -8,7 +8,21 @@ Build a local test package with Python 3.9 or newer. The builder fetches the two
 python plugins/build.py
 ```
 
-The output is `dist/agent-tools/`. Use `--output` with a fresh path to build another copy. Use `--version` to prepare a later version for update testing. The folder contains both marketplace manifests and self-contained plugin folders. Remote Git distribution requires publishing that generated tree at a Git ref with the marketplace manifests at its root.
+The output is `dist/agent-tools/`. Use `--output` with a fresh path to build another copy, and `--version` to test an update. The folder contains three marketplace manifests and self-contained plugin folders.
+
+## Install from Git
+
+The generated tree is published on the `plugin-dist` branch. Use the `plugin-v0.1.0-rc.1` tag for the first version under test.
+
+| Client | Git distribution path to test |
+| --- | --- |
+| Codex | Run `codex plugin marketplace add okathira/agent-tools --ref plugin-v0.1.0-rc.1`. Install **Agent Tools** from the desktop plugin picker. |
+| Claude Code | Run `/plugin marketplace add okathira/agent-tools#plugin-v0.1.0-rc.1`, then install the desired locale. Select `project` for shared settings or `local` for your copy of the repository. |
+| Cursor | Clone `plugin-dist` or its tag and use the local copy path below. For Teams or Enterprise, use the repository import and select `plugin-dist` if the import offers branch selection. |
+
+For a new version, generate the tree into a fresh directory and commit it to `plugin-dist` with the previous distribution commit as its parent. Tag that commit `plugin-v<version>` and push the branch and tag. Keep the source on `main` and never add local MCP settings or indexes to the distribution tree.
+
+To update zvec-grep, edit [zvec-grep.version](zvec-grep.version), run `python plugins/build.py --sync-zg`, and review the generated launcher changes. Builds reject a stale pin. Run the MCP and existing-index checks before you release a new version.
 
 ## Local installation test
 
@@ -22,7 +36,7 @@ The following client paths are ready for testing. Use a clean profile and a sepa
 
 These are local installation paths. Public directory submissions and OpenAI web execution are separate.
 
-zvec-grep 0.3.1 is pinned in the plugin. Run the test in an environment with no older zvec-grep daemon already running. Client profiles alone do not isolate the daemon; use a separate OS environment for tests that must run alongside an older daemon.
+The plugin uses the zvec-grep version in [zvec-grep.version](zvec-grep.version). Run the test in an environment with no older zvec-grep daemon already running. Client profiles alone do not isolate the daemon. Use a separate OS environment for tests that must run alongside an older daemon.
 
 ## Prepare the target repository
 

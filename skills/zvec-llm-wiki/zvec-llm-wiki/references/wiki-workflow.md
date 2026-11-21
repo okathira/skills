@@ -155,6 +155,7 @@ The hot block says: the wiki is an OKF bundle; read indexes first; then use wiki
 `okf-generate` for writes and `okf-consume` for trust; show the write plan and proceed unless
 stopped; regenerate indexes, lint, and run incremental `zg --index` after edits.
 
-The default remains `local/potion-multilingual-128m`. A higher-quality same-engine option is
-`local/qwen3-embedding-0.6b`; switching requires a rebuild and explicit approval. Use `zg --help
+The default remains `local/potion-multilingual-128m`. Compare `local/embeddinggemma-300m` and
+`local/qwen3-embedding-0.6b` to evaluate retrieval quality. A supported GPU runtime can accelerate
+either model. Switching an existing index requires a rebuild and explicit approval. Use `zg --help
 models` for the installed catalog.

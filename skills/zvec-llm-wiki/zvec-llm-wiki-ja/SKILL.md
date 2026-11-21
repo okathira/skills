@@ -99,7 +99,7 @@ wiki 編集後は増分 `zg --index` を実行し、新しい query に依存す
 このスキルが定義するのは CLI 構文ではなく **いつ** 使うか。`zg --help search`、`zg --help
 index`、`zg --help install`、`zg --help models` を実行し、フラグを推測しない。1 つの workspace index を
 query 時の scope で wiki、references、code に使う。多言語デフォルト `local/potion-multilingual-128m`
-を維持する。`local/qwen3-embedding-0.6b` は同じエンジン内の品質向上策だが rebuild が必要なため
+を維持する。`local/embeddinggemma-300m` と `local/qwen3-embedding-0.6b` は検索品質を比較する候補で、対応する GPU ランタイムで高速化できる。既存インデックスのモデル変更は rebuild が必要なため
 承認必須。qmd や第 2 の indexer は追加しない。
 
 ## ブートストラップと移行
