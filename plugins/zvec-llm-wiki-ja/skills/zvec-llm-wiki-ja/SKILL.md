@@ -15,7 +15,7 @@ license: MIT
 wiki は [OKF v0.3](https://github.com/open-knowledge-format/open-knowledge-format/blob/main/SPEC.md)
 の bundle。`zg`（zvec-grep）が唯一の検索エンジン。ループは次のとおり:
 
-> **Query → Work → Ingest/Record/Crystallize → Lint → 増分 `zg --index`**
+> **Query → Work → Ingest/Record/Crystallize → Lint → 増分 `zg.sh --index`**
 
 このスキルはループと llm-wiki 固有の拡張を担う。書式は公式の兄弟スキルが担う:
 
@@ -92,12 +92,14 @@ OKF ではこの警告は README のようなファイルのためのものな�
 分割されている、リネーム後の古い名前（rg）、deprecated な主張が残っている、alias がそのページの
 事実だけを指している。詳細は `references/wiki-workflow.md`。
 
-wiki 編集後は増分 `zg --index` を実行し、新しい query に依存する前に `zg --status`/freshness を確認する。
+wiki 編集後は増分 `zg.sh --index` を実行し、新しい query に依存する前に `zg.sh --status`/freshness を確認する。
 
 ## zg の使い方
 
-このスキルが定義するのは CLI 構文ではなく **いつ** 使うか。`zg --help search`、`zg --help
-index`、`zg --help install`、`zg --help models` を実行し、フラグを推測しない。1 つの workspace index を
+CLI は対象リポジトリのルートで、このスキルに同梱の `bash /path/to/installed-skill/scripts/zg.sh …` を使う。以下の `zg.sh` はそのランチャーを指す。
+
+このスキルが定義するのは CLI 構文ではなく **いつ** 使うか。`zg.sh --help search`、`zg.sh --help
+index`、`zg.sh --help install`、`zg.sh --help models` を実行し、フラグを推測しない。1 つの workspace index を
 query 時の scope で wiki、references、code に使う。多言語デフォルト `local/potion-multilingual-128m`
 を維持する。`local/embeddinggemma-300m` と `local/qwen3-embedding-0.6b` は検索品質を比較する候補で、対応する GPU ランタイムで高速化できる。既存インデックスのモデル変更は rebuild が必要なため
 承認必須。qmd や第 2 の indexer は追加しない。
@@ -106,8 +108,8 @@ query 時の scope で wiki、references、code に使う。多言語デフォ�
 
 ```bash
 bash scripts/zg-bootstrap.sh                          # エージェント自動検出
-bash scripts/zg-bootstrap.sh --target cursor codex    # 明示的ターゲット; zg --help install を参照
-bash scripts/zg-bootstrap.sh --embedding <model>      # デフォルト wiki 埋め込みを上書き（一覧: zg --help models）
+bash scripts/zg-bootstrap.sh --target cursor codex    # 明示的ターゲット; zg.sh --help install を参照
+bash scripts/zg-bootstrap.sh --embedding <model>      # デフォルト wiki 埋め込みを上書き（一覧: zg.sh --help models）
 ```
 
 Node.js 22+ と、PyYAML 入りの Python 3.9+ が必要。`docs/wiki/` がないときだけ OKF bundle のひな形を

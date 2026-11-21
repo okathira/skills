@@ -1,7 +1,7 @@
 {
   "name": "zvec-llm-wiki-ja",
   "description": "zvec-grep で Open Knowledge Format の Wiki を検索・メンテナンスします。",
-  "version": "0.1.0-rc.1",
+  "version": "0.1.7",
   "author": {
     "name": "okathira"
   },

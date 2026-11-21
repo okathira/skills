@@ -28,4 +28,4 @@ Intent, constraints, conflicts, and preserved dead ends that the source alone do
 [^<source-id>]: <Source title>
 
 <!-- Delete keys you cannot fill from a source. Omit status for stable pages; use draft or
-deprecated + superseded_by. Append log.md, run llm_wiki.py index, lint, then incremental `zg --index`. -->
+deprecated + superseded_by. Append log.md, run llm_wiki.py index, lint, then incremental `zg.sh --index`. -->

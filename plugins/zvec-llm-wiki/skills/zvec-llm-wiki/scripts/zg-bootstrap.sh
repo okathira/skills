@@ -12,8 +12,8 @@ TARGETS=()
 EMBEDDING="local/potion-multilingual-128m"
 EMBEDDING_EXPLICIT=0
 SKIP_MCP=0
-# Synced from plugins/zvec-grep.version in the source repository.
-ZG_PACKAGE="@zvec/zvec-grep@0.3.1"
+SCRIPT_DIR="$(cd "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/zg.sh"
 
 usage() {
   cat <<'EOF'
@@ -22,7 +22,7 @@ Usage: zg-bootstrap.sh [--target <agent>]... [--embedding <model>] [--skip-mcp]
   --target <agent>     Repeatable; passed to zg install (see: zg --help install)
   --skip-mcp           Prepare the wiki and index without changing MCP configuration
   --embedding <model>  First-index model (default: local/potion-multilingual-128m)
-                       List models: zg --help models
+                       List models with the bundled zg.sh --help models
 
 With no --target, upserts committed project MCP (.cursor/mcp.json, .mcp.json) only.
 Pass --target codex (etc.) for user-level zg install. If zg is not on PATH, this
@@ -102,7 +102,7 @@ upsert_agents_md() {
 - Living wiki: `docs/wiki/`, an OKF v0.3 bundle (start at `docs/wiki/index.md`, then directory indexes)
 - Query order: indexes; then zg hybrid scoped to `docs/wiki/**`; then rg for exact names; widen to docs/raw or code only if needed
 - Write with `okf-generate`; report trust and freshness with `okf-consume`; llm-wiki rules live in `zvec-llm-wiki`
-- Wiki writes are involved: show the page plan, then edit unless stopped; after edits regenerate indexes, lint, and run incremental `zg index`
+- Wiki writes are involved: show the page plan, then edit unless stopped; after edits regenerate indexes, lint, and update the index with `bash /path/to/installed-skill/scripts/zg.sh --index` from the installed zvec-llm-wiki skill
 
 <!-- ZVEC_LLM_WIKI_END -->
 EOF
@@ -138,12 +138,12 @@ EOF
 upsert_project_mcp() {
   local rel_path="$1"
   mkdir -p "$(dirname "$rel_path")"
-  node - "$rel_path" "$ZG_PACKAGE" <<'NODE'
+  node - "$rel_path" "$ZG_PACKAGE" "$ZG_ALLOW_SCRIPTS" <<'NODE'
 const fs = require("fs");
 const path = process.argv[2];
 const entry = {
   command: "npx",
-  args: ["--yes", process.argv[3], "--server", "--stdio", "--mcp-toolset", "agent"],
+  args: ["--yes", process.argv[4], process.argv[3], "--server", "--stdio", "--mcp-toolset", "agent"],
 };
 
 function isHttpTransport(server) {
@@ -209,24 +209,23 @@ filter_user_install_targets() {
 # zg install writes command "zg". A one-shot npx invocation does not leave that binary on PATH.
 ensure_persistent_zg() {
   if command -v zg >/dev/null 2>&1; then
-    ZG=(zg)
-    return 0
+    if ! zg_has_pinned_version; then
+      echo "User-level MCP needs zg ${ZG_PACKAGE##*@} on PATH. Update the existing zg or omit --target." >&2
+      return 1
+    fi
+    return
   fi
   if ! command -v npm >/dev/null 2>&1; then
-    echo "error: user-level targets need zg on PATH, and npm is not available to install it." >&2
-    exit 1
+    echo "User-level MCP needs zg ${ZG_PACKAGE##*@} or npm on PATH." >&2
+    return 1
   fi
-  say "Installing @zvec/zvec-grep globally so user-level agents can launch zg"
-  npm install -g "$ZG_PACKAGE"
+  say "Installing $ZG_PACKAGE for user-level MCP"
+  npm install -g "$ZG_ALLOW_SCRIPTS" "$ZG_PACKAGE"
   hash -r
-  if ! command -v zg >/dev/null 2>&1 || ! zg --version >/dev/null 2>&1; then
-    local prefix
-    prefix="$(npm prefix -g 2>/dev/null || true)"
-    echo "error: installed @zvec/zvec-grep, but zg does not launch. Add ${prefix:-the npm global bin directory} to PATH, then rerun." >&2
-    exit 1
+  if ! zg_has_pinned_version; then
+    echo "zg ${ZG_PACKAGE##*@} cannot be launched from PATH. Add the npm global bin directory to PATH and retry." >&2
+    return 1
   fi
-  ZG=(zg)
-  say "Using zg ($(zg --version 2>/dev/null || echo unknown))"
 }
 
 # 1) Node.js 22+ check --------------------------------------------------------
@@ -243,36 +242,23 @@ if ! python3 -c 'import sys, yaml; sys.exit(sys.version_info < (3, 9))' >/dev/nu
   warn "Python 3.9+ with PyYAML is needed for llm_wiki.py and okf-generate's validate.py (pip install pyyaml)"
 fi
 
-# 2) Resolve zg for CLI indexing. Project MCP uses npx; a global zg is optional.
-ZG=()
-if (( SKIP_MCP )); then
-  if ! command -v npx >/dev/null 2>&1; then
-    echo "The plugin requires npx from Node.js 22+." >&2
-    exit 1
+# 2) Check the CLI before making project changes.
+if [[ ${#TARGETS[@]} -gt 0 ]]; then
+  filter_user_install_targets
+  if [[ ${#FILTERED_TARGETS[@]} -gt 0 ]]; then
+    ensure_persistent_zg
   fi
-  ZG=(npx --yes "$ZG_PACKAGE")
-elif command -v zg >/dev/null 2>&1; then
-  ZG=(zg)
-  say "Using zg ($(zg --version 2>/dev/null || echo unknown))"
-elif command -v npx >/dev/null 2>&1; then
-  ZG=(npx --yes "$ZG_PACKAGE")
-  say "Using npx @zvec/zvec-grep for CLI (install zg globally if you prefer a shorter command)"
-else
-  echo "Neither zg nor npm found. Install Node.js 22+ first." >&2
+fi
+if ! zg_has_pinned_version && ! command -v npx >/dev/null 2>&1; then
+  echo "Install Node.js with npx or put zg ${ZG_PACKAGE##*@} on PATH." >&2
   exit 1
 fi
 
 run_zg() {
-  local command="$1"
-  shift
-  # Native zg uses --index/--status/--install. Older global zg uses subcommands.
-  if [[ "${ZG[0]}" == npx ]] || "${ZG[@]}" --help | grep -E '^[[:space:]]+--index[[:space:]]+Build' >/dev/null; then
-    command="--$command"
-  fi
   if (( SKIP_MCP )); then
     set -- "$@" --mode direct
   fi
-  "${ZG[@]}" "$command" "$@"
+  zg_run "$@"
 }
 
 # 3) Project MCP (commit) + optional user-level agent installers ----------------
@@ -283,17 +269,15 @@ else
   upsert_project_mcp ".mcp.json"
 
   if [[ ${#TARGETS[@]} -eq 0 ]]; then
-    say "Skipping user-level zg install (auto). Use project .cursor/mcp.json and .mcp.json; run zg --install --target <agent> for Codex/OpenCode user config."
+    say "Skipping user-level zg install (auto). Use project .cursor/mcp.json and .mcp.json; rerun bootstrap with --target <agent> for Codex/OpenCode user config."
   else
-    filter_user_install_targets
     if [[ ${#FILTERED_TARGETS[@]} -gt 0 ]]; then
       say "Configuring user-level agent integration: ${FILTERED_TARGETS[*]} (cursor/claude use committed project MCP)"
-      ensure_persistent_zg
       INSTALL_CMD=(--yes)
       for target in "${FILTERED_TARGETS[@]}"; do
         INSTALL_CMD+=(--target "$target")
       done
-      run_zg install "${INSTALL_CMD[@]}"
+      zg --install "${INSTALL_CMD[@]}"
     else
       say "Only cursor/claude requested — project MCP files are enough; no user-level zg install"
     fi
@@ -341,18 +325,18 @@ ensure_gitignore_zvec
 if [[ -d .zvec-grep ]]; then
   say "Existing index found — running incremental update (no rebuild)"
   if (( EMBEDDING_EXPLICIT )); then
-    warn "--embedding is ignored for an existing index. To change models, use zg --index --rebuild --embedding <model> with explicit user confirmation."
+    warn "--embedding is ignored for an existing index. To change models, use zg.sh --index --rebuild --embedding <model> with explicit user confirmation."
   fi
-  run_zg index
+  run_zg --index
 else
   say "Building first index (embedding: ${EMBEDDING}; zg default file discovery)"
-  run_zg index --embedding "$EMBEDDING"
+  run_zg --index --embedding "$EMBEDDING"
 fi
 
-run_zg status --check-ready
+run_zg --status --check-ready
 
 say "Done. Restart your agent if MCP was just configured."
-say "Hot memory: AGENTS.md. Read docs/wiki/index.md first. For zg usage: zg --help"
+say "Hot memory: AGENTS.md. Read docs/wiki/index.md first. For zg usage: bundled scripts/zg.sh --help"
 if [[ ! -d "$(dirname -- "${BASH_SOURCE[0]}")/../../okf-generate" && ! -d .agents/skills/okf-generate && ! -d "${HOME}/.agents/skills/okf-generate" ]]; then
   warn "okf-generate is not installed; run install.sh (without --no-okf) so agents can write and validate OKF"
 fi

@@ -2,7 +2,7 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "zvec-llm-wiki",
   "description": "Maintain and search an Open Knowledge Format wiki with zvec-grep.",
-  "version": "0.1.0-rc.1",
+  "version": "0.1.7",
   "author": {
     "name": "okathira"
   },
