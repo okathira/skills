@@ -12,7 +12,8 @@
 
 | スキル | できること | English |
 |--------|------------|---------|
-| [zvec-llm-wiki-ja](skills/zvec-llm-wiki/zvec-llm-wiki-ja/) | ソース・設計知識・プロジェクト文脈を生きた wiki に編纂し、段階的検索に [zvec-grep](https://github.com/zvec-ai/zvec-grep) を使う | [zvec-llm-wiki](skills/zvec-llm-wiki/zvec-llm-wiki/) |
+| [zvec-llm-wiki-ja](skills/zvec-llm-wiki/zvec-llm-wiki-ja/) | ソース・設計知識・プロジェクト文脈を生きた [OKF](https://github.com/open-knowledge-format/open-knowledge-format) の wiki に編纂し、段階的検索に [zvec-grep](https://github.com/zvec-ai/zvec-grep) を使う | [zvec-llm-wiki](skills/zvec-llm-wiki/zvec-llm-wiki/) |
+| [zvec-llm-wiki-okf-migrate-ja](skills/zvec-llm-wiki-okf-migrate/zvec-llm-wiki-okf-migrate-ja/) | OKF 以前の zvec-llm-wiki の wiki を OKF v0.3 へ一度だけ移行し、最後に人がレビューする | [zvec-llm-wiki-okf-migrate](skills/zvec-llm-wiki-okf-migrate/zvec-llm-wiki-okf-migrate/) |
 
 ## スキルの使い方
 

@@ -12,7 +12,8 @@ A growing catalog of **independent** Agent Skills. Each skill is its own package
 
 | Skill | What it does | 日本語 |
 |-------|----------------|--------|
-| [zvec-llm-wiki](skills/zvec-llm-wiki/zvec-llm-wiki/) | Compile sources, design knowledge, and project context into a living wiki, using [zvec-grep](https://github.com/zvec-ai/zvec-grep) for staged retrieval | [zvec-llm-wiki-ja](skills/zvec-llm-wiki/zvec-llm-wiki-ja/) |
+| [zvec-llm-wiki](skills/zvec-llm-wiki/zvec-llm-wiki/) | Compile sources, design knowledge, and project context into a living [OKF](https://github.com/open-knowledge-format/open-knowledge-format) wiki, using [zvec-grep](https://github.com/zvec-ai/zvec-grep) for staged retrieval | [zvec-llm-wiki-ja](skills/zvec-llm-wiki/zvec-llm-wiki-ja/) |
+| [zvec-llm-wiki-okf-migrate](skills/zvec-llm-wiki-okf-migrate/zvec-llm-wiki-okf-migrate/) | One-time migration of a pre-OKF zvec-llm-wiki wiki to OKF v0.3, ending with a human review | [zvec-llm-wiki-okf-migrate-ja](skills/zvec-llm-wiki-okf-migrate/zvec-llm-wiki-okf-migrate-ja/) |
 
 ## Using a skill
 

@@ -1,39 +1,41 @@
 ---
-status: proposed # proposed (working) | accepted (decided) | superseded
-date: YYYY-MM-DD
-deciders:
-  - <@handle | email | owner | agent:name>
-aliases:
+type: Decision Record
+title: "ADR-NNNN: <short decision title>"
+description: <One sentence stating the decision this page owns.>
+status: draft
+x-zvec-aliases:
   - ADR-NNNN
   - <high-signal name for this decision>
   - <short form agents type>
-source: <path, URL, or omit this key>
+generated: { by: "<tool>/<model>", at: "<YYYY-MM-DDTHH:MM:SSZ>" }
+sources:
+  - id: <source-id>
+    resource: <URL or repository path relative to this page>
+    title: <Source title>
 ---
 
-# ADR-NNNN: <short decision title>
+# Context
+What problem/force required a decision? Link to code or issues. Keep to the facts.[^<source-id>]
 
-One-line statement of the decision this page owns.
-
-## Context
-What problem/force required a decision? Link to code or issues. Keep to the facts.
-
-## Decision
+# Decision
 What we chose, stated in one or two sentences.
 
-## Why (rationale)
+# Why (rationale)
 The reasoning a code scan cannot recover: trade-offs, constraints, assumptions.
 
-## Alternatives considered
+# Alternatives considered
 - **Option A** — rejected because ...
 - **Option B** — rejected because ...
 
-## Consequences
+# Consequences
 Positive, negative, and follow-ups. What becomes easier/harder. What to watch for (gotchas).
 
-## References
-Wiki graph only. Do not restamp `source` URLs or paths here.
+# References
+Wiki graph only. Do not restamp `sources` here.
 
-<!-- Register this ADR with a one-line summary in docs/wiki/index.md, append log.md, then run
-incremental `zg index`. Keep status, date, deciders, superseded_by, aliases, and source only in
-frontmatter. deciders is a list of @handle, email, owner, or agent:<name>. Omit empty keys; add
-superseded_by only when replaced. -->
+[^<source-id>]: <Source title>
+
+<!-- Proposed = status: draft. On acceptance, remove status and record the acceptance as a
+verified event only when the decider confirms and states an id, for example
+verified: [{ by: "human:owner", at: "<now>" }]. When replaced, set status: deprecated and
+superseded_by: /decisions/ADR-MMMM-....md. Append log.md, run llm_wiki.py index, then `zg index`. -->

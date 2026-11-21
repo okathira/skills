@@ -1,38 +1,41 @@
 ---
-status: proposed # proposed (working) | accepted (decided) | superseded
-date: YYYY-MM-DD
-deciders:
-  - <@handle | メール | owner | agent:name>
-aliases:
+type: Decision Record
+title: "ADR-NNNN: <短い決定タイトル>"
+description: <このページが所有する決定を 1 文で。>
+status: draft
+x-zvec-aliases:
   - ADR-NNNN
   - <この決定の高シグナルな名前>
   - <エージェントが打つ短い形>
-source: <path、URL、またはこのキーを省略>
+generated: { by: "<tool>/<model>", at: "<YYYY-MM-DDTHH:MM:SSZ>" }
+sources:
+  - id: <source-id>
+    resource: <URL、またはこのページからの相対パスで書いたリポジトリ内ファイル>
+    title: <ソースのタイトル>
 ---
 
-# ADR-NNNN: <短い決定タイトル>
+# Context（背景）
+どのような問題や要因が決定を必要としたか? コードや issue へリンク。事実に留める。[^<source-id>]
 
-このページが所有する決定の 1 行要約。
-
-## Context（背景）
-どのような問題や要因が決定を必要としたか? コードや issue へリンク。事実に留める。
-
-## Decision（決定）
+# Decision（決定）
 選んだ内容を 1〜2 文で述べる。
 
-## Why (rationale)（理由）
+# Why (rationale)（理由）
 コードスキャンでは復元できない推論: トレードオフ、制約、前提。
 
-## Alternatives considered（検討した代替案）
+# Alternatives considered（検討した代替案）
 - **Option A** — 却下理由: ...
 - **Option B** — 却下理由: ...
 
-## Consequences（影響）
+# Consequences（影響）
 ポジティブ、ネガティブ、フォローアップ。何が楽/難しくなるか。注意すべき落とし穴。
 
-## References（参照）
-wiki グラフのみ。`source` の URL や path はここに再掲しない。
+# References（参照）
+wiki グラフのみ。`sources` をここに再掲しない。
 
-<!-- この ADR を 1 行要約付きで docs/wiki/index.md に登録し、log.md に追記後、増分 `zg index` を
-実行する。status、date、deciders、superseded_by、aliases、source は frontmatter だけ。deciders は
-@handle、メール、owner、agent:<name> のリスト。空キーは省略し、superseded_by は置き換え時だけ足す。 -->
+[^<source-id>]: <ソースのタイトル>
+
+<!-- 提案中は status: draft。承認されたら status を消し、決定者が確認して ID を明示したときだけ
+承認を verified の記録として残す。例: verified: [{ by: "human:owner", at: "<now>" }]。
+置き換えられたら status: deprecated と superseded_by: /decisions/ADR-MMMM-....md を付ける。
+log.md に追記し、llm_wiki.py index、増分 `zg index` を実行する。 -->

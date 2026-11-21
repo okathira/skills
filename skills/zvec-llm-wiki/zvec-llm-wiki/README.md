@@ -7,10 +7,15 @@ Core loop: **Query → Work → Ingest/Record/Crystallize → Lint → increment
 Writes are involved: show the page plan, then edit unless the user stops. Destructive index
 operations remain approval-gated.
 
-The default Karpathy-style wiki contains `index.md`, `log.md`, `sources/`, `entities/`, `concepts/`,
-and `analyses/`. `decisions/` and `runbooks/` are optional coding overlays; project-root `raw/` is
-optional and immutable. Query order is index first, wiki-scoped zg hybrid, rg for exact names, then
-wider raw or code scope only when needed. qmd is not used.
+The wiki is an [Open Knowledge Format (OKF) v0.3](https://github.com/open-knowledge-format/open-knowledge-format/blob/main/SPEC.md)
+bundle. The official `okf-generate` and `okf-consume` skills own the format, validation, and trust
+rules; this skill adds Karpathy operations, staged zg retrieval, and `x-zvec-*` extensions.
+
+The default Karpathy-style wiki contains `index.md`, `log.md`, `summaries/`, `entities/`, `concepts/`,
+and `analyses/`, each mapped to an OKF `type`. `decisions/` and `runbooks/` are optional coding
+overlays. Optional immutable imports live in `docs/raw/`, outside the bundle. Query order is indexes
+first, wiki-scoped zg hybrid, rg for exact names, then wider scope only when needed. qmd is not used. Wikis written
+before OKF are migrated with the separate [`zvec-llm-wiki-okf-migrate`](../../zvec-llm-wiki-okf-migrate/zvec-llm-wiki-okf-migrate/) skill.
 
 ## Layout
 
@@ -20,11 +25,12 @@ skills/zvec-llm-wiki/zvec-llm-wiki/
   install/install.sh              # copy the skill into agent skill directories
   SKILL.md                        # agent entry point
   scripts/zg-bootstrap.sh         # bootstrap zg + docs/wiki in a target repo
+  scripts/llm_wiki.py             # generate index.md files and lint llm-wiki rules
   references/
   templates/
 ```
 
-The skill `name` is `zvec-llm-wiki` and matches this folder. `install.sh` copies `SKILL.md`, `scripts/`, `references/`, and `templates/` only — not this README or `install/`.
+The skill `name` is `zvec-llm-wiki` and matches this folder. `install.sh` copies `SKILL.md`, `scripts/`, `references/`, and `templates/` only — not this README or `install/`. It also fetches the official `okf-generate` and `okf-consume` skills from the OKF repository at a pinned commit into the same skills directory (Apache-2.0; `LICENSE.md` is copied). Pass `--no-okf` to skip them.
 
 Two setup steps — do not confuse them:
 
@@ -58,7 +64,7 @@ Restart your agent after installing.
 
 ## 2. Bootstrap a target repo
 
-Run from the **project** you are working in (not from this catalog). Requires **Node.js 22+** — zvec-grep has no standalone binary.
+Run from the **project** you are working in (not from this catalog). Requires **Node.js 22+** — zvec-grep has no standalone binary — and **Python 3.9+ with PyYAML** (`pip install pyyaml`) for `llm_wiki.py` and `validate.py`.
 
 ```bash
 cd your-repo
@@ -90,8 +96,8 @@ Pass `--target codex` (etc.) for optional user-level `zg install`. If `zg` is no
 installs `@zvec/zvec-grep` globally and checks that `zg` launches before writing that config.
 Cursor/Claude use the project MCP files.
 For a new wiki it creates
-a useful registry, operation log, and category directories without empty stubs; an existing wiki is
-untouched. It then upserts `AGENTS.md` hot memory and builds the first index with zg default file
+an OKF root `index.md`, an operation log, and category directories without empty stubs; an existing
+wiki is untouched (a pre-OKF wiki gets a migration warning). It then upserts `AGENTS.md` hot memory and builds the first index with zg default file
 discovery. Restart the agent after MCP configuration.
 
 ## Skill package contents
@@ -101,12 +107,14 @@ discovery. Restart the agent after MCP configuration.
 | `SKILL.md` | Entry point: operations, wiki layers, staged zg routing |
 | `references/wiki-workflow.md` | Page/log contracts, ingest depth, lint rules, embeddings |
 | `scripts/zg-bootstrap.sh` | Idempotent, non-destructive repo setup |
-| `templates/wiki-page.md` | Source, entity, concept, and analysis page template |
+| `scripts/llm_wiki.py` | `index` regenerates directory indexes; `lint` checks the llm-wiki layer |
+| `templates/wiki-page.md` | Summary, entity, concept, and analysis page template |
 | `templates/adr.md` | Architecture Decision Record template (coding overlay) |
 | `templates/runbook.md` | Procedure template (coding overlay) |
 
 ## Design sources
 
+- [Open Knowledge Format](https://github.com/open-knowledge-format/open-knowledge-format) — bundle format, `okf-generate` / `okf-consume` skills, and `validate.py`
 - [zvec-grep](https://github.com/zvec-ai/zvec-grep) — zg behavior and CLI reference (`zg help`)
 - [Karpathy LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) — persistent compiled wiki, categories, operations, index-first query, and log
 - [zvec-grep open-source post](https://zvec.org/en/blog/2026-08-28-zvec-grep-open-source/) — one staged engine for semantic/hybrid discovery and rg verification

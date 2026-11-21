@@ -1,20 +1,26 @@
 ---
-status: decided
-aliases:
+type: Concept
+title: Agent Skills catalog layout
+description: Repository layout and the boundary between distributable skills, raw code, and compiled wiki knowledge.
+x-zvec-aliases:
   - repository layout
   - catalog architecture
   - layer boundaries
   - raw vs wiki
   - skills directory
-source:
-  - ../../../README.md
-  - ../../../README.ja.md
+generated: { by: "cursor/auto", at: "2026-11-20T11:07:00Z" }
+verified:
+  - { by: "human:owner", at: "2026-11-20T15:31:00Z" }
+sources:
+  - id: readme
+    resource: ../../../README.md
+    title: Agent Skills catalog
+  - id: readme-ja
+    resource: ../../../README.ja.md
+    title: Agent Skills catalog (Japanese)
 ---
-# Agent Skills catalog layout
 
-> This page owns the repository layout and the boundary between distributable skills, raw code, and compiled wiki knowledge.
-
-## Layout
+# Layout
 
 ```text
 skills/
@@ -24,40 +30,45 @@ skills/
     zvec-llm-wiki/
       zvec-llm-wiki/
       zvec-llm-wiki-ja/
-  docs/wiki/
-    index.md
+    zvec-llm-wiki-okf-migrate/
+      zvec-llm-wiki-okf-migrate/
+      zvec-llm-wiki-okf-migrate-ja/
+  docs/raw/                # optional immutable imports; outside the OKF bundle
+  docs/wiki/               # OKF bundle root
+    index.md               # okf_version, title, description; generated entries
     log.md
-    sources/
+    summaries/             # empty until a source is ingested
     entities/
     concepts/
     analyses/
     decisions/
     runbooks/
   AGENTS.md
-  .agents/skills/          # committed runtime skill install (default install.sh)
+  .agents/skills/          # committed runtime installs: zvec-llm-wiki, okf-generate, okf-consume, migrate
   .cursor/mcp.json         # committed Cursor MCP (bootstrap)
   .mcp.json                # committed Claude Code MCP (bootstrap)
 ```
 
 Skill packages are self-contained folders with `SKILL.md`, `install/`, `scripts/`, `references/`, and `templates/`. The package under `skills/` is the distributable source; `.agents/skills/` is the agent runtime copy ([ADR-0004](../decisions/ADR-0004-project-skill-install.md)).
 
-## Layer boundaries
+# Layer boundaries
 
-- **Raw:** executable code and package files. The wiki links to them; it does not compile the whole tree into prose.
-- **Wiki:** living project knowledge under `docs/wiki/`.
+- **Raw:** executable code and package files, plus optional imports in `docs/raw/`. The wiki links to them; it does not compile the whole tree into prose.
+- **Wiki:** living project knowledge under `docs/wiki/`, an OKF v0.3 bundle ([ADR-0005](../decisions/ADR-0005-okf-alignment.md)).
 - **Schema / hot memory:** the marked block in `AGENTS.md` plus the installed skill.
 - **Human landing pages:** root `README.md` and `README.ja.md` remain outside the wiki as installer UI.
 
-## Install vs bootstrap
+# Install vs bootstrap
 
 | Step | Script | Result |
 |------|--------|--------|
-| Install the skill | `skills/zvec-llm-wiki/zvec-llm-wiki/install/install.sh` | Copies the package into `.agents/skills/` (default; commit) or `~/.agents/skills/` with `--user` |
-| Bootstrap a project | `skills/zvec-llm-wiki/zvec-llm-wiki/scripts/zg-bootstrap.sh` | Wiki, hot memory, committed `.cursor/mcp.json` / `.mcp.json`, and zg index |
+| Install the skill | `skills/zvec-llm-wiki/zvec-llm-wiki/install/install.sh` | Copies the package and fetches `okf-generate` / `okf-consume` into `.agents/skills/` (default; commit) or `~/.agents/skills/` with `--user` |
+| Bootstrap a project | `skills/zvec-llm-wiki/zvec-llm-wiki/scripts/zg-bootstrap.sh` | OKF wiki scaffold, hot memory, committed `.cursor/mcp.json` / `.mcp.json`, and zg index |
+| Migrate a pre-OKF wiki | `zvec-llm-wiki-okf-migrate` skill | One-time conversion plus a human review that records `verified` |
 
 The local `.zvec-grep/` index is gitignored and is never the source of truth.
 
-## Related
+# Related
 
 - [Conventions](conventions.md)
 - [Glossary](glossary.md)
