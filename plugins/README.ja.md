@@ -12,13 +12,13 @@ python plugins/build.py
 
 ## Git からの導入
 
-生成ツリーは `plugin-dist` ブランチで配布します。新版を受け取る場合はブランチ、特定のビルドを再現する場合は `plugin-v<version>` タグを使います。最初の `plugin-v0.1.0-rc.1` タグも利用できます。
+生成ツリーは `plugin-dist` ブランチで配布します。特定のビルドを再現する場合は、以下の `plugin-dist` をその版の `plugin-v<version>` タグに置き換えてください。
 
-| クライアント | テストする Git 配布経路 |
+| クライアント | Git からの導入方法 |
 | --- | --- |
-| Codex | `codex plugin marketplace add okathira/agent-tools --ref plugin-v0.1.0-rc.1` を実行し、デスクトップアプリの Plugins で **Agent Tools** から導入します。 |
-| Claude Code | `/plugin marketplace add okathira/agent-tools#plugin-v0.1.0-rc.1` を実行し、使う言語版を導入します。設定を共有するなら `project`、自分だけがそのリポジトリで使うなら `local` を選びます。 |
-| Cursor | `plugin-dist` またはタグを clone し、下記のローカル読み込み手順を使います。Teams／Enterprise ではリポジトリ取り込みで、ブランチを指定できる場合は `plugin-dist` を選びます。 |
+| Codex | `codex plugin marketplace add okathira/agent-tools --ref plugin-dist` を実行します。デスクトップアプリの Plugins で **Agent Tools** を開き、使う言語版を導入します。 |
+| Claude Code | `/plugin marketplace add okathira/agent-tools#plugin-dist` を実行し、使う言語版を導入します。設定を共有するなら `project`、自分だけがそのリポジトリで使うなら `local` を選びます。 |
+| Cursor | `plugin-dist` を clone し、下記のローカル読み込み手順を使います。Teams／Enterprise ではリポジトリ取り込みで、ブランチを指定できる場合は `plugin-dist` を選びます。 |
 
 ## CI と公開
 

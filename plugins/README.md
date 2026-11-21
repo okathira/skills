@@ -12,13 +12,13 @@ The output is `dist/agent-tools/`. Use `--output` with a fresh path to build ano
 
 ## Install from Git
 
-The generated tree is published on the `plugin-dist` branch. Use the branch to follow new versions and a `plugin-v<version>` Git tag to reproduce a particular build. The original `plugin-v0.1.0-rc.1` tag remains available.
+The generated tree is published on the `plugin-dist` branch. Use the branch to follow new versions. To reproduce a specific build, substitute its `plugin-v<version>` tag for `plugin-dist` in the source reference.
 
-| Client | Git distribution path to test |
+| Client | Install from Git |
 | --- | --- |
-| Codex | Run `codex plugin marketplace add okathira/agent-tools --ref plugin-v0.1.0-rc.1`. Install **Agent Tools** from the desktop plugin picker. |
-| Claude Code | Run `/plugin marketplace add okathira/agent-tools#plugin-v0.1.0-rc.1`, then install the desired locale. Select `project` for shared settings or `local` for your copy of the repository. |
-| Cursor | Clone `plugin-dist` or its tag and use the local copy path below. For Teams or Enterprise, use the repository import and select `plugin-dist` if the import offers branch selection. |
+| Codex | Run `codex plugin marketplace add okathira/agent-tools --ref plugin-dist`. Open **Agent Tools** in the desktop plugin picker and install the desired locale. |
+| Claude Code | Run `/plugin marketplace add okathira/agent-tools#plugin-dist`, then install the desired locale. Select `project` for shared settings or `local` for your copy of the repository. |
+| Cursor | Clone `plugin-dist` and use the local copy path below. For Teams or Enterprise, use the repository import and select `plugin-dist` if the import offers branch selection. |
 
 ## CI and publication
 
