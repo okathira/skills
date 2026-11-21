@@ -102,7 +102,7 @@ upsert_agents_md() {
 - 生きた wiki: `docs/wiki/`、OKF v0.3 の bundle（`docs/wiki/index.md` から始め、次にディレクトリの index）
 - Query 順序: index 群、次に `docs/wiki/**` にスコープした zg hybrid、完全一致名は rg、不足時だけ docs/raw かコードへ広げる
 - 書き込みは `okf-generate`、信頼度と鮮度の報告は `okf-consume`、llm-wiki の規則は `zvec-llm-wiki-ja` に従う
-- Wiki 書き込みは involved: ページ計画を示し、止められなければ編集する。編集後は index 再生成、lint、zvec-llm-wiki-ja に同梱の `scripts/zg.sh --index` で増分更新
+- Wiki 書き込みは involved: ページ計画を示し、止められなければ編集する。編集後は index 再生成、lint、zvec-llm-wiki-ja に同梱の `bash /path/to/installed-skill/scripts/zg.sh --index` で増分更新
 
 <!-- ZVEC_LLM_WIKI_END -->
 EOF

@@ -4,6 +4,8 @@ Newest date first. Each entry starts with the operation in bold, such as **Inges
 
 ## 2026-11-21
 
+* **Record**: Repaired the [skill setup runbook](runbooks/skill-setup.md) code blocks and used the bundled launcher for index and status commands. Bootstrap guidance and migration instructions invoke the launcher with Bash.
+
 * **Record**: Updated the [development toolchain](runbooks/skill-setup.md) to npm 12.2.3 with Node.js 26.13.1 LTS. CI installs the pinned npm in a temporary prefix.
 
 * **Record**: Pinned development to Node.js 26.13.1 LTS and bundled npm 11.20.0, and checked the npm pin in CI. Documented the development toolchain in [skill setup](runbooks/skill-setup.md).

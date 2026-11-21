@@ -9,7 +9,7 @@ x-zvec-aliases:
   - install.sh
   - incremental zg --index
   - project MCP
-generated: { by: "codex/gpt-6.2-sol", at: "2026-11-21T14:47:14Z" }
+generated: { by: "codex/gpt-6.2-sol", at: "2026-11-21T15:35:55Z" }
 verified:
   - { by: "human:owner", at: "2026-11-20T15:31:00Z" }
 sources:
@@ -80,7 +80,7 @@ Supported embeddings are whatever the installed zg lists — do not copy a model
 
 ```bash
 bash .agents/skills/zvec-llm-wiki/scripts/zg.sh --help models
-npx --yes @zvec/zvec-grep help models   ```
+```
 
 **Idempotent**: second run does not rebuild wiki scaffold or drop index; runs incremental `zg.sh --index`.
 
@@ -92,7 +92,7 @@ npx --yes @zvec/zvec-grep help models   ```
 python3 .agents/skills/zvec-llm-wiki/scripts/llm_wiki.py index
 python3 .agents/skills/zvec-llm-wiki/scripts/llm_wiki.py lint --strict
 bash .agents/skills/zvec-llm-wiki/scripts/zg.sh --index
-npx --yes @zvec/zvec-grep status --check-ready
+bash .agents/skills/zvec-llm-wiki/scripts/zg.sh --status --check-ready
 ```
 
 Restart the agent after first MCP configuration. The project MCP launchers and the bundled `scripts/zg.sh` use the version in `plugins/zvec-grep.version`. Run the bundled launcher from the target repository. It reuses a matching global binary and otherwise invokes the pinned npm package. The npm launcher explicitly permits the zvec-grep package's lifecycle scripts. The index is local to each checkout or worktree. In a new session, open the intended worktree with Node/npm on PATH and check that the client connects to `zvec_grep`. See the [plugin test guide](../../../plugins/README.md) for the separate plugin installation path.
@@ -114,8 +114,8 @@ An index created by zg 0.2.2 was reported as needing a rebuild by 0.3.1. If the 
 |-------|--------|
 | MCP `zvec_grep` missing in Cursor | Confirm `.cursor/mcp.json` is committed; restart Cursor. Approve the server if prompted. |
 | MCP works locally but not on a fresh clone | Install skill (step 1) and bootstrap (step 2); ensure Node 22+ and network for first `npx`. |
-| `zg` not on PATH for CLI | Use `npx --yes @zvec/zvec-grep …` or `npm install -g @zvec/zvec-grep`. MCP does not require global `zg` when project MCP uses `npx`. |
-| Query misses a new wiki page | Run `llm_wiki.py index` so its directory index lists it, then run incremental `zg.sh --index` |
+| `zg` not on PATH for CLI | Run `bash .agents/skills/zvec-llm-wiki/scripts/zg.sh --status --check-ready`. The launcher uses the pinned package through `npx` when a matching `zg` is absent. |
+| Query misses a new wiki page | Run `llm_wiki.py index` so its directory index lists it, then run the index command in step 3. |
 | `PyYAML is required` from a wiki script | Install it with `pip3 install --user pyyaml`; sandboxed agent shells need network access to PyPI. |
 | Agent follows old frontmatter or loop rules | Catalog `SKILL.md` changed but `.agents/skills/` did not. Re-run step 1 with `--force`, commit, and restart the agent. |
 
