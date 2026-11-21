@@ -3,7 +3,7 @@
 [Agent Skill](https://agentskills.io/) で、**zvec-grep（`zg`）** を使ってプロジェクトの
 **LLM 向け wiki**（`docs/wiki/`）を ingest、query、lint、record、crystallize する。
 
-コアループ: **Query → Work → Ingest/Record/Crystallize → Lint → 増分 `zg index`**。
+コアループ: **Query → Work → Ingest/Record/Crystallize → Lint → 増分 `zg.sh --index`**。
 書き込みは involved: ページ計画を示し、ユーザーが止めなければ編集する。破壊的な index 操作は
 引き続き承認必須。
 
@@ -46,7 +46,7 @@ skills/zvec-llm-wiki/zvec-llm-wiki-ja/
 cd your-repo
 
 # プロジェクト（既定）— チーム、Cloud Agents
-sh /path/to/skills/skills/zvec-llm-wiki/zvec-llm-wiki-ja/install/install.sh
+sh /path/to/agent-tools/skills/zvec-llm-wiki/zvec-llm-wiki-ja/install/install.sh
 
 # マシン全体
 sh skills/zvec-llm-wiki/zvec-llm-wiki-ja/install/install.sh --user
@@ -70,24 +70,22 @@ Windows では Git Bash など POSIX シェルから実行する。
 cd your-repo
 
 # インストール済みエージェントを自動検出（Codex、Cursor、OpenCode、Claude、…）
-bash /path/to/skills/skills/zvec-llm-wiki/zvec-llm-wiki-ja/scripts/zg-bootstrap.sh
+bash /path/to/agent-tools/skills/zvec-llm-wiki/zvec-llm-wiki-ja/scripts/zg-bootstrap.sh
 
-# またはエージェントを明示的に指定（参照: zg help install）
-bash /path/to/skills/skills/zvec-llm-wiki/zvec-llm-wiki-ja/scripts/zg-bootstrap.sh --target cursor codex opencode
+# またはエージェントを明示的に指定（参照: zg.sh --help install）
+bash /path/to/agent-tools/skills/zvec-llm-wiki/zvec-llm-wiki-ja/scripts/zg-bootstrap.sh --target cursor codex opencode
 
 # デフォルト wiki 埋め込みを上書き
-bash /path/to/skills/skills/zvec-llm-wiki/zvec-llm-wiki-ja/scripts/zg-bootstrap.sh --embedding local/potion-multilingual-128m
+bash /path/to/agent-tools/skills/zvec-llm-wiki/zvec-llm-wiki-ja/scripts/zg-bootstrap.sh --embedding local/potion-multilingual-128m
 ```
 
 使える埋め込みモデルはインストール済み zg のカタログが正。一覧は次で確認する（この README にはモデル表を置かない）。
 
 ```bash
-zg help models
-# PATH に zg が無いとき:
-npx --yes @zvec/zvec-grep help models
+bash /path/to/installed-skill/scripts/zg.sh --help models
 ```
 
-ブートストラップは **コミットする** `.cursor/mcp.json` と `.mcp.json` を `npx @zvec/zvec-grep server --stdio` で upsert するため、エージェントにグローバル `zg` は不要。再実行時はそのサーバーの command と args を更新し、`env` など互換フィールドは残す。既存の HTTP トランスポートは結合せず拒否する。CLI は PATH の `zg` または `npx @zvec/zvec-grep`。ユーザー全体の `zg install` は `--target codex` 等で任意。`zg` が PATH に無いときは `@zvec/zvec-grep` をグローバルインストールし、設定を書く前に `zg` が起動することを確認する。Cursor/Claude はプロジェクト MCP を使う。新規 wiki には空 stub なしで OKF のルート `index.md`、操作ログ、種別ディレクトリを作り、既存 wiki には触れない（OKF 以前の wiki には移行の警告を出す）。その後 `AGENTS.md` ホットメモリを upsert し、zg デフォルト探索で最初のインデックスを構築する。MCP 設定後にエージェントを再起動する。
+ブートストラップは **コミットする** `.cursor/mcp.json` と `.mcp.json` を `npx` で固定版の zvec-grep を起動する設定で upsert するため、エージェントにグローバル `zg` は不要。再実行時はそのサーバーの command と args を更新し、`env` など互換フィールドは残す。既存の HTTP トランスポートは結合せず拒否する。索引と検索には同梱の `scripts/zg.sh` を対象リポジトリで使います。PATH 上の `zg` が固定版と一致すればそれを使い、違えば `npx` で固定版を呼び出します。ユーザー全体の設定を `--target codex` などで有効にする場合、`zg` がなければ固定版を npm でインストールします。別の版が PATH にある場合は、更新後に再実行してください。Cursor/Claude はプロジェクト MCP を使う。新規 wiki には空 stub なしで OKF のルート `index.md`、操作ログ、種別ディレクトリを作り、既存 wiki には触れない（OKF 以前の wiki には移行の警告を出す）。その後 `AGENTS.md` ホットメモリを upsert し、zg デフォルト探索で最初のインデックスを構築する。MCP 設定後にエージェントを再起動する。
 
 ## スキルパッケージの内容
 
@@ -104,7 +102,7 @@ npx --yes @zvec/zvec-grep help models
 ## 設計の出典
 
 - [Open Knowledge Format](https://github.com/open-knowledge-format/open-knowledge-format) — bundle の書式、`okf-generate` / `okf-consume` スキル、`validate.py`
-- [zvec-grep](https://github.com/zvec-ai/zvec-grep) — zg の挙動と CLI リファレンス（`zg help`）
+- [zvec-grep](https://github.com/zvec-ai/zvec-grep) — zg の挙動と CLI リファレンス（`zg.sh --help`）
 - [Karpathy LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) — 永続的な編纂 wiki、種別、操作、index 先読み、log
 - [zvec-grep オープンソース記事](https://zvec.org/en/blog/2026-08-28-zvec-grep-open-source/) — semantic/hybrid discovery と rg verification を段階化した 1 エンジン
 - [Agent Skills](https://agentskills.io/specification) 執筆（簡潔な SKILL.md、段階的開示）

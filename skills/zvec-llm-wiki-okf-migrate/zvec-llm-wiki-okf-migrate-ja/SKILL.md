@@ -5,7 +5,7 @@ description: >-
   source、ADR の date/deciders、`## [date] kind | title` 形式の log）を Open Knowledge Format v0.3 の bundle へ
   一度だけ移行し、最後に人のレビューで承認を記録する。LLM wiki を OKF へ移行・変換・更新するよう頼まれたとき、
   または zvec-llm-wiki-ja の lint が OKF 以前のキーを報告したときに使う。日常の wiki 編集には使わない。
-license: Proprietary. Internal use.
+license: MIT
 ---
 
 # LLM wiki を OKF v0.3 へ移行する
@@ -75,7 +75,7 @@ OKF bundle へ変換する。同じスキルディレクトリに次の兄弟ス
 
    旧 ADR の `I204`（info）はレビュー手順までは想定どおり。
 6. **log と index。** `log.md` の今日の日付に `* **Record**: wiki を OKF v0.3 へ移行した` を足し、
-   index を再生成し、増分 `zg index` を実行する。
+   index を再生成し、導入済みの `zvec-llm-wiki-ja` スキルに同梱の `bash /path/to/installed-skill/scripts/zg.sh --index` で増分更新する。
 7. **確認と承認。** 移行したページをディレクトリごとにユーザーへ示す: frontmatter、description、
    手順 4 で判断して直した箇所。ページまたはグループごとに確認してもらい、記録する ID を明示して
    もらう。個人プロジェクトなら `human:owner` でよい。ID を git の設定やマシンから推測しない。

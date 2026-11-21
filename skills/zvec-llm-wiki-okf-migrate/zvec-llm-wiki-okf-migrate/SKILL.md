@@ -1,7 +1,7 @@
 ---
 name: zvec-llm-wiki-okf-migrate
 description: One-time migration of a pre-OKF zvec-llm-wiki wiki (docs/wiki/ pages without a type key, status working/decided, aliases, source, ADR date/deciders, `## [date] kind | title` logs) to an Open Knowledge Format v0.3 bundle, ending with a human review that records verifications. Use when asked to migrate, convert, or upgrade an LLM wiki to OKF, or when zvec-llm-wiki lint reports pre-OKF keys. Not for day-to-day wiki edits.
-license: Proprietary. Internal use.
+license: MIT
 ---
 
 # Migrate an LLM wiki to OKF v0.3
@@ -73,7 +73,7 @@ Run from the project root. `<skills>` is the directory that holds these skills, 
 
    `I204` info on former ADRs is expected until the review step.
 6. **Log and index.** Add a `* **Record**: Migrated the wiki to OKF v0.3` entry under today's date
-   in `log.md`, regenerate indexes, and run incremental `zg index`.
+   in `log.md`, regenerate indexes, and run `bash /path/to/installed-skill/scripts/zg.sh --index` from the installed `zvec-llm-wiki` skill.
 7. **Review and approve.** Walk the user through the migrated pages, grouped by directory: the
    frontmatter, the description, and any judgment edits from step 4. Ask the reviewer to confirm
    each page or group and to state the id to record; `human:owner` is fine for a personal project.

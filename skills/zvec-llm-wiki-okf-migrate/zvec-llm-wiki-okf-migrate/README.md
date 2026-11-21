@@ -24,8 +24,8 @@ this skill into the same scope:
 
 ```bash
 cd your-repo
-sh /path/to/skills/skills/zvec-llm-wiki/zvec-llm-wiki/install/install.sh
-sh /path/to/skills/skills/zvec-llm-wiki-okf-migrate/zvec-llm-wiki-okf-migrate/install/install.sh
+sh /path/to/agent-tools/skills/zvec-llm-wiki/zvec-llm-wiki/install/install.sh
+sh /path/to/agent-tools/skills/zvec-llm-wiki-okf-migrate/zvec-llm-wiki-okf-migrate/install/install.sh
 ```
 
 The same `--user`, `--claude`, and `--force` options apply. Requires Python 3.9+ with PyYAML.

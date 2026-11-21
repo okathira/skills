@@ -7,12 +7,18 @@ x-zvec-aliases:
   - bootstrap runbook
   - zg-bootstrap
   - install.sh
-  - incremental zg index
+  - incremental zg --index
   - project MCP
-generated: { by: "cursor/auto", at: "2026-11-20T10:52:00Z" }
+generated: { by: "codex/gpt-6.2-sol", at: "2026-11-21T15:35:55Z" }
 verified:
   - { by: "human:owner", at: "2026-11-20T15:31:00Z" }
 sources:
+  - id: npm-release
+    resource: https://registry.npmjs.org/npm/12.2.3
+    title: npm 12.2.3 package metadata and Node.js compatibility
+  - id: node-release-index
+    resource: https://nodejs.org/dist/index.json
+    title: Node.js release index with bundled npm versions
   - id: zg-bootstrap-sh
     resource: ../../../skills/zvec-llm-wiki/zvec-llm-wiki/scripts/zg-bootstrap.sh
     title: zvec-llm-wiki bootstrap script
@@ -23,7 +29,7 @@ sources:
 
 # Prerequisites
 
-- Node.js 22+; this catalog pins dogfood Node in the repo-root `.node-version` (version managers that read that file pick it up automatically).
+- Node.js 22+ for installation into other projects. For development and dogfooding in this repository, select the exact release in `.node-version` and install the version in `.npm-version`. For example, with the pinned Node active in your version manager, run `npm install -g npm@12.2.3` and check `npm --version`. CI installs npm into a temporary prefix, adds it to PATH, and verifies the pin.[^node-release-index][^npm-release]
 - Python 3.9+ with PyYAML (`pip3 install --user pyyaml`) for `llm_wiki.py` and `validate.py`
 - POSIX shell (Git Bash on Windows), plus `curl` and `tar` to fetch the OKF skills
 
@@ -59,8 +65,8 @@ bash skills/zvec-llm-wiki/zvec-llm-wiki/scripts/zg-bootstrap.sh
 Creates or updates:
 
 - `docs/wiki/` as an OKF bundle (only when absent; a pre-OKF wiki gets a migration warning), `AGENTS.md`, `.zvec-grep/` (local index; gitignored)[^zg-bootstrap-sh]
-- **Committed MCP**: `.cursor/mcp.json` (Cursor) and `.mcp.json` (Claude Code) with `npx @zvec/zvec-grep` stdio — no global `zg` required for agents
-- First or incremental `zg index` with `local/potion-multilingual-128m` on a new wiki
+- **Committed MCP**: `.cursor/mcp.json` (Cursor) and `.mcp.json` (Claude Code) with an `npx` launcher for the pinned zvec-grep package — no global `zg` required for agents
+- First or incremental `zg.sh --index` with `local/potion-multilingual-128m` on a new wiki
 
 Optional user-level agents (Codex, OpenCode, …):
 
@@ -68,16 +74,15 @@ Optional user-level agents (Codex, OpenCode, …):
 bash skills/zvec-llm-wiki/zvec-llm-wiki/scripts/zg-bootstrap.sh --target codex opencode
 ```
 
-Bootstrap does **not** run user-level `zg install` when `--target` is omitted. Cursor and Claude use the committed project MCP files instead of `~/.cursor/mcp.json` / user Claude config. Re-running the project upsert updates the `zvec_grep` command and args, keeps compatible fields such as `env`, and stops if that server is already an HTTP transport. When `--target` names a user-level agent and `zg` is not on PATH, bootstrap installs `@zvec/zvec-grep` globally and checks that `zg` launches before `zg install` writes `command: zg`.
+Bootstrap does **not** run user-level `zg --install` when `--target` is omitted. Cursor and Claude use the committed project MCP files instead of `~/.cursor/mcp.json` / user Claude config. Re-running the project upsert updates the `zvec_grep` command and args, keeps compatible fields such as `env`, and stops if that server is already an HTTP transport. When `--target` names a user-level agent and `zg` is not on PATH, bootstrap installs `@zvec/zvec-grep` globally at the pin and checks its version before writing user-level MCP settings. A different version already on PATH must be updated before user-level setup.
 
 Supported embeddings are whatever the installed zg lists — do not copy a model table into this wiki. Inspect the catalog:
 
 ```bash
-zg help models
-npx --yes @zvec/zvec-grep help models   # if zg is not on PATH
+bash .agents/skills/zvec-llm-wiki/scripts/zg.sh --help models
 ```
 
-**Idempotent**: second run does not rebuild wiki scaffold or drop index; runs incremental `zg index`.
+**Idempotent**: second run does not rebuild wiki scaffold or drop index; runs incremental `zg.sh --index`.
 
 **Git**: add `.zvec-grep/` to `.gitignore` (local index only). Commit `.agents/skills/`, `.cursor/mcp.json`, and `.mcp.json`.
 
@@ -86,11 +91,11 @@ npx --yes @zvec/zvec-grep help models   # if zg is not on PATH
 ```bash
 python3 .agents/skills/zvec-llm-wiki/scripts/llm_wiki.py index
 python3 .agents/skills/zvec-llm-wiki/scripts/llm_wiki.py lint --strict
-npx --yes @zvec/zvec-grep index    # or `zg index` if on PATH
-npx --yes @zvec/zvec-grep status --check-ready
+bash .agents/skills/zvec-llm-wiki/scripts/zg.sh --index
+bash .agents/skills/zvec-llm-wiki/scripts/zg.sh --status --check-ready
 ```
 
-Restart the agent after first MCP configuration.
+Restart the agent after first MCP configuration. The project MCP launchers and the bundled `scripts/zg.sh` use the version in `plugins/zvec-grep.version`. Run the bundled launcher from the target repository. It reuses a matching global binary and otherwise invokes the pinned npm package. The npm launcher explicitly permits the zvec-grep package's lifecycle scripts. The index is local to each checkout or worktree. In a new session, open the intended worktree with Node/npm on PATH and check that the client connects to `zvec_grep`. See the [plugin test guide](../../../plugins/README.md) for the separate plugin installation path.
 
 # Verification
 
@@ -99,7 +104,9 @@ Restart the agent after first MCP configuration.
 - `AGENTS.md` still contains the `ZVEC_LLM_WIKI` hot block; existing `docs/wiki/` pages were not replaced by the scaffold.
 - `.agents/skills/okf-generate/LICENSE.md` and `.agents/skills/okf-consume/LICENSE.md` exist.
 - `llm_wiki.py lint --strict` exits 0; it also runs `okf-generate`'s `validate.py`.
-- `zg status --check-ready` succeeds after incremental `zg index`.
+- `zg.sh --status --check-ready` succeeds after incremental `zg.sh --index`.
+
+An index created by zg 0.2.2 was reported as needing a rebuild by 0.3.1. If the pinned CLI reports `rebuild required`, confirm before running the bundled launcher with `--index --rebuild`. The bootstrap leaves that decision to the user.
 
 # Troubleshooting
 
@@ -107,8 +114,8 @@ Restart the agent after first MCP configuration.
 |-------|--------|
 | MCP `zvec_grep` missing in Cursor | Confirm `.cursor/mcp.json` is committed; restart Cursor. Approve the server if prompted. |
 | MCP works locally but not on a fresh clone | Install skill (step 1) and bootstrap (step 2); ensure Node 22+ and network for first `npx`. |
-| `zg` not on PATH for CLI | Use `npx --yes @zvec/zvec-grep …` or `npm install -g @zvec/zvec-grep`. MCP does not require global `zg` when project MCP uses `npx`. |
-| Query misses a new wiki page | Run `llm_wiki.py index` so its directory index lists it, then run incremental `zg index` |
+| `zg` not on PATH for CLI | Run `bash .agents/skills/zvec-llm-wiki/scripts/zg.sh --status --check-ready`. The launcher uses the pinned package through `npx` when a matching `zg` is absent. |
+| Query misses a new wiki page | Run `llm_wiki.py index` so its directory index lists it, then run the index command in step 3. |
 | `PyYAML is required` from a wiki script | Install it with `pip3 install --user pyyaml`; sandboxed agent shells need network access to PyPI. |
 | Agent follows old frontmatter or loop rules | Catalog `SKILL.md` changed but `.agents/skills/` did not. Re-run step 1 with `--force`, commit, and restart the agent. |
 
@@ -122,3 +129,6 @@ Restart the agent after first MCP configuration.
 
 [^install-sh]: zvec-llm-wiki install script
 [^zg-bootstrap-sh]: zvec-llm-wiki bootstrap script
+
+[^node-release-index]: The official Node.js release index lists each LTS version and its bundled npm.
+[^npm-release]: The npm package metadata lists compatible versions of Node.js.

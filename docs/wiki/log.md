@@ -2,6 +2,24 @@
 
 Newest date first. Each entry starts with the operation in bold, such as **Ingest**, **Record**, **Crystallize**, or **Lint**, and links the pages it changed.
 
+## 2026-11-21
+
+* **Record**: Repaired the [skill setup runbook](runbooks/skill-setup.md) code blocks and used the bundled launcher for index and status commands. Bootstrap guidance and migration instructions invoke the launcher with Bash.
+
+* **Record**: Updated the [development toolchain](runbooks/skill-setup.md) to npm 12.2.3 with Node.js 26.13.1 LTS. CI installs the pinned npm in a temporary prefix.
+
+* **Record**: Pinned development to Node.js 26.13.1 LTS and bundled npm 11.20.0, and checked the npm pin in CI. Documented the development toolchain in [skill setup](runbooks/skill-setup.md).
+
+* **Record**: Updated [skill setup](runbooks/skill-setup.md) and [MCP gotchas](concepts/gotchas.md) for the pinned zg launcher, npm script permission, and version checks. Queued publish jobs so an older validation cannot replace the latest waiting job.
+
+* **Record**: Added [CI validation and Git publication](concepts/catalog-layout.md) for generated plugins. The build validates package formats without installing a client.
+
+* **Record**: Centralized the zvec-grep pin, documented both GPU-capable model choices, and prepared the [plugin distribution branch](concepts/catalog-layout.md).
+
+* **Record**: Broadened the catalog to Agent Tools.
+  - Updated the [catalog layout](concepts/catalog-layout.md) with the GitHub rename, MIT distribution, and generated local plugin marketplace.
+  - Kept project MCP for dogfooding and added a bootstrap option for plugin-managed MCP. Updated [skill setup](runbooks/skill-setup.md) and [gotchas](concepts/gotchas.md) for the pinned zvec-grep 0.3.1 launcher and CLI syntax.
+
 ## 2026-11-20
 
 * **Record**: Migrated the wiki to OKF v0.3

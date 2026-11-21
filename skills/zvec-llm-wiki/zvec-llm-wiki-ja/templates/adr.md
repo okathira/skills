@@ -38,4 +38,4 @@ wiki グラフのみ。`sources` をここに再掲しない。
 <!-- 提案中は status: draft。承認されたら status を消し、決定者が確認して ID を明示したときだけ
 承認を verified の記録として残す。例: verified: [{ by: "human:owner", at: "<now>" }]。
 置き換えられたら status: deprecated と superseded_by: /decisions/ADR-MMMM-....md を付ける。
-log.md に追記し、llm_wiki.py index、増分 `zg index` を実行する。 -->
+log.md に追記し、llm_wiki.py index、増分 `zg.sh --index` を実行する。 -->

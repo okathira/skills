@@ -33,4 +33,4 @@ sources:
 [^<source-id>]: <ソースのタイトル>
 
 <!-- 検証済みの事実はここに複製せず、所有するページに記録する。log.md に追記し、llm_wiki.py index、
-lint、増分 `zg index` を実行する。 -->
+lint、増分 `zg.sh --index` を実行する。 -->

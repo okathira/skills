@@ -1,29 +1,38 @@
 ---
 type: Concept
-title: Agent Skills catalog layout
-description: Repository layout and the boundary between distributable skills, raw code, and compiled wiki knowledge.
+title: Agent Tools catalog layout
+description: Repository layout and the boundary between distribution, dogfooding configuration, and compiled wiki knowledge.
 x-zvec-aliases:
   - repository layout
   - catalog architecture
   - layer boundaries
   - raw vs wiki
   - skills directory
-generated: { by: "cursor/auto", at: "2026-11-20T11:07:00Z" }
+generated: { by: "codex/gpt-6.2-sol", at: "2026-11-21T11:14:10Z" }
 verified:
   - { by: "human:owner", at: "2026-11-20T15:31:00Z" }
 sources:
   - id: readme
     resource: ../../../README.md
-    title: Agent Skills catalog
+    title: Agent Tools catalog
   - id: readme-ja
     resource: ../../../README.ja.md
-    title: Agent Skills catalog (Japanese)
+    title: Agent Tools catalog (Japanese)
+  - id: packaging
+    resource: ../../../plugins/README.md
+    title: zvec-llm-wiki local packaging and test instructions
+  - id: ci
+    resource: ../../../.github/workflows/plugins.yml
+    title: Plugin distribution workflow
+  - id: builder
+    resource: ../../../plugins/build.py
+    title: Plugin builder
 ---
 
 # Layout
 
 ```text
-skills/
+agent-tools/
   README.md
   README.ja.md
   skills/
@@ -33,6 +42,8 @@ skills/
     zvec-llm-wiki-okf-migrate/
       zvec-llm-wiki-okf-migrate/
       zvec-llm-wiki-okf-migrate-ja/
+  plugins/                 # builder and local test instructions
+  dist/agent-tools/        # generated marketplace and plugin folders (ignored)
   docs/raw/                # optional immutable imports; outside the OKF bundle
   docs/wiki/               # OKF bundle root
     index.md               # okf_version, title, description; generated entries
@@ -49,14 +60,16 @@ skills/
   .mcp.json                # committed Claude Code MCP (bootstrap)
 ```
 
-Skill packages are self-contained folders with `SKILL.md`, `install/`, `scripts/`, `references/`, and `templates/`. The package under `skills/` is the distributable source; `.agents/skills/` is the agent runtime copy ([ADR-0004](../decisions/ADR-0004-project-skill-install.md)).
+Each folder under `skills/<group>/<locale>/` is a standalone distribution with its own `SKILL.md`, license, installer, and supporting files.[^readme] The live copies under `.agents/skills/` and the committed root and Cursor MCP settings serve this repository's dogfooding workflow ([ADR-0004](../decisions/ADR-0004-project-skill-install.md)).
+
+The plugin builder takes the English or Japanese skill from `skills/` and fetches both OKF dependencies at the standalone installers' pinned revision. It assembles independent packages with the portable and Claude Code manifests. The generated tree has its own marketplace and MCP configuration. GitHub Actions validates the generated distribution on PRs and updates `plugin-dist` and a version tag after validation on `main`.[^ci] The source branch tracks the inputs; CI publishes the exact validated artifact. Use the pinned zvec-grep version from `plugins/zvec-grep.version` across the distribution and project launchers.[^builder] See the local installation matrix and workspace-switching checks for the next test phase.[^packaging]
 
 # Layer boundaries
 
 - **Raw:** executable code and package files, plus optional imports in `docs/raw/`. The wiki links to them; it does not compile the whole tree into prose.
 - **Wiki:** living project knowledge under `docs/wiki/`, an OKF v0.3 bundle ([ADR-0005](../decisions/ADR-0005-okf-alignment.md)).
 - **Schema / hot memory:** the marked block in `AGENTS.md` plus the installed skill.
-- **Human landing pages:** root `README.md` and `README.ja.md` remain outside the wiki as installer UI.
+- **Human landing pages:** root `README.md` and `README.ja.md` remain outside the wiki as the catalog for distribution and installation.[^readme] The operational instructions for this repository live in `AGENTS.md` and the Wiki.
 
 # Install vs bootstrap
 
@@ -75,3 +88,8 @@ The local `.zvec-grep/` index is gitignored and is never the source of truth.
 - [Skill setup runbook](../runbooks/skill-setup.md)
 - [ADR-0001](../decisions/ADR-0001-locale-independence.md)
 - [ADR-0002](../decisions/ADR-0002-catalog-skills-directory.md)
+
+[^readme]: Agent Tools catalog and standalone installation.
+[^builder]: Plugin packaging inputs and generated manifests.
+[^packaging]: Local build and installation test instructions.
+[^ci]: Build and validate artifacts on pull requests and publish them after validation on main.

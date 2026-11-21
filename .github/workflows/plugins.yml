@@ -1,0 +1,81 @@
+name: Plugin distribution
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  PLUGIN_VERSION: 0.1.${{ github.run_number }}
+
+jobs:
+  validate:
+    name: Build and validate plugins
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          package-manager-cache: false
+      - name: Install pinned npm
+        run: |
+          version=$(cat .npm-version)
+          prefix="$RUNNER_TEMP/pinned-npm"
+          npm install --global --prefix "$prefix" --ignore-scripts --no-audit --no-fund "npm@$version"
+          echo "$prefix/bin" >> "$GITHUB_PATH"
+      - name: Verify npm version
+        run: |
+          expected=$(cat .npm-version)
+          actual=$(npm --version)
+          if [ "$actual" != "$expected" ]; then
+            echo "Expected npm $expected, got $actual" >&2
+            exit 1
+          fi
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: Install validation dependencies
+        run: python -m pip install jsonschema==4.26.0 PyYAML==6.0.4
+      - name: Build and validate formats
+        run: |
+          python plugins/build.py --version "$PLUGIN_VERSION"
+          python -B plugins/validate.py dist/agent-tools --version "$PLUGIN_VERSION"
+          find dist/agent-tools -name '*.sh' -type f -print0 | xargs -0 -r -n 1 bash -n
+          python .agents/skills/zvec-llm-wiki/scripts/llm_wiki.py lint --strict
+      - name: Archive validated distribution
+        run: tar -C dist/agent-tools -cf dist/plugin-dist.tar .
+      - uses: actions/upload-artifact@v7
+        with:
+          name: plugin-dist
+          path: dist/plugin-dist.tar
+          if-no-files-found: error
+          overwrite: true
+
+  publish:
+    name: Publish to plugin-dist
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: plugin-dist
+      queue: max
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v8
+        with:
+          name: plugin-dist
+          path: dist
+      - name: Publish validated tree
+        run: |
+          mkdir -p dist/agent-tools
+          tar -xf dist/plugin-dist.tar -C dist/agent-tools
+          bash plugins/publish.sh dist/agent-tools "$PLUGIN_VERSION" "$GITHUB_SHA"

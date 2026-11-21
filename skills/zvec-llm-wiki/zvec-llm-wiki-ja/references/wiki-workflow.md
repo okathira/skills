@@ -28,7 +28,7 @@ ingest、query、lint、record、crystallize の詳細リファレンス。書�
    手で編集しない。
 4. 書き込みは involved: ページ計画と根拠を示し、ユーザーが止めなければ編集する。
 5. 矛盾は見える形で隔離し、置き換えたページは `deprecated` と `superseded_by` で残す。
-6. 増分 `zg index` は通常操作。`--rebuild`、`--drop`、`--reset-paths` は明示的な承認必須。
+6. 増分 `zg.sh --index` は通常操作。`--rebuild`、`--drop`、`--reset-paths` は明示的な承認必須。
 
 ## ページ契約（OKF への llm-wiki の追加）
 
@@ -98,7 +98,7 @@ OKF の `tags` は横断的な分類なので、alias を入れない。
 4. wiki の証拠が不足した後だけ `docs/raw/**` またはコードへ広げる。
 5. 証拠が十分なら止める。`okf-consume` の信頼度、status、鮮度、矛盾の規則を適用する。
 
-現在の構文は `zg help query` を使う。1 つの workspace index がすべての scope を担う。
+現在の構文は `zg.sh --help search` を使う。1 つの workspace index がすべての scope を担う。
 
 ## Ingest の深さ
 
@@ -107,7 +107,7 @@ OKF の `tags` は横断的な分類なので、alias を入れない。
 - **コード:** raw な証拠として索引・検索する。リポジトリツリーを wiki ページへ編纂しない。
 - **生きた Markdown:** 2 つ目のコピーを維持せず wiki へ移動する。
 
-各 ingest で `log.md` に追記し、index を再生成し、増分 `zg index` を実行する。次の query 前に
+各 ingest で `log.md` に追記し、index を再生成し、増分 `zg.sh --index` を実行する。次の query 前に
 freshness を確認する。
 
 ## ログ契約
@@ -149,8 +149,8 @@ OKF の log 形式: `## YYYY-MM-DD` 見出しを新しい順に並べ、各 entr
 
 ホットブロックは、wiki が OKF bundle であること、まず index 群、次に wiki スコープの zg、書き込みは
 `okf-generate`、信頼度は `okf-consume`、書き込み計画を示して止められなければ続行、編集後に index
-再生成・lint・増分 `zg index`、という順序を示す。
+再生成・lint・増分 `zg.sh --index`、という順序を示す。
 
-デフォルトは `local/potion-multilingual-128m` のまま。より高品質な同一エンジンの選択肢は
-`local/qwen3-embedding-0.6b`。切り替えには rebuild と明示的な承認が必要。インストール済み
-カタログは `zg help models` を使う。
+デフォルトは `local/potion-multilingual-128m` のまま。検索品質を比較する候補は `local/embeddinggemma-300m` と
+`local/qwen3-embedding-0.6b`。対応する GPU ランタイムで高速化できる。切り替えには rebuild と明示的な承認が必要。インストール済み
+カタログは `zg.sh --help models` を使う。
