@@ -21,8 +21,8 @@ LOCALES = {
     "zvec-llm-wiki": "Maintain and search an Open Knowledge Format wiki with zvec-grep.",
     "zvec-llm-wiki-ja": "zvec-grep で Open Knowledge Format の Wiki を検索・メンテナンスします。",
 }
-ZG_BOOTSTRAPS = [SOURCE / name / "scripts/zg-bootstrap.sh" for name in LOCALES] + [
-    REPO / ".agents/skills/zvec-llm-wiki/scripts/zg-bootstrap.sh"
+ZG_LAUNCHERS = [SOURCE / name / "scripts/zg.sh" for name in LOCALES] + [
+    REPO / ".agents/skills/zvec-llm-wiki/scripts/zg.sh"
 ]
 ZG_CONFIGS = [REPO / ".mcp.json", REPO / ".cursor/mcp.json"]
 
@@ -31,7 +31,7 @@ def zg_server(package):
     return {
         "type": "stdio",
         "command": "npx",
-        "args": ["--yes", package, "--server", "--stdio", "--mcp-toolset", "agent"],
+        "args": ["--yes", "--allow-scripts=@zvec/zvec-grep", package, "--server", "--stdio", "--mcp-toolset", "agent"],
     }
 
 
@@ -41,7 +41,7 @@ def sync_zg(write=False):
         raise ValueError("plugins/zvec-grep.version must contain an exact MAJOR.MINOR.PATCH version")
     package = f"@zvec/zvec-grep@{version}"
     stale = []
-    for path in ZG_BOOTSTRAPS:
+    for path in ZG_LAUNCHERS:
         before = path.read_text(encoding="utf-8")
         after, count = re.subn(r'^ZG_PACKAGE="[^"\n]+"$', f'ZG_PACKAGE="{package}"', before, flags=re.MULTILINE)
         if count != 1:
@@ -112,7 +112,7 @@ def unpack_okf(archive, revision, destination):
 
 def write_json(path, value):
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    path.write_bytes((json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode("utf-8"))
 
 
 def build(destination, version):
@@ -202,7 +202,7 @@ def main():
     parser.add_argument("--output", type=Path, default=REPO / "dist/agent-tools")
     parser.add_argument("--version", default="0.1.0")
     mode = parser.add_mutually_exclusive_group()
-    mode.add_argument("--sync-zg", action="store_true", help="sync the zg pin to standalone and dogfooding files")
+    mode.add_argument("--sync-zg", action="store_true", help="sync the zg pin and MCP launcher settings")
     mode.add_argument("--check-zg", action="store_true", help="check the zg pin without building a package")
     args = parser.parse_args()
     if args.sync_zg or args.check_zg:

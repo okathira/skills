@@ -12,7 +12,7 @@ Run `docs/wiki/` as a living, compounding knowledge system shared by people and 
 is an [OKF v0.3](https://github.com/open-knowledge-format/open-knowledge-format/blob/main/SPEC.md)
 bundle. `zg` (zvec-grep) is the single retrieval engine. The loop is:
 
-> **Query → Work → Ingest/Record/Crystallize → Lint → incremental `zg --index`**
+> **Query → Work → Ingest/Record/Crystallize → Lint → incremental `zg.sh --index`**
 
 This skill owns the loop and the llm-wiki extensions. The official sibling skills own the format:
 
@@ -90,14 +90,16 @@ Then judge what scripts cannot: contradictions isolated rather than merged, over
 stale names after renames (rg), superseded claims still visible, and aliases that name only this
 page's fact. Details are in `references/wiki-workflow.md`.
 
-After wiki edits, run incremental `zg --index`, then `zg --status`/freshness before relying on a new
+After wiki edits, run incremental `zg.sh --index`, then `zg.sh --status`/freshness before relying on a new
 query.
 
 ## zg usage
 
-This skill defines **when**, not CLI syntax. Run `zg --help search`, `zg --help index`, `zg --help
-install`, or `zg --help models`; do not invent flags. One workspace index serves wiki, references, and
-code through query-time scopes. Keep the multilingual default `local/potion-multilingual-128m`;
+Run the bundled launcher as `bash /path/to/installed-skill/scripts/zg.sh …` from the target repository root. The `zg.sh` examples use this launcher.
+
+This skill defines **when**, not CLI syntax. Run `zg.sh --help search`, `zg.sh --help index`, `zg.sh --help
+install`, or `zg.sh --help models`; do not invent flags. One workspace index serves wiki, references, and
+code through query-time scopes. Keep the multilingual default `local/potion-multilingual-128m`.
 Compare `local/embeddinggemma-300m` and `local/qwen3-embedding-0.6b` when evaluating retrieval quality.
 A supported CUDA or Metal runtime can accelerate either model. Switching an existing index requires
 an explicit rebuild and user approval. Do not add qmd or a second indexer.
@@ -106,8 +108,8 @@ an explicit rebuild and user approval. Do not add qmd or a second indexer.
 
 ```bash
 bash scripts/zg-bootstrap.sh                          # auto-detect agents
-bash scripts/zg-bootstrap.sh --target cursor codex    # explicit targets; see zg --help install
-bash scripts/zg-bootstrap.sh --embedding <model>      # override default wiki embedding (list: zg --help models)
+bash scripts/zg-bootstrap.sh --target cursor codex    # explicit targets; see zg.sh --help install
+bash scripts/zg-bootstrap.sh --embedding <model>      # override default wiki embedding (list: zg.sh --help models)
 ```
 
 Requires Node.js 22+ and Python 3.9+ with PyYAML. The script scaffolds an OKF bundle only when

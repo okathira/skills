@@ -33,4 +33,4 @@ Cross-links to the concepts, entities, or decisions this procedure depends on.
 [^<source-id>]: <Source title>
 
 <!-- Record verified facts on their owning page instead of duplicating them here. Append log.md,
-run llm_wiki.py index, lint, then incremental `zg --index`. -->
+run llm_wiki.py index, lint, then incremental `zg.sh --index`. -->

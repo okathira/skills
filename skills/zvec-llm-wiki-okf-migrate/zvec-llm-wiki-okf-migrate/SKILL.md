@@ -73,7 +73,7 @@ Run from the project root. `<skills>` is the directory that holds these skills, 
 
    `I204` info on former ADRs is expected until the review step.
 6. **Log and index.** Add a `* **Record**: Migrated the wiki to OKF v0.3` entry under today's date
-   in `log.md`, regenerate indexes, and run incremental `zg index`.
+   in `log.md`, regenerate indexes, and run `scripts/zg.sh --index` from the installed `zvec-llm-wiki` skill.
 7. **Review and approve.** Walk the user through the migrated pages, grouped by directory: the
    frontmatter, the description, and any judgment edits from step 4. Ask the reviewer to confirm
    each page or group and to state the id to record; `human:owner` is fine for a personal project.

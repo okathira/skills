@@ -38,4 +38,4 @@ Wiki graph only. Do not restamp `sources` here.
 <!-- Proposed = status: draft. On acceptance, remove status and record the acceptance as a
 verified event only when the decider confirms and states an id, for example
 verified: [{ by: "human:owner", at: "<now>" }]. When replaced, set status: deprecated and
-superseded_by: /decisions/ADR-MMMM-....md. Append log.md, run llm_wiki.py index, then `zg --index`. -->
+superseded_by: /decisions/ADR-MMMM-....md. Append log.md, run llm_wiki.py index, then `zg.sh --index`. -->

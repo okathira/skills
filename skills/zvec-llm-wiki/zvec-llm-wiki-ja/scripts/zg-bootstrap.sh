@@ -12,8 +12,8 @@ TARGETS=()
 EMBEDDING="local/potion-multilingual-128m"
 EMBEDDING_EXPLICIT=0
 SKIP_MCP=0
-# Synced from plugins/zvec-grep.version in the source repository.
-ZG_PACKAGE="@zvec/zvec-grep@0.3.1"
+SCRIPT_DIR="$(cd "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/zg.sh"
 
 usage() {
   cat <<'EOF'
@@ -22,7 +22,7 @@ usage() {
   --target <agent>     繰り返し可; zg install に渡す（参照: zg --help install）
   --skip-mcp           MCP 設定を変更せずに Wiki とインデックスを準備する
   --embedding <model>  初回インデックスのモデル（デフォルト: local/potion-multilingual-128m）
-                       対応一覧は zg --help models
+                       対応一覧は同梱の zg.sh --help models
 
 --target なしの場合はコミット用プロジェクト MCP（.cursor/mcp.json、.mcp.json）のみ更新する。
 Codex などユーザー全体設定は --target codex 等を指定。zg が PATH に無いときは
@@ -102,7 +102,7 @@ upsert_agents_md() {
 - 生きた wiki: `docs/wiki/`、OKF v0.3 の bundle（`docs/wiki/index.md` から始め、次にディレクトリの index）
 - Query 順序: index 群、次に `docs/wiki/**` にスコープした zg hybrid、完全一致名は rg、不足時だけ docs/raw かコードへ広げる
 - 書き込みは `okf-generate`、信頼度と鮮度の報告は `okf-consume`、llm-wiki の規則は `zvec-llm-wiki-ja` に従う
-- Wiki 書き込みは involved: ページ計画を示し、止められなければ編集する。編集後は index 再生成、lint、増分 `zg index`
+- Wiki 書き込みは involved: ページ計画を示し、止められなければ編集する。編集後は index 再生成、lint、zvec-llm-wiki-ja に同梱の `scripts/zg.sh --index` で増分更新
 
 <!-- ZVEC_LLM_WIKI_END -->
 EOF
@@ -138,12 +138,12 @@ EOF
 upsert_project_mcp() {
   local rel_path="$1"
   mkdir -p "$(dirname "$rel_path")"
-  node - "$rel_path" "$ZG_PACKAGE" <<'NODE'
+  node - "$rel_path" "$ZG_PACKAGE" "$ZG_ALLOW_SCRIPTS" <<'NODE'
 const fs = require("fs");
 const path = process.argv[2];
 const entry = {
   command: "npx",
-  args: ["--yes", process.argv[3], "--server", "--stdio", "--mcp-toolset", "agent"],
+  args: ["--yes", process.argv[4], process.argv[3], "--server", "--stdio", "--mcp-toolset", "agent"],
 };
 
 function isHttpTransport(server) {
@@ -209,24 +209,23 @@ filter_user_install_targets() {
 # zg install は command に "zg" を書く。一時的な npx 実行ではその実行ファイルは PATH に残らない。
 ensure_persistent_zg() {
   if command -v zg >/dev/null 2>&1; then
-    ZG=(zg)
-    return 0
+    if ! zg_has_pinned_version; then
+      echo "ユーザー全体の MCP 設定には PATH 上の zg ${ZG_PACKAGE##*@} が必要です。既存の zg を更新するか、--target を外してください。" >&2
+      return 1
+    fi
+    return
   fi
   if ! command -v npm >/dev/null 2>&1; then
-    echo "エラー: ユーザー全体ターゲットには PATH 上の zg が必要ですが、インストールに使う npm がありません。" >&2
-    exit 1
+    echo "ユーザー全体の MCP 設定には zg ${ZG_PACKAGE##*@} または npm が必要です。" >&2
+    return 1
   fi
-  say "@zvec/zvec-grep をグローバルインストールします（ユーザー全体エージェントが zg を起動できるようにするため）"
-  npm install -g "$ZG_PACKAGE"
+  say "ユーザー全体の MCP 用に $ZG_PACKAGE をインストールする"
+  npm install -g "$ZG_ALLOW_SCRIPTS" "$ZG_PACKAGE"
   hash -r
-  if ! command -v zg >/dev/null 2>&1 || ! zg --version >/dev/null 2>&1; then
-    local prefix
-    prefix="$(npm prefix -g 2>/dev/null || true)"
-    echo "エラー: @zvec/zvec-grep をインストールしましたが、zg を起動できません。${prefix:-npm のグローバル bin} を PATH に追加して再実行してください。" >&2
-    exit 1
+  if ! zg_has_pinned_version; then
+    echo "zg ${ZG_PACKAGE##*@} が PATH から起動できません。npm のグローバル bin ディレクトリを PATH に追加して再実行してください。" >&2
+    return 1
   fi
-  ZG=(zg)
-  say "zg を使用 ($(zg --version 2>/dev/null || echo 不明))"
 }
 
 # 1) Node.js 22+ の確認 -------------------------------------------------------
@@ -243,36 +242,23 @@ if ! python3 -c 'import sys, yaml; sys.exit(sys.version_info < (3, 9))' >/dev/nu
   warn "llm_wiki.py と okf-generate の validate.py には PyYAML 入りの Python 3.9+ が必要です（pip install pyyaml）"
 fi
 
-# 2) インデックス用 CLI。プロジェクト MCP は npx 起動。zg のグローバルインストールは任意。
-ZG=()
-if (( SKIP_MCP )); then
-  if ! command -v npx >/dev/null 2>&1; then
-    echo "プラグインには Node.js 22 以上の npx が必要です。" >&2
-    exit 1
+# 2) Check the CLI before making project changes.
+if [[ ${#TARGETS[@]} -gt 0 ]]; then
+  filter_user_install_targets
+  if [[ ${#FILTERED_TARGETS[@]} -gt 0 ]]; then
+    ensure_persistent_zg
   fi
-  ZG=(npx --yes "$ZG_PACKAGE")
-elif command -v zg >/dev/null 2>&1; then
-  ZG=(zg)
-  say "zg を使用 ($(zg --version 2>/dev/null || echo 不明))"
-elif command -v npx >/dev/null 2>&1; then
-  ZG=(npx --yes "$ZG_PACKAGE")
-  say "CLI は npx @zvec/zvec-grep を使用（短いコマンドがよければ zg をグローバルインストール）"
-else
-  echo "zg も npm も見つかりません。先に Node.js 22+ をインストールしてください。" >&2
+fi
+if ! zg_has_pinned_version && ! command -v npx >/dev/null 2>&1; then
+  echo "Node.js の npx を導入するか、zg ${ZG_PACKAGE##*@} を PATH に追加してください。" >&2
   exit 1
 fi
 
 run_zg() {
-  local command="$1"
-  shift
-  # Native zg uses --index/--status/--install. Older global zg uses subcommands.
-  if [[ "${ZG[0]}" == npx ]] || "${ZG[@]}" --help | grep -E '^[[:space:]]+--index[[:space:]]+Build' >/dev/null; then
-    command="--$command"
-  fi
   if (( SKIP_MCP )); then
     set -- "$@" --mode direct
   fi
-  "${ZG[@]}" "$command" "$@"
+  zg_run "$@"
 }
 
 # 3) プロジェクト MCP（コミット）+ 任意のユーザー全体インストール ----------------
@@ -285,15 +271,13 @@ else
   if [[ ${#TARGETS[@]} -eq 0 ]]; then
     say "ユーザー全体の zg install はスキップ（自動）。.cursor/mcp.json と .mcp.json を使う。Codex/OpenCode は zg install --target <agent> を別途実行。"
   else
-    filter_user_install_targets
     if [[ ${#FILTERED_TARGETS[@]} -gt 0 ]]; then
       say "ユーザー全体のエージェント連携: ${FILTERED_TARGETS[*]}（cursor/claude はコミット済みプロジェクト MCP）"
-      ensure_persistent_zg
       INSTALL_CMD=(--yes)
       for target in "${FILTERED_TARGETS[@]}"; do
         INSTALL_CMD+=(--target "$target")
       done
-      run_zg install "${INSTALL_CMD[@]}"
+      zg --install "${INSTALL_CMD[@]}"
     else
       say "cursor/claude のみ指定 — プロジェクト MCP で十分。ユーザー全体の zg install は不要"
     fi
@@ -341,18 +325,18 @@ ensure_gitignore_zvec
 if [[ -d .zvec-grep ]]; then
   say "既存インデックスを検出 — 増分更新します（rebuild なし）"
   if (( EMBEDDING_EXPLICIT )); then
-    warn "既存インデックスでは --embedding を無視します。モデルを変えるには、ユーザーの明示的な確認のうえ zg --index --rebuild --embedding <model> を使ってください。"
+    warn "既存インデックスでは --embedding を無視します。モデルを変えるには、ユーザーの明示的な確認のうえ zg.sh --index --rebuild --embedding <model> を使ってください。"
   fi
-  run_zg index
+  run_zg --index
 else
   say "初回インデックスを構築します（埋め込み: ${EMBEDDING}; zg デフォルトファイル探索）"
-  run_zg index --embedding "$EMBEDDING"
+  run_zg --index --embedding "$EMBEDDING"
 fi
 
-run_zg status --check-ready
+run_zg --status --check-ready
 
 say "完了。MCP を今設定した場合はエージェントを再起動してください。"
-say "ホットメモリ: AGENTS.md。まず docs/wiki/index.md を読む。zg の使い方: zg --help"
+say "ホットメモリ: AGENTS.md。まず docs/wiki/index.md を読む。zg の使い方: 同梱の scripts/zg.sh --help"
 if [[ ! -d "$(dirname -- "${BASH_SOURCE[0]}")/../../okf-generate" && ! -d .agents/skills/okf-generate && ! -d "${HOME}/.agents/skills/okf-generate" ]]; then
   warn "okf-generate が未インストールです。エージェントが OKF を書いて検証できるよう install.sh（--no-okf なし）を実行してください"
 fi

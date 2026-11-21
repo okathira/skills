@@ -9,7 +9,7 @@ x-zvec-aliases:
   - heading-only stubs
   - MCP zg PATH
   - stale skill install
-generated: { by: "codex/gpt-6.2-sol", at: "2026-11-21T10:56:45Z" }
+generated: { by: "codex/gpt-6.2-sol", at: "2026-11-21T12:57:19Z" }
 verified:
   - { by: "human:owner", at: "2026-11-20T15:31:00Z" }
 sources:
@@ -76,3 +76,5 @@ This catalog wiki is English. Prefer English ubiquitous-language aliases; see [C
 
 [^zg-bootstrap-sh]: zvec-llm-wiki bootstrap script
 [^llm-wiki-py]: zvec-llm-wiki index and lint script
+
+Use the installed wiki skill's `scripts/zg.sh` from the target repository to keep index commands on the project MCP version. If a different `zg` is on PATH, the launcher uses the pinned npm package. User-level bootstrap requires the matching binary on PATH because user-level MCP launches `zg` directly.

@@ -4,6 +4,7 @@
       "command": "npx",
       "args": [
         "--yes",
+        "--allow-scripts=@zvec/zvec-grep",
         "@zvec/zvec-grep@0.3.1",
         "--server",
         "--stdio",

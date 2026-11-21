@@ -4,6 +4,8 @@ Newest date first. Each entry starts with the operation in bold, such as **Inges
 
 ## 2026-11-21
 
+* **Record**: Updated [skill setup](runbooks/skill-setup.md) and [MCP gotchas](concepts/gotchas.md) for the pinned zg launcher, npm script permission, and version checks. Queued publish jobs so an older validation cannot replace the latest waiting job.
+
 * **Record**: Added [CI validation and Git publication](concepts/catalog-layout.md) for generated plugins. The build validates package formats without installing a client.
 
 * **Record**: Centralized the zvec-grep pin, documented both GPU-capable model choices, and prepared the [plugin distribution branch](concepts/catalog-layout.md).
