@@ -1,0 +1,16 @@
+{
+  "name": "agent-tools",
+  "owner": {
+    "name": "okathira"
+  },
+  "plugins": [
+    {
+      "name": "zvec-llm-wiki",
+      "source": "./plugins/zvec-llm-wiki"
+    },
+    {
+      "name": "zvec-llm-wiki-ja",
+      "source": "./plugins/zvec-llm-wiki-ja"
+    }
+  ]
+}

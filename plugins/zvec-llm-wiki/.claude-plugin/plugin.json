@@ -1,0 +1,10 @@
+{
+  "name": "zvec-llm-wiki",
+  "description": "Maintain and search an Open Knowledge Format wiki with zvec-grep.",
+  "version": "0.1.0-rc.1",
+  "author": {
+    "name": "okathira"
+  },
+  "repository": "https://github.com/okathira/agent-tools",
+  "license": "MIT"
+}

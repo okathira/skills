@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "zvec_grep": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "--yes",
+        "@zvec/zvec-grep@0.3.1",
+        "--server",
+        "--stdio",
+        "--mcp-toolset",
+        "agent"
+      ]
+    }
+  }
+}

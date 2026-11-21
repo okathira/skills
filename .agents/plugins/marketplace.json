@@ -1,0 +1,32 @@
+{
+  "name": "agent-tools",
+  "interface": {
+    "displayName": "Agent Tools"
+  },
+  "plugins": [
+    {
+      "name": "zvec-llm-wiki",
+      "source": {
+        "source": "local",
+        "path": "./plugins/zvec-llm-wiki"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "zvec-llm-wiki-ja",
+      "source": {
+        "source": "local",
+        "path": "./plugins/zvec-llm-wiki-ja"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

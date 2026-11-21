@@ -1,0 +1,18 @@
+{
+  "name": "agent-tools",
+  "owner": {
+    "name": "okathira"
+  },
+  "plugins": [
+    {
+      "name": "zvec-llm-wiki",
+      "source": "plugins/zvec-llm-wiki",
+      "description": "Maintain and search an Open Knowledge Format wiki with zvec-grep."
+    },
+    {
+      "name": "zvec-llm-wiki-ja",
+      "source": "plugins/zvec-llm-wiki-ja",
+      "description": "zvec-grep で Open Knowledge Format の Wiki を検索・メンテナンスします。"
+    }
+  ]
+}
