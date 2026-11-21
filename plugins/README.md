@@ -12,7 +12,7 @@ The output is `dist/agent-tools/`. Use `--output` with a fresh path to build ano
 
 ## Install from Git
 
-The generated tree is published on the `plugin-dist` branch. Use the `plugin-v0.1.0-rc.1` tag for the first version under test.
+The generated tree is published on the `plugin-dist` branch. Use the branch to follow new versions and a `plugin-v<version>` Git tag to reproduce a particular build. The original `plugin-v0.1.0-rc.1` tag remains available.
 
 | Client | Git distribution path to test |
 | --- | --- |
@@ -20,11 +20,13 @@ The generated tree is published on the `plugin-dist` branch. Use the `plugin-v0.
 | Claude Code | Run `/plugin marketplace add okathira/agent-tools#plugin-v0.1.0-rc.1`, then install the desired locale. Select `project` for shared settings or `local` for your copy of the repository. |
 | Cursor | Clone `plugin-dist` or its tag and use the local copy path below. For Teams or Enterprise, use the repository import and select `plugin-dist` if the import offers branch selection. |
 
-For a new version, generate the tree into a fresh directory and commit it to `plugin-dist` with the previous distribution commit as its parent. Tag that commit `plugin-v<version>` and push the branch and tag. Keep the source on `main` and never add local MCP settings or indexes to the distribution tree.
+## CI and publication
 
-To update zvec-grep, edit [zvec-grep.version](zvec-grep.version), run `python plugins/build.py --sync-zg`, and review the generated launcher changes. Builds reject a stale pin. Run the MCP and existing-index checks before you release a new version.
+GitHub Actions builds into ignored `dist/` on pull requests and pushes to `main`. It validates the Agent Plugins schemas, all three catalogs and their paths, the Claude Code manifests, the bundled skills and licenses, and Shell syntax. The validated tree is available as an artifact. On `main`, a second job publishes that exact artifact to `plugin-dist` and creates `plugin-v<version>`. The version is `0.1.<workflow run number>` so plugin caches can identify each build. The `main` tree contains the build inputs only.
 
-## Local installation test
+To update zvec-grep, edit [zvec-grep.version](zvec-grep.version), run `python plugins/build.py --sync-zg`, and review the generated launcher changes. CI rejects a stale pin. Confirm runtime compatibility separately when changing the pinned dependency.
+
+## Optional local installation test
 
 The following client paths are ready for testing. Use a clean profile and a separate test repository. Record the client version and OS. Have Node.js 22+, npm/npx, Bash, and Python 3.9+ with PyYAML available. On Windows, run Bash scripts from Git Bash. In each command, use the absolute path to the generated marketplace.
 

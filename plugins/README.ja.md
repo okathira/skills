@@ -12,7 +12,7 @@ python plugins/build.py
 
 ## Git からの導入
 
-生成ツリーは `plugin-dist` ブランチで配布します。初回の検証には `plugin-v0.1.0-rc.1` タグを使います。
+生成ツリーは `plugin-dist` ブランチで配布します。新版を受け取る場合はブランチ、特定のビルドを再現する場合は `plugin-v<version>` タグを使います。最初の `plugin-v0.1.0-rc.1` タグも利用できます。
 
 | クライアント | テストする Git 配布経路 |
 | --- | --- |
@@ -20,11 +20,13 @@ python plugins/build.py
 | Claude Code | `/plugin marketplace add okathira/agent-tools#plugin-v0.1.0-rc.1` を実行し、使う言語版を導入します。設定を共有するなら `project`、自分だけがそのリポジトリで使うなら `local` を選びます。 |
 | Cursor | `plugin-dist` またはタグを clone し、下記のローカル読み込み手順を使います。Teams／Enterprise ではリポジトリ取り込みで、ブランチを指定できる場合は `plugin-dist` を選びます。 |
 
-更新時は新しいディレクトリに生成し、前回の配布コミットを親として `plugin-dist` にコミットします。そのコミットに `plugin-v<version>` タグを付け、ブランチと一緒に push します。ソースは `main` に置き、配布ツリーにはプロジェクトの MCP 設定やローカルインデックスを含めません。
+## CI と公開
 
-zg を更新する場合は [zvec-grep.version](zvec-grep.version) を変更し、`python plugins/build.py --sync-zg` を実行します。ビルド時に反映漏れを検出します。新版の配布前に MCP の起動・検索と既存インデックスとの互換性を確認します。
+GitHub Actions は PR と `main` への push で、Git 管理外の `dist/` に配布物を生成します。Agent Plugins のスキーマ、3クライアント用カタログとパス、Claude Code のマニフェスト、同梱スキルとライセンス、シェル構文を検証します。検証済みの配布物は CI の成果物として取得できます。`main` では後続ジョブがその成果物を `plugin-dist` に公開し、`plugin-v<version>` タグを作ります。クライアントのキャッシュが版を識別できるよう、バージョンは `0.1.<ワークフロー実行番号>` にします。`main` にはビルド元だけを置きます。
 
-## ローカル導入テスト
+zg を更新する場合は [zvec-grep.version](zvec-grep.version) を変更し、`python plugins/build.py --sync-zg` を実行します。CI は反映漏れを検出します。依存バージョンを変えるときは、実行環境との互換性も別途確認します。
+
+## 任意のローカル導入テスト
 
 クリーンなプロファイルと別のテスト用リポジトリを使い、クライアントのバージョンと OS を記録します。Node.js 22 以上、npm/npx、Bash、PyYAML 入りの Python 3.9 以上を用意します。Windows では Git Bash から Bash スクリプトを実行してください。以下の `<marketplace-root>` は生成先の絶対パスです。
 
