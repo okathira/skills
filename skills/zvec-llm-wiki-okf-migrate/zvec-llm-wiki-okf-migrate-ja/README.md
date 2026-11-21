@@ -23,8 +23,8 @@ skills/zvec-llm-wiki-okf-migrate/zvec-llm-wiki-okf-migrate-ja/
 
 ```bash
 cd your-repo
-sh /path/to/skills/skills/zvec-llm-wiki/zvec-llm-wiki-ja/install/install.sh
-sh /path/to/skills/skills/zvec-llm-wiki-okf-migrate/zvec-llm-wiki-okf-migrate-ja/install/install.sh
+sh /path/to/agent-tools/skills/zvec-llm-wiki/zvec-llm-wiki-ja/install/install.sh
+sh /path/to/agent-tools/skills/zvec-llm-wiki-okf-migrate/zvec-llm-wiki-okf-migrate-ja/install/install.sh
 ```
 
 `--user`、`--claude`、`--force` も同じように使える。PyYAML 入りの Python 3.9+ が必要。エージェントを

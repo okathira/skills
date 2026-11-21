@@ -28,7 +28,7 @@ zg is the only search engine. There is no qmd integration, second index, or stri
    frontmatter.
 4. Writes are involved: show the page plan and evidence, then edit unless the user stops.
 5. Contradictions stay visible and isolated; replaced pages stay as `deprecated` with `superseded_by`.
-6. Incremental `zg index` is routine. `--rebuild`, `--drop`, and `--reset-paths` require explicit
+6. Incremental `zg --index` is routine. `--rebuild`, `--drop`, and `--reset-paths` require explicit
    approval.
 
 ## Page contract (llm-wiki additions to OKF)
@@ -101,7 +101,7 @@ glossary. OKF `tags` are cross-cutting categories; do not put aliases there.
 4. Widen to `docs/raw/**` or code only after wiki evidence is insufficient.
 5. Stop when evidence is enough. Apply `okf-consume` trust, status, freshness, and conflict rules.
 
-Use `zg help query` for current syntax. One workspace index serves all scopes.
+Use `zg --help search` for current syntax. One workspace index serves all scopes.
 
 ## Ingest depths
 
@@ -111,7 +111,7 @@ Use `zg help query` for current syntax. One workspace index serves all scopes.
 - **Code:** index and query it as raw evidence. Do not compile the repository tree into wiki pages.
 - **Living Markdown:** move it into the wiki rather than keeping a second copy.
 
-Every ingest appends `log.md`, regenerates indexes, then runs incremental `zg index` and checks
+Every ingest appends `log.md`, regenerates indexes, then runs incremental `zg --index` and checks
 freshness before the next query.
 
 ## Log contract
@@ -153,8 +153,8 @@ Judgment:
 
 The hot block says: the wiki is an OKF bundle; read indexes first; then use wiki-scoped zg; follow
 `okf-generate` for writes and `okf-consume` for trust; show the write plan and proceed unless
-stopped; regenerate indexes, lint, and run incremental `zg index` after edits.
+stopped; regenerate indexes, lint, and run incremental `zg --index` after edits.
 
 The default remains `local/potion-multilingual-128m`. A higher-quality same-engine option is
-`local/qwen3-embedding-0.6b`; switching requires a rebuild and explicit approval. Use `zg help
+`local/qwen3-embedding-0.6b`; switching requires a rebuild and explicit approval. Use `zg --help
 models` for the installed catalog.

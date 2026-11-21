@@ -3,7 +3,7 @@
 An [Agent Skill](https://agentskills.io/) for ingesting, querying, linting, recording, and
 crystallizing a project's **LLM-facing wiki** (`docs/wiki/`) with **zvec-grep (`zg`)**.
 
-Core loop: **Query → Work → Ingest/Record/Crystallize → Lint → incremental `zg index`**.
+Core loop: **Query → Work → Ingest/Record/Crystallize → Lint → incremental `zg --index`**.
 Writes are involved: show the page plan, then edit unless the user stops. Destructive index
 operations remain approval-gated.
 
@@ -45,7 +45,7 @@ Copies the skill into `.agents/skills/zvec-llm-wiki` (Cursor, Codex, OpenCode) b
 cd your-repo
 
 # Project (default) — team repos, Cloud Agents
-sh /path/to/skills/skills/zvec-llm-wiki/zvec-llm-wiki/install/install.sh
+sh /path/to/agent-tools/skills/zvec-llm-wiki/zvec-llm-wiki/install/install.sh
 
 # User-wide on one machine
 sh skills/zvec-llm-wiki/zvec-llm-wiki/install/install.sh --user
@@ -70,29 +70,29 @@ Run from the **project** you are working in (not from this catalog). Requires **
 cd your-repo
 
 # Auto-detect installed agents (Codex, Cursor, OpenCode, Claude, …)
-bash /path/to/skills/skills/zvec-llm-wiki/zvec-llm-wiki/scripts/zg-bootstrap.sh
+bash /path/to/agent-tools/skills/zvec-llm-wiki/zvec-llm-wiki/scripts/zg-bootstrap.sh
 
-# Or pick agents explicitly (see: zg help install)
-bash /path/to/skills/skills/zvec-llm-wiki/zvec-llm-wiki/scripts/zg-bootstrap.sh --target cursor codex opencode
+# Or pick agents explicitly (see: zg --help install)
+bash /path/to/agent-tools/skills/zvec-llm-wiki/zvec-llm-wiki/scripts/zg-bootstrap.sh --target cursor codex opencode
 
 # Override the default wiki embedding
-bash /path/to/skills/skills/zvec-llm-wiki/zvec-llm-wiki/scripts/zg-bootstrap.sh --embedding local/potion-multilingual-128m
+bash /path/to/agent-tools/skills/zvec-llm-wiki/zvec-llm-wiki/scripts/zg-bootstrap.sh --embedding local/potion-multilingual-128m
 ```
 
 Supported embedding models come from the installed zg catalog. List them there (this README does
 not duplicate the table):
 
 ```bash
-zg help models
+zg --help models
 # if zg is not on PATH:
 npx --yes @zvec/zvec-grep help models
 ```
 
-Bootstrap upserts **committed** `.cursor/mcp.json` and `.mcp.json` with `npx @zvec/zvec-grep server --stdio`
+Bootstrap upserts **committed** `.cursor/mcp.json` and `.mcp.json` with `npx @zvec/zvec-grep@0.3.1 --server --stdio`
 so agents do not require a global `zg`. A re-run updates that server's command and args, keeps
 compatible fields such as `env`, and refuses to merge an existing HTTP transport.
 The CLI uses `zg` on PATH or `npx @zvec/zvec-grep`.
-Pass `--target codex` (etc.) for optional user-level `zg install`. If `zg` is not on PATH, bootstrap
+Pass `--target codex` (etc.) for optional user-level `zg --install`. If `zg` is not on PATH, bootstrap
 installs `@zvec/zvec-grep` globally and checks that `zg` launches before writing that config.
 Cursor/Claude use the project MCP files.
 For a new wiki it creates
@@ -115,7 +115,7 @@ discovery. Restart the agent after MCP configuration.
 ## Design sources
 
 - [Open Knowledge Format](https://github.com/open-knowledge-format/open-knowledge-format) — bundle format, `okf-generate` / `okf-consume` skills, and `validate.py`
-- [zvec-grep](https://github.com/zvec-ai/zvec-grep) — zg behavior and CLI reference (`zg help`)
+- [zvec-grep](https://github.com/zvec-ai/zvec-grep) — zg behavior and CLI reference (`zg --help`)
 - [Karpathy LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) — persistent compiled wiki, categories, operations, index-first query, and log
 - [zvec-grep open-source post](https://zvec.org/en/blog/2026-08-28-zvec-grep-open-source/) — one staged engine for semantic/hybrid discovery and rg verification
 - [Agent Skills](https://agentskills.io/specification) authoring (concise SKILL.md, progressive disclosure)

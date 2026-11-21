@@ -2,6 +2,12 @@
 
 Newest date first. Each entry starts with the operation in bold, such as **Ingest**, **Record**, **Crystallize**, or **Lint**, and links the pages it changed.
 
+## 2026-11-21
+
+* **Record**: Broadened the catalog to Agent Tools.
+  - Updated the [catalog layout](concepts/catalog-layout.md) with the GitHub rename, MIT distribution, and generated local plugin marketplace.
+  - Kept project MCP for dogfooding and added a bootstrap option for plugin-managed MCP. Updated [skill setup](runbooks/skill-setup.md) and [gotchas](concepts/gotchas.md) for the pinned zvec-grep 0.3.1 launcher and CLI syntax.
+
 ## 2026-11-20
 
 * **Record**: Migrated the wiki to OKF v0.3

@@ -1,7 +1,7 @@
 ---
 name: zvec-llm-wiki-okf-migrate
 description: One-time migration of a pre-OKF zvec-llm-wiki wiki (docs/wiki/ pages without a type key, status working/decided, aliases, source, ADR date/deciders, `## [date] kind | title` logs) to an Open Knowledge Format v0.3 bundle, ending with a human review that records verifications. Use when asked to migrate, convert, or upgrade an LLM wiki to OKF, or when zvec-llm-wiki lint reports pre-OKF keys. Not for day-to-day wiki edits.
-license: Proprietary. Internal use.
+license: MIT
 ---
 
 # Migrate an LLM wiki to OKF v0.3

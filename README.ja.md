@@ -1,12 +1,8 @@
-# Agent Skills catalog
-
-[![Agent Skills](https://img.shields.io/badge/Agent%20Skills-spec-111827?style=flat-square)](https://agentskills.io/)
-
-ターミナルエージェント向けスキル — [Cursor](https://cursor.com/)、Codex、OpenCode、Claude Code。
+# Agent Tools
 
 [English](README.md) · [日本語](README.ja.md)
 
-**独立した** Agent Skill を集めたカタログです。スキルごとにパッケージを足し、エージェントへ入れて、このリポジトリでもドックフーディングしていきます。インストール後、エージェントはそのスキルの `SKILL.md` に従います。
+Codex、Claude Code、Cursor、OpenCode 向けのスキルと、Wiki の検索・メンテナンス用プラグインをまとめたカタログです。
 
 ## スキル
 
@@ -17,9 +13,15 @@
 
 ## スキルの使い方
 
-スキルのフォルダを開き、**そのスキルの** README に従ってください。最初の一歩はだいたい `install/install.sh` で、そのあとエージェントを再起動します。カタログを pull したあとの `--force` 再実行は、各スキルの README の指示に従います。
+スキルのフォルダを開き、各 README の導入手順に従ってください。既定のインストール先は対象リポジトリの `.agents/skills/` です。ユーザー全体に入れる場合は `install.sh --user` を使います。
 
-インストールはスキルファイルをエージェント用ディレクトリへコピーします（このカタログ README はコピーしません）。既定はリポジトリ内の `.agents/skills/` で、**コミット**してチームと Cloud Agents が同じ版を共有します。マシン全体は `install.sh --user`。ブートストラップ、MCP、プロジェクト配線などは各スキルの README にあります。
+## プラグイン
+
+`zvec-llm-wiki` は Wiki スキルと OKF の補助スキル、zvec-grep MCP をまとめたプラグインです。Codex、Claude Code、Cursor 向けのローカル導入を準備しています。[ビルドと導入テストの手順](plugins/README.ja.md)を参照してください。
+
+## MCP
+
+プラグインは [zvec-grep](https://github.com/zvec-ai/zvec-grep) のローカル stdio MCP を使います。MCP を単体で使う場合は [zvec-grep の公式手順](https://zvec.org/en/docs/zvec-grep/agents/)を参照してください。
 
 ## 言語ポリシー
 
@@ -32,6 +34,10 @@
 
 - **独立性:** 各スキル・各ロケールのフォルダは単体で完結する。そのフォルダだけ取り出せばインストールと実行ができる。同じスキルのロケール同士は 1 対 1。シンボリックリンクや実行時の他ロケール参照はしない。挙動とフラグは揃え、自然言語と `name` だけ変える。
 - **メンテナンス:** スキルの挙動を変えるときは、そのスキルの全ロケールを同じ変更で直す。カタログのトップ説明を変えるときは `README.md` と `README.ja.md` を同時に直す（同じ見出し、同じ事実）。インストールはロケールを 1 つ選ぶ。
+
+## ライセンス
+
+自作のスキルとプラグインは [MIT](LICENSE) です。同梱する第三者のファイルには、それぞれのライセンスが適用されます。
 
 ## 関連
 

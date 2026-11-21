@@ -28,4 +28,4 @@ source だけでは説明できない意図、制約、矛盾、保持すべき�
 [^<source-id>]: <ソースのタイトル>
 
 <!-- ソースで埋められないキーは消す。stable なページは status を書かず、draft か
-deprecated + superseded_by を使う。log.md に追記し、llm_wiki.py index、lint、増分 `zg index` を実行する。 -->
+deprecated + superseded_by を使う。log.md に追記し、llm_wiki.py index、lint、増分 `zg --index` を実行する。 -->

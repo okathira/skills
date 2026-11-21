@@ -1,12 +1,8 @@
-# Agent Skills catalog
-
-[![Agent Skills](https://img.shields.io/badge/Agent%20Skills-spec-111827?style=flat-square)](https://agentskills.io/)
-
-Skills for terminal agents — [Cursor](https://cursor.com/), Codex, OpenCode, and Claude Code.
+# Agent Tools
 
 [English](README.md) · [日本語](README.ja.md)
 
-A growing catalog of **independent** Agent Skills. Each skill is its own package: we add it here, install it into our agents, and dogfood it in this repository as well. After install, agents follow that skill's `SKILL.md`.
+A catalog of standalone agent skills and plugins for searching and maintaining project wikis. The standalone skills target Codex, Claude Code, Cursor, and OpenCode.
 
 ## Skills
 
@@ -17,9 +13,15 @@ A growing catalog of **independent** Agent Skills. Each skill is its own package
 
 ## Using a skill
 
-Open the skill folder and follow **its** README. The usual first step is `install/install.sh`, then restart the agent. Re-run with `--force` after pulling catalog updates, if that skill's README says so.
+Open the skill folder and follow its README. The default install location is `.agents/skills/` in the target repository. Use `install.sh --user` for a user-wide install.
 
-Install copies skill files into agent directories — not this catalog README. By default that is `.agents/skills/` in the repo; **commit** that copy so teammates and Cloud Agents share the same skill revision. Use `install.sh --user` for a machine-wide install. Anything extra (bootstrap, tools, project MCP) is documented per skill.
+## Plugins
+
+`zvec-llm-wiki` bundles the wiki skill, its OKF companion skills, and zvec-grep MCP. Local installation for Codex, Claude Code, and Cursor is being prepared. See the [build and installation test instructions](plugins/README.md).
+
+## MCP
+
+The plugin uses the local stdio MCP server from [zvec-grep](https://github.com/zvec-ai/zvec-grep). For MCP-only setup, follow the [upstream agent instructions](https://zvec.org/en/docs/zvec-grep/agents/).
 
 ## Language policy
 
@@ -32,6 +34,10 @@ English is the default locale so agents spend fewer tokens. Japanese is opt-in.
 
 - **Independence:** each skill locale folder is a complete package. Extracting that folder alone is enough to install and run it. Locales of the same skill stay one-to-one; there are no symlinks or cross-locale runtime deps. Behavior and flags stay aligned; only natural language and `name` differ.
 - **Maintenance:** when a skill's behavior changes, update every locale of that skill in the same change. When catalog landing copy changes, update `README.md` and `README.ja.md` together (same sections, same facts). Pick one locale per install.
+
+## License
+
+The original skills and plugins are [MIT-licensed](LICENSE). Bundled third-party files retain their own licenses.
 
 ## Related
 

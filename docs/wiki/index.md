@@ -1,10 +1,10 @@
 ---
 okf_version: "0.3"
-title: Agent Skills catalog wiki
-description: Design decisions, conventions, and procedures for the Agent Skills catalog and its zvec-llm-wiki skill; read it before changing a skill.
+title: Agent Tools repository wiki
+description: Decisions and procedures for maintaining the Agent Tools catalog and this repository's dogfooding setup.
 ---
 
-# Agent Skills catalog wiki
+# Agent Tools repository wiki
 
 * [Concepts](concepts/index.md) - Terms, patterns, rules, and ideas.
 * [Decisions](decisions/index.md) - Architecture decision records.

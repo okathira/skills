@@ -4,8 +4,8 @@
       "command": "npx",
       "args": [
         "--yes",
-        "@zvec/zvec-grep",
-        "server",
+        "@zvec/zvec-grep@0.3.1",
+        "--server",
         "--stdio",
         "--mcp-toolset",
         "agent"

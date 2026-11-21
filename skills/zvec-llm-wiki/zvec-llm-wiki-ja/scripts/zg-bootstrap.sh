@@ -3,7 +3,7 @@
 # 冪等で非破壊的: 既存インデックスを rebuild/drop しない。
 #
 # 使い方:
-#   ./zg-bootstrap.sh [--target <agent>]... [--embedding <model>]
+#   ./zg-bootstrap.sh [--target <agent>]... [--embedding <model>] [--skip-mcp]
 #   ./zg-bootstrap.sh                    # エージェント自動検出 (zg install)
 #
 set -euo pipefail
@@ -11,15 +11,18 @@ set -euo pipefail
 TARGETS=()
 EMBEDDING="local/potion-multilingual-128m"
 EMBEDDING_EXPLICIT=0
+SKIP_MCP=0
+ZG_PACKAGE="@zvec/zvec-grep@0.3.1"
 
 usage() {
   cat <<'EOF'
-使い方: zg-bootstrap.sh [--target <agent>]... [--embedding <model>]
+使い方: zg-bootstrap.sh [--target <agent>]... [--embedding <model>] [--skip-mcp]
 
-  --target <agent>     繰り返し可; zg install に渡す（参照: zg help install）
+  --target <agent>     繰り返し可; zg install に渡す（参照: zg --help install）
+  --skip-mcp           MCP 設定を変更せずに Wiki とインデックスを準備する
   --embedding <model>  初回インデックスのモデル（デフォルト: local/potion-multilingual-128m）
-                       対応一覧は zg help models
-                       （PATH に無いときは npx --yes @zvec/zvec-grep help models）
+                       対応一覧は zg --help models
+                       （PATH に無いときは npx --yes @zvec/zvec-grep@0.3.1 --help models）
 
 --target なしの場合はコミット用プロジェクト MCP（.cursor/mcp.json、.mcp.json）のみ更新する。
 Codex などユーザー全体設定は --target codex 等を指定。zg が PATH に無いときは
@@ -52,6 +55,10 @@ while [[ $# -gt 0 ]]; do
       EMBEDDING_EXPLICIT=1
       shift
       ;;
+    --skip-mcp)
+      SKIP_MCP=1
+      shift
+      ;;
     -h|--help)
       usage
       exit 0
@@ -63,6 +70,11 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+if (( SKIP_MCP && ${#TARGETS[@]} )); then
+  echo "エラー: --skip-mcp と --target は併用できません" >&2
+  exit 1
+fi
 
 say() { printf '\033[1;36m==>\033[0m %s\n' "$*"; }
 
@@ -126,12 +138,12 @@ EOF
 upsert_project_mcp() {
   local rel_path="$1"
   mkdir -p "$(dirname "$rel_path")"
-  node - "$rel_path" <<'NODE'
+  node - "$rel_path" "$ZG_PACKAGE" <<'NODE'
 const fs = require("fs");
 const path = process.argv[2];
 const entry = {
   command: "npx",
-  args: ["--yes", "@zvec/zvec-grep", "server", "--stdio", "--mcp-toolset", "agent"],
+  args: ["--yes", process.argv[3], "--server", "--stdio", "--mcp-toolset", "agent"],
 };
 
 function isHttpTransport(server) {
@@ -205,7 +217,7 @@ ensure_persistent_zg() {
     exit 1
   fi
   say "@zvec/zvec-grep をグローバルインストールします（ユーザー全体エージェントが zg を起動できるようにするため）"
-  npm install -g @zvec/zvec-grep
+  npm install -g "$ZG_PACKAGE"
   hash -r
   if ! command -v zg >/dev/null 2>&1 || ! zg --version >/dev/null 2>&1; then
     local prefix
@@ -233,11 +245,17 @@ fi
 
 # 2) インデックス用 CLI。プロジェクト MCP は npx 起動。zg のグローバルインストールは任意。
 ZG=()
-if command -v zg >/dev/null 2>&1; then
+if (( SKIP_MCP )); then
+  if ! command -v npx >/dev/null 2>&1; then
+    echo "プラグインには Node.js 22 以上の npx が必要です。" >&2
+    exit 1
+  fi
+  ZG=(npx --yes "$ZG_PACKAGE")
+elif command -v zg >/dev/null 2>&1; then
   ZG=(zg)
   say "zg を使用 ($(zg --version 2>/dev/null || echo 不明))"
-elif command -v npm >/dev/null 2>&1; then
-  ZG=(npx --yes @zvec/zvec-grep)
+elif command -v npx >/dev/null 2>&1; then
+  ZG=(npx --yes "$ZG_PACKAGE")
   say "CLI は npx @zvec/zvec-grep を使用（短いコマンドがよければ zg をグローバルインストール）"
 else
   echo "zg も npm も見つかりません。先に Node.js 22+ をインストールしてください。" >&2
@@ -245,27 +263,40 @@ else
 fi
 
 run_zg() {
-  "${ZG[@]}" "$@"
+  local command="$1"
+  shift
+  # Native zg uses --index/--status/--install. Older global zg uses subcommands.
+  if [[ "${ZG[0]}" == npx ]] || "${ZG[@]}" --help | grep -E '^[[:space:]]+--index[[:space:]]+Build' >/dev/null; then
+    command="--$command"
+  fi
+  if (( SKIP_MCP )); then
+    set -- "$@" --mode direct
+  fi
+  "${ZG[@]}" "$command" "$@"
 }
 
 # 3) プロジェクト MCP（コミット）+ 任意のユーザー全体インストール ----------------
-upsert_project_mcp ".cursor/mcp.json"
-upsert_project_mcp ".mcp.json"
-
-if [[ ${#TARGETS[@]} -eq 0 ]]; then
-  say "ユーザー全体の zg install はスキップ（自動）。.cursor/mcp.json と .mcp.json を使う。Codex/OpenCode は zg install --target <agent> を別途実行。"
+if (( SKIP_MCP )); then
+  say "MCP 設定の変更を省略（プラグイン側で管理）"
 else
-  filter_user_install_targets
-  if [[ ${#FILTERED_TARGETS[@]} -gt 0 ]]; then
-    say "ユーザー全体のエージェント連携: ${FILTERED_TARGETS[*]}（cursor/claude はコミット済みプロジェクト MCP）"
-    ensure_persistent_zg
-    INSTALL_CMD=("${ZG[@]}" install --yes)
-    for target in "${FILTERED_TARGETS[@]}"; do
-      INSTALL_CMD+=(--target "$target")
-    done
-    "${INSTALL_CMD[@]}"
+  upsert_project_mcp ".cursor/mcp.json"
+  upsert_project_mcp ".mcp.json"
+
+  if [[ ${#TARGETS[@]} -eq 0 ]]; then
+    say "ユーザー全体の zg install はスキップ（自動）。.cursor/mcp.json と .mcp.json を使う。Codex/OpenCode は zg install --target <agent> を別途実行。"
   else
-    say "cursor/claude のみ指定 — プロジェクト MCP で十分。ユーザー全体の zg install は不要"
+    filter_user_install_targets
+    if [[ ${#FILTERED_TARGETS[@]} -gt 0 ]]; then
+      say "ユーザー全体のエージェント連携: ${FILTERED_TARGETS[*]}（cursor/claude はコミット済みプロジェクト MCP）"
+      ensure_persistent_zg
+      INSTALL_CMD=(--yes)
+      for target in "${FILTERED_TARGETS[@]}"; do
+        INSTALL_CMD+=(--target "$target")
+      done
+      run_zg install "${INSTALL_CMD[@]}"
+    else
+      say "cursor/claude のみ指定 — プロジェクト MCP で十分。ユーザー全体の zg install は不要"
+    fi
   fi
 fi
 
@@ -310,7 +341,7 @@ ensure_gitignore_zvec
 if [[ -d .zvec-grep ]]; then
   say "既存インデックスを検出 — 増分更新します（rebuild なし）"
   if (( EMBEDDING_EXPLICIT )); then
-    warn "既存インデックスでは --embedding を無視します。モデルを変えるには、ユーザーの明示的な確認のうえ zg index --rebuild --embedding <model> を使ってください。"
+    warn "既存インデックスでは --embedding を無視します。モデルを変えるには、ユーザーの明示的な確認のうえ zg --index --rebuild --embedding <model> を使ってください。"
   fi
   run_zg index
 else
@@ -321,7 +352,7 @@ fi
 run_zg status --check-ready
 
 say "完了。MCP を今設定した場合はエージェントを再起動してください。"
-say "ホットメモリ: AGENTS.md。まず docs/wiki/index.md を読む。zg の使い方: zg help"
-if [[ ! -d .agents/skills/okf-generate && ! -d "${HOME}/.agents/skills/okf-generate" ]]; then
+say "ホットメモリ: AGENTS.md。まず docs/wiki/index.md を読む。zg の使い方: zg --help"
+if [[ ! -d "$(dirname -- "${BASH_SOURCE[0]}")/../../okf-generate" && ! -d .agents/skills/okf-generate && ! -d "${HOME}/.agents/skills/okf-generate" ]]; then
   warn "okf-generate が未インストールです。エージェントが OKF を書いて検証できるよう install.sh（--no-okf なし）を実行してください"
 fi

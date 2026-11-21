@@ -9,7 +9,7 @@ x-zvec-aliases:
   - heading-only stubs
   - MCP zg PATH
   - stale skill install
-generated: { by: "cursor/auto", at: "2026-11-20T11:07:00Z" }
+generated: { by: "codex/gpt-6.2-sol", at: "2026-11-21T09:34:30Z" }
 verified:
   - { by: "human:owner", at: "2026-11-20T15:31:00Z" }
 sources:
@@ -42,9 +42,9 @@ Bootstrap does not copy `SKILL.md`. After catalog updates to the package, re-run
 
 User-level `~/.agents/skills/` and `~/.cursor/mcp.json` are not shared with Cloud Agents or teammates.
 
-# User-level `zg install` vs project MCP
+# User-level `zg --install` vs project MCP
 
-`zg install --target cursor` writes `~/.cursor/mcp.json` with `command: zg` and does not install the npm package. Prefer committed project MCP with `npx @zvec/zvec-grep` from bootstrap. Re-running that upsert keeps compatible fields such as `env` and refuses to merge an existing HTTP `zvec_grep` entry into the stdio command. Use `zg install --target codex` (etc.) only when you need that agent's **user-level** config. Bootstrap's `--target` does the same install, and when `zg` is not already on PATH it installs `@zvec/zvec-grep` globally and checks that `zg` launches first. A one-shot `npx` install does not leave a `zg` binary for those user-level entries.
+`zg --install --target cursor` writes `~/.cursor/mcp.json` with `command: zg` and does not install the npm package. Prefer committed project MCP with `npx @zvec/zvec-grep@0.3.1` from bootstrap. Re-running that upsert keeps compatible fields such as `env` and refuses to merge an existing HTTP `zvec_grep` entry into the stdio command. Use `zg --install --target codex` (etc.) only when you need that agent's **user-level** config. Bootstrap's `--target` does the same install, and when `zg` is not already on PATH it installs `@zvec/zvec-grep` globally and checks that `zg` launches first. A one-shot `npx` install does not leave a `zg` binary for those user-level entries.
 
 # Do not create heading-only stubs
 

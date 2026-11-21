@@ -83,7 +83,7 @@ copy_skill() {
   mkdir -p "$(dirname "$dest")"
   rm -rf "$dest"
   mkdir -p "$dest"
-  cp "$ROOT_DIR/SKILL.md" "$dest/"
+  cp "$ROOT_DIR/SKILL.md" "$ROOT_DIR/LICENSE" "$dest/"
   cp -R "$ROOT_DIR/scripts" "$ROOT_DIR/references" "$ROOT_DIR/templates" "$dest/"
   echo "インストール先: $dest"
 }
